@@ -2173,12 +2173,17 @@ async function syncRemoteIfConfigured() {
   if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return;
 
   try {
-    const [posts, media, inspo, campaigns] = await Promise.all([
-      apiGetPosts(),
-      apiGetMedia(),
-      apiGetInspo(),
-      apiGetCampaigns()
-    ]);
+const [postsResult, mediaResult, inspoResult, campaignsResult] = await Promise.allSettled([
+  apiGetPosts(),
+  apiGetMedia(),
+  apiGetInspo(),
+  apiGetCampaigns()
+]);
+
+const posts = postsResult.status === "fulfilled" ? postsResult.value : [];
+const media = mediaResult.status === "fulfilled" ? mediaResult.value : [];
+const inspo = inspoResult.status === "fulfilled" ? inspoResult.value : [];
+const campaigns = campaignsResult.status === "fulfilled" ? campaignsResult.value : [];
 
     if (Array.isArray(campaigns)) {
       appState.campaigns = campaigns.map(campaign => ({
