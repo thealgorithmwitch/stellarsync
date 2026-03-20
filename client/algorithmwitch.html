@@ -1,0 +1,1781 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">StellarSync | Content Command Center</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" vid="6">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" vid="7">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" vid="8">
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="9"></script>
+    <style vid="10">
+        :root {
+            --color-bg: #0a0612;
+            --color-accent: #a855f7;
+            --panel-bg: #120c1d;
+            --panel-border: rgba(255, 255, 255, 0.04);
+            
+            --p-edu: #00f0ff;
+            --p-promo: #b25fff;
+            --p-engage: #ffd700;
+            --p-aware: #00ffaa;
+            
+            --s-pub: #00ffaa;
+            --s-sch: #ffd700;
+            --s-drf: #94a3b8;
+            --s-fail: #f43f5e;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .font-magical { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+
+        .stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: twinkle var(--duration) ease-in-out infinite; animation-delay: var(--delay); }
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: var(--opacity); transform: scale(1.3); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 1rem;
+        }
+
+        .glass-card {
+            background: #181125 !important;
+            border: 1px solid var(--panel-border) !important;
+            border-radius: 0.75rem !important;
+            transition: all 0.2s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            transform: translateY(-2px);
+            cursor: pointer;
+        }
+
+        .glow-text { text-shadow: none !important; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem !important; border: none !important; background: transparent !important; }
+        .cal-cell { background: #160f24 !important; border: 1px solid rgba(255,255,255,0.02) !important; border-radius: 0.75rem !important; min-height: 90px; padding: 0.75rem !important; display: flex; flex-direction: column; gap: 6px; transition: background-color 0.2s; }
+        .cal-cell:hover { background: #1a122a !important; }
+        .cal-cell.empty { background: rgba(22, 15, 36, 0.3) !important; border-color: transparent !important; }
+        
+        .post-pill { padding: 0.35rem 0.5rem !important; border-radius: 0.5rem !important; border-left: none !important; font-size: 10px; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; background: #221835 !important; }
+        .post-pill.edu { background: rgba(0, 240, 255, 0.08) !important; border: 1px solid rgba(0, 240, 255, 0.15) !important; }
+        .post-pill.promo { background: rgba(178, 95, 255, 0.08) !important; border: 1px solid rgba(178, 95, 255, 0.15) !important; }
+        .post-pill.engage { background: rgba(255, 215, 0, 0.08) !important; border: 1px solid rgba(255, 215, 0, 0.15) !important; }
+        .post-pill.aware { background: rgba(0, 255, 170, 0.08) !important; border: 1px solid rgba(0, 255, 170, 0.15) !important; }
+
+        .starmap-container { cursor: grab; background-color: var(--color-bg); }
+        .starmap-container:active { cursor: grabbing; }
+        .pipeline-svg { position: absolute; top: 0; left: 0; width: 2000px; height: 1200px; pointer-events: none; z-index: 1; }
+        .pipeline-path { fill: none; stroke-width: 2; stroke-dasharray: 6 6; animation: dash 30s linear infinite; opacity: 0.2; }
+        @keyframes dash { to { stroke-dashoffset: -100; } }
+        
+        .map-node { position: absolute; z-index: 10; transform: translate(-50%, -50%); }
+        .hub-node { padding: 12px; border-radius: 12px; border: 1px solid var(--panel-border); background: #120c1d; width: 160px; }
+        .post-node { background: #181125; border: 1px solid var(--panel-border); border-radius: 0.75rem; padding: 12px; width: 220px; transition: transform 0.2s, border-color 0.2s; cursor: pointer; }
+        .post-node:hover { transform: translate(-50%, -55%); border-color: rgba(255,255,255,0.2); z-index: 20; }
+
+        .badge { font-size: 8px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; border: 1px solid; letter-spacing: 0.05em; }
+        .badge-pub { color: var(--s-pub); border-color: rgba(0, 255, 170, 0.2); background: rgba(0, 255, 170, 0.1); }
+        .badge-sch { color: var(--s-sch); border-color: rgba(255, 215, 0, 0.2); background: rgba(255, 215, 0, 0.1); }
+        .badge-drf { color: var(--s-drf); border-color: rgba(148, 163, 184, 0.2); background: rgba(148, 163, 184, 0.1); }
+
+        #scheduling-modal { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        #scheduling-modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: scale(0.98) translateY(10px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: #120c1d; border: 1px solid var(--panel-border); border-radius: 1rem; }
+        #scheduling-modal.active .modal-content { transform: scale(1) translateY(0); }
+
+        .ledger-row { transition: background 0.2s; border-bottom: 1px solid var(--panel-border); }
+        .ledger-row:hover { background: #160f24; }
+
+        .form-input { width: 100%; background: #181125; border: 1px solid var(--panel-border); border-radius: 0.5rem; padding: 10px 14px; color: white; font-size: 13px; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: rgba(255,255,255,0.2); }
+        .pillar-btn { border: 1px solid var(--panel-border); background: #181125; color: #94a3b8; transition: all 0.2s; border-radius: 0.5rem; }
+        .pillar-btn.active.edu { border-color: var(--p-edu); color: var(--p-edu); background: rgba(0, 240, 255, 0.05); }
+        .pillar-btn.active.promo { border-color: var(--p-promo); color: var(--p-promo); background: rgba(178, 95, 255, 0.05); }
+        .pillar-btn.active.engage { border-color: var(--p-engage); color: var(--p-engage); background: rgba(255, 215, 0, 0.05); }
+        .pillar-btn.active.aware { border-color: var(--p-aware); color: var(--p-aware); background: rgba(0, 255, 170, 0.05); }
+        
+        .nav-btn.active { background-color: #2d1b4e !important; color: white !important; border-color: transparent !important; }
+        .nav-btn:hover:not(.active) { background-color: #1a1128 !important; color: white !important; }
+    </style>
+</head>
+<body class="flex flex-col relative p-4 gap-4" vid="11">
+    
+    <div class="fixed inset-0 z-0 pointer-events-none" vid="12">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#0a0514] via-[#05020a] to-[#0a0514]" vid="13"></div>
+            <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px]" vid="14"></div>
+            <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[150px]" vid="15"></div>
+            <div id="stars-container" class="stars absolute inset-0" vid="16"></div>
+        </div>
+
+    <header class="h-16 px-6 flex justify-between items-center bg-[#120c1d] border border-white/5 rounded-2xl relative z-50 shrink-0" vid="17">
+        <div class="flex items-center gap-4" vid="18">
+            <div class="w-10 h-10 rounded-xl bg-[#231738] flex items-center justify-center" vid="19">
+                <i class="ph-fill ph-planet text-[#c77dff] text-2xl" vid="20"></i>
+            </div>
+            <span class="font-bold text-xl text-white tracking-wide" vid="21">StellarSync</span>
+        </div>
+        <div class="flex items-center gap-6" vid="22">
+            <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0a2016] border border-[#0d4029] rounded-full cursor-pointer" vid="23">
+                <div class="w-1.5 h-1.5 rounded-full bg-[#00ffaa] shadow-[0_0_8px_#00ffaa]" vid="24"></div>
+                <span class="text-[10px] uppercase tracking-wider text-[#00ffaa] font-semibold" vid="25">Data Synced</span>
+            </div>
+            <button onclick="openModal()" class="px-6 py-2 bg-gradient-to-r from-[#9d4edd] to-[#c77dff] hover:opacity-90 text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(157,78,221,0.2)] border border-white/10" vid="26">
+                <i class="ph-bold ph-plus" vid="27"></i> New Post
+            </button>
+            <div class="w-10 h-10 rounded-xl bg-[#1e152d] border border-white/5 flex items-center justify-center text-xs font-bold cursor-pointer text-gray-300 hover:text-white transition-colors" vid="28">
+                AW
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative z-10 w-full gap-4" vid="29">
+        
+        <aside class="w-[88px] bg-[#120c1d] border border-white/5 rounded-2xl flex flex-col items-center py-6 gap-4 shrink-0 z-40" vid="30">
+            <button id="nav-calendar" onclick="switchView('calendar')" class="w-12 h-12 rounded-xl bg-[#2d1b4e] text-white flex items-center justify-center relative group nav-btn active transition-colors" vid="31">
+                <i class="ph-fill ph-calendar-blank text-2xl" vid="32"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="33">Calendar</span>
+            </button>
+            <button id="nav-constellation" onclick="switchView('constellation')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="34">
+                <i class="ph-fill ph-planet text-2xl" vid="35"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="36">Constellation</span>
+            </button>
+            <button id="nav-ledger" onclick="switchView('ledger')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="37">
+                <i class="ph-fill ph-table text-2xl" vid="38"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="39">Ledger</span>
+            </button>
+            <button id="nav-media" onclick="switchView('media')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="40">
+                <i class="ph-fill ph-images text-2xl" vid="41"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="42">Media</span>
+            </button>
+            <div class="w-8 h-[1px] bg-white/5 my-2" vid="43"></div>
+            <button id="nav-inspo" onclick="switchView('inspo')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="44">
+                <i class="ph-fill ph-lightbulb text-2xl" vid="45"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="46">Inspo Vault</span>
+            </button>
+            <div class="mt-auto" vid="47">
+                <button class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center transition-colors" vid="48">
+                    <i class="ph-fill ph-gear text-xl" vid="49"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 w-full h-full overflow-hidden relative" vid="50">
+            
+            
+            <section id="view-calendar" class="view-section w-full h-full p-8 flex flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="51">
+                <div class="mb-8 flex justify-between items-start" vid="52">
+                    <div vid="53">
+                        <h2 class="text-4xl font-bold text-white tracking-tight flex items-baseline gap-3" vid="54">October <span class="text-2xl font-medium text-gray-500 tracking-normal" vid="55">2024</span></h2>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2 flex items-center gap-1.5" vid="56"><i class="ph-fill ph-calendar-blank text-[#c77dff]" vid="57"></i> Content Calendar</p>
+                    </div>
+                    <div class="flex items-center gap-4" vid="58">
+                        <div class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1" vid="59">
+                            <button class="px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm" vid="60">Mo</button>
+                            <button class="px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors" vid="61">Wk</button>
+                        </div>
+                        <div class="flex gap-1" vid="62">
+                            <button class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors" vid="63"><i class="ph-bold ph-caret-left" vid="64"></i></button>
+                            <button class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors" vid="65"><i class="ph-bold ph-caret-right" vid="66"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar" vid="67">
+                    
+                    <div class="grid grid-cols-7 mb-4 text-center" vid="68">
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="69">Sun</span>
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="70">Mon</span>
+                        <span class="text-[10px] font-bold text-[#c77dff] tracking-wider uppercase" vid="71">Tue</span>
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="72">Wed</span>
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="73">Thu</span>
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="74">Fri</span>
+                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="75">Sat</span>
+                    </div>
+                    
+                    <div class="cal-grid" vid="76">
+                        
+                        <div class="cal-cell empty" vid="77"><span class="text-xs text-gray-600 font-medium" vid="78">29</span></div>
+                        <div class="cal-cell empty" vid="79"><span class="text-xs text-gray-600 font-medium" vid="80">30</span></div>
+                        
+                        <div class="cal-cell" vid="81"><span class="text-xs text-gray-300 font-medium" vid="82">1</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="83">
+                            <span class="text-xs text-gray-300 font-medium" vid="84">2</span>
+                            <div class="post-pill edu mt-1" vid="85">
+                                <div class="flex items-center gap-1.5 w-full" vid="86">
+                                    <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-xs" vid="87"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#00f0ff] ml-auto" vid="88"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="89">Solar ...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="90"><span class="text-xs text-gray-300 font-medium" vid="91">3</span></div>
+                        <div class="cal-cell" vid="92"><span class="text-xs text-gray-300 font-medium" vid="93">4</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="94">
+                            <span class="text-xs text-gray-300 font-medium" vid="95">5</span>
+                            <div class="post-pill promo mt-1" vid="96">
+                                <div class="flex items-center gap-1.5 w-full" vid="97">
+                                    <i class="ph-fill ph-instagram-logo text-[#b25fff] text-xs" vid="98"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="99"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="100">Winte...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="101"><span class="text-xs text-gray-300 font-medium" vid="102">6</span></div>
+                        <div class="cal-cell" vid="103"><span class="text-xs text-gray-300 font-medium" vid="104">7</span></div>
+                        <div class="cal-cell" vid="105"><span class="text-xs text-gray-300 font-medium" vid="106">8</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="107">
+                            <span class="text-xs text-gray-300 font-medium" vid="108">9</span>
+                            <div class="post-pill aware mt-1" vid="109">
+                                <div class="flex items-center gap-1.5 w-full" vid="110">
+                                    <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-xs" vid="111"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#94a3b8] ml-auto" vid="112"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="113">Eco-V...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="114"><span class="text-xs text-gray-300 font-medium" vid="115">10</span></div>
+                        <div class="cal-cell" vid="116"><span class="text-xs text-gray-300 font-medium" vid="117">11</span></div>
+                        <div class="cal-cell" vid="118"><span class="text-xs text-gray-300 font-medium" vid="119">12</span></div>
+                        <div class="cal-cell" vid="120"><span class="text-xs text-gray-300 font-medium" vid="121">13</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="122">
+                            <span class="text-xs text-gray-300 font-medium" vid="123">14</span>
+                            <div class="post-pill engage mt-1" vid="124">
+                                <div class="flex items-center gap-1.5 w-full" vid="125">
+                                    <div class="flex" vid="126">
+                                        <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xs" vid="127"></i>
+                                        <i class="ph-fill ph-instagram-logo text-[#ffd700] text-xs -ml-1" vid="128"></i>
+                                    </div>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="129"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="130">Futur...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="131"><span class="text-xs text-gray-300 font-medium" vid="132">15</span></div>
+                        <div class="cal-cell" vid="133"><span class="text-xs text-gray-300 font-medium" vid="134">16</span></div>
+                        <div class="cal-cell" vid="135"><span class="text-xs text-gray-300 font-medium" vid="136">17</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="137">
+                            <span class="text-xs text-gray-300 font-medium" vid="138">18</span>
+                            <div class="post-pill edu mt-1" vid="139">
+                                <div class="flex items-center gap-1.5 w-full" vid="140">
+                                    <i class="ph-fill ph-instagram-logo text-[#00f0ff] text-xs" vid="141"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="142"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="143">Panel...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="144"><span class="text-xs text-gray-300 font-medium" vid="145">19</span></div>
+                        <div class="cal-cell" vid="146"><span class="text-xs text-gray-300 font-medium" vid="147">20</span></div>
+                        <div class="cal-cell" vid="148"><span class="text-xs text-gray-300 font-medium" vid="149">21</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="150">
+                            <span class="text-xs text-gray-300 font-medium" vid="151">22</span>
+                            <div class="post-pill promo mt-1" vid="152">
+                                <div class="flex items-center gap-1.5 w-full" vid="153">
+                                    <i class="ph-fill ph-linkedin-logo text-[#b25fff] text-xs" vid="154"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#94a3b8] ml-auto" vid="155"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="156">Q4 Di...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="157"><span class="text-xs text-gray-300 font-medium" vid="158">23</span></div>
+                        <div class="cal-cell" vid="159"><span class="text-xs text-gray-300 font-medium" vid="160">24</span></div>
+                        
+                        <div class="cal-cell relative cursor-pointer group ring-1 ring-[#c77dff]/50 bg-[#1c132d] !important" onclick="openModal('Wind Turbine Stats', 'instagram', 'aware', '2024-10-25T13:00', 'published')" vid="161">
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-[#c77dff] rounded-full shadow-[0_0_10px_#c77dff]" vid="162"></div>
+                            <span class="text-xs text-white font-bold" vid="163">25</span>
+                            <div class="post-pill aware mt-1" vid="164">
+                                <div class="flex items-center gap-1.5 w-full" vid="165">
+                                    <i class="ph-fill ph-instagram-logo text-[#00ffaa] text-xs" vid="166"></i>
+                                    <div class="w-1.5 h-1.5 rounded-full bg-[#00ffaa] ml-auto" vid="167"></div>
+                                </div>
+                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="168">Turbi...</span>
+                            </div>
+                        </div>
+                        <div class="cal-cell" vid="169"><span class="text-xs text-gray-300 font-medium" vid="170">26</span></div>
+                        <div class="cal-cell empty" vid="171"><span class="text-xs text-gray-600 font-medium" vid="172">27</span></div>
+                        <div class="cal-cell empty" vid="173"><span class="text-xs text-gray-600 font-medium" vid="174">28</span></div>
+                        <div class="cal-cell empty" vid="175"><span class="text-xs text-gray-600 font-medium" vid="176">29</span></div>
+                        <div class="cal-cell empty" vid="177"><span class="text-xs text-gray-600 font-medium" vid="178">30</span></div>
+                        <div class="cal-cell empty" vid="179"><span class="text-xs text-gray-600 font-medium" vid="180">31</span></div>
+                    </div>
+
+                </div>
+            </section>
+
+            
+            <section id="view-constellation" class="view-section hidden w-full h-full flex-col overflow-hidden bg-transparent border border-white/5 rounded-2xl" vid="181">
+                
+                <div class="absolute top-6 left-6 z-30 flex gap-2" vid="182">
+                    <button id="zoom-in" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" vid="183"><i class="ph-bold ph-magnifying-glass-plus text-lg" vid="184"></i></button>
+                    <button id="zoom-out" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" vid="185"><i class="ph-bold ph-magnifying-glass-minus text-lg" vid="186"></i></button>
+                    <button id="zoom-reset" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Reset" vid="187"><i class="ph-bold ph-corners-out text-lg" vid="188"></i></button>
+                </div>
+                <div class="absolute top-6 right-6 z-30 bg-[#1a1128] border border-white/5 px-4 py-2 rounded-xl" vid="189">
+                    <span class="text-xs uppercase font-bold text-[#c77dff] tracking-widest flex items-center gap-2" vid="190"><i class="ph-fill ph-planet" vid="191"></i> Constellation</span>
+                </div>
+
+                <div id="starmap-viewport" class="w-full h-full overflow-hidden relative" vid="192">
+                    <div id="starmap-canvas" class="starmap-container absolute top-0 left-0 w-[2000px] h-[1200px] transform origin-top-left transition-transform duration-75 ease-out" vid="193">
+                        
+                        <svg class="pipeline-svg" vid="194">
+                            <path d="M 150 200 Q 300 150 450 200 T 800 200" class="pipeline-path stroke-[#00f0ff]" vid="195"></path>
+                            <path d="M 150 400 Q 350 450 550 400 T 950 400" class="pipeline-path stroke-[#b25fff]" vid="196"></path>
+                            <path d="M 150 600 Q 400 550 650 600 T 1100 600" class="pipeline-path stroke-[#00ffaa]" vid="197"></path>
+                            <path d="M 150 800 Q 300 850 500 800 T 900 800" class="pipeline-path stroke-[#ffd700]" vid="198"></path>
+                        </svg>
+
+                        <div class="map-node hub-node border-l-4 border-l-[#00f0ff]" style="left: 150px; top: 200px;" vid="199">
+                            <h3 class="font-bold text-white text-sm mb-1" vid="200">Solar Tech 101</h3>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="201">Education</p>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#00f0ff]" style="left: 450px; top: 200px;" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="202">
+                            <div class="flex justify-between items-center mb-3" vid="203">
+                                <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-xl" vid="204"></i>
+                                <span class="badge badge-pub" vid="205">Published</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="206">Solar Physics 101</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="207">Oct 2 • Infographic</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="208">
+                                <div class="w-full h-full flex items-center justify-center text-[#00f0ff]/40" vid="209"><i class="ph-fill ph-image text-2xl" vid="210"></i></div>
+                            </div>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#00f0ff]" style="left: 800px; top: 200px;" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="211">
+                            <div class="flex justify-between items-center mb-3" vid="212">
+                                <i class="ph-fill ph-instagram-logo text-[#00f0ff] text-xl" vid="213"></i>
+                                <span class="badge badge-sch" vid="214">Scheduled</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="215">Panel Maintenance Guide</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="216">Oct 18 • Carousel</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="217">
+                                <div class="w-full h-full flex items-center justify-center text-[#00f0ff]/40" vid="218"><i class="ph-fill ph-images text-2xl" vid="219"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="map-node hub-node border-l-4 border-l-[#b25fff]" style="left: 150px; top: 400px;" vid="220">
+                            <h3 class="font-bold text-white text-sm mb-1" vid="221">Winter Savings</h3>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="222">Promo</p>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#b25fff]" style="left: 550px; top: 400px;" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="223">
+                            <div class="flex justify-between items-center mb-3" vid="224">
+                                <i class="ph-fill ph-instagram-logo text-[#b25fff] text-xl" vid="225"></i>
+                                <span class="badge badge-sch" vid="226">Scheduled</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="227">Winter Savings Promo</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="228">Oct 5 • Video</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="229">
+                                <div class="w-full h-full flex items-center justify-center text-[#b25fff]/40" vid="230"><i class="ph-fill ph-video-camera text-2xl" vid="231"></i></div>
+                            </div>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#b25fff]" style="left: 950px; top: 400px;" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="232">
+                            <div class="flex justify-between items-center mb-3" vid="233">
+                                <i class="ph-fill ph-linkedin-logo text-[#b25fff] text-xl" vid="234"></i>
+                                <span class="badge badge-drf" vid="235">Draft</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="236">Q4 Discount Reveal</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="237">Oct 22 • Image</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-dashed border-gray-700" vid="238">
+                                <div class="w-full h-full flex items-center justify-center text-gray-500 text-[10px] font-bold" vid="239">AWAITING ASSET</div>
+                            </div>
+                        </div>
+
+                        <div class="map-node hub-node border-l-4 border-l-[#00ffaa]" style="left: 150px; top: 600px;" vid="240">
+                            <h3 class="font-bold text-white text-sm mb-1" vid="241">Eco-Vanguard</h3>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="242">Awareness</p>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#00ffaa]" style="left: 650px; top: 600px;" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="243">
+                            <div class="flex justify-between items-center mb-3" vid="244">
+                                <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-xl" vid="245"></i>
+                                <span class="badge badge-drf" vid="246">Draft</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="247">Eco-Vanguard Report</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="248">Oct 9 • Article Link</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5 p-3 flex flex-col gap-1.5 justify-center" vid="249">
+                                <div class="w-full h-1.5 bg-white/10 rounded" vid="250"></div>
+                                <div class="w-3/4 h-1.5 bg-white/10 rounded" vid="251"></div>
+                                <div class="w-1/2 h-1.5 bg-[#00ffaa]/30 rounded mt-1" vid="252"></div>
+                            </div>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#00ffaa]" style="left: 1100px; top: 600px;" onclick="openModal('Wind Turbine Stats', 'instagram', 'aware', '2024-10-25T13:00', 'published')" vid="253">
+                            <div class="flex justify-between items-center mb-3" vid="254">
+                                <i class="ph-fill ph-instagram-logo text-[#00ffaa] text-xl" vid="255"></i>
+                                <span class="badge badge-pub" vid="256">Published</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="257">Wind Turbine Stats</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="258">Oct 25 • Infographic</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="259">
+                                <div class="w-full h-full flex items-center justify-center text-[#00ffaa]/40" vid="260"><i class="ph-fill ph-chart-pie-slice text-2xl" vid="261"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="map-node hub-node border-l-4 border-l-[#ffd700]" style="left: 150px; top: 800px;" vid="262">
+                            <h3 class="font-bold text-white text-sm mb-1" vid="263">Future Focus</h3>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="264">Engagement</p>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#ffd700]" style="left: 500px; top: 800px;" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="265">
+                            <div class="flex justify-between items-center mb-3" vid="266">
+                                <div class="flex gap-1" vid="267">
+                                    <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xl" vid="268"></i>
+                                    <i class="ph-fill ph-instagram-logo text-[#ffd700] text-xl" vid="269"></i>
+                                </div>
+                                <span class="badge badge-sch" vid="270">Scheduled</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="271">Future Focus Poll</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="272">Oct 14 • Text/Poll</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden p-3 flex flex-col justify-center gap-2 border border-white/5" vid="273">
+                                <div class="w-full h-2 bg-[#ffd700]/20 rounded-full" vid="274"><div class="w-[60%] h-full bg-[#ffd700] rounded-full" vid="275"></div></div>
+                                <div class="w-full h-2 bg-white/10 rounded-full" vid="276"><div class="w-[40%] h-full bg-white/30 rounded-full" vid="277"></div></div>
+                            </div>
+                        </div>
+                        <div class="map-node post-node border-l-4 border-[#ffd700]" style="left: 900px; top: 800px;" onclick="openModal('Community Q&amp;A', 'linkedin', 'engage', '2024-10-29T15:00', 'draft')" vid="278">
+                            <div class="flex justify-between items-center mb-3" vid="279">
+                                <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xl" vid="280"></i>
+                                <span class="badge badge-drf" vid="281">Draft</span>
+                            </div>
+                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="282">Community Q&amp;A</h4>
+                            <p class="text-[10px] text-gray-400 mb-3" vid="283">Oct 29 • Live Event Link</p>
+                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5 flex items-center justify-center" vid="284">
+                                <i class="ph-fill ph-users-three text-[#ffd700]/40 text-3xl" vid="285"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            
+            <section id="view-ledger" class="view-section hidden w-full h-full flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="286">
+                <div class="p-8 border-b border-white/5 flex justify-between items-end" vid="287">
+                    <div vid="288">
+                        <h2 class="text-4xl font-bold text-white tracking-tight" vid="289">Content Ledger</h2>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2" vid="290">Detailed View with Captions</p>
+                    </div>
+                    <div class="flex gap-2" vid="291">
+                        <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Filter" vid="292">
+                            <i class="ph-bold ph-faders text-lg" vid="293"></i>
+                        </button>
+                        <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Sort" vid="294">
+                            <i class="ph-bold ph-sort-ascending text-lg" vid="295"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-8" vid="296">
+                    <div class="space-y-4" vid="297">
+                        
+                        <div class="ledger-card glass-card p-5" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="298">
+                            <div class="flex items-start gap-5" vid="299">
+                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="300">
+                                    <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-3xl" vid="301"></i>
+                                </div>
+                                <div class="flex-1 min-w-0" vid="302">
+                                    <div class="flex items-center gap-3 mb-2" vid="303">
+                                        <span class="badge badge-pub text-[8px]" vid="304">PUBLISHED</span>
+                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="305">Education</span>
+                                        <span class="text-gray-500 text-[10px] font-medium" vid="306">Oct 2 • 10:00 AM</span>
+                                    </div>
+                                    <h3 class="text-white font-bold text-base mb-2" vid="307">Solar Physics 101</h3>
+                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="308">Understanding how photovoltaic cells convert sunlight into electricity. A deep dive into the physics behind clean energy generation and why silicon wafers are the backbone of modern solar technology.</p>
+                                    <div class="mt-4 flex items-center gap-5" vid="309">
+                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="310">
+                                            <i class="ph-bold ph-sparkle" vid="311"></i> AI Enhance
+                                        </button>
+                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="312">
+                                            <i class="ph-bold ph-copy" vid="313"></i> Duplicate
+                                        </button>
+                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="314">
+                                            <i class="ph-bold ph-trash" vid="315"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="ledger-card glass-card p-5" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="316">
+                            <div class="flex items-start gap-5" vid="317">
+                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="318">
+                                    <i class="ph-fill ph-instagram-logo text-[#b25fff] text-3xl" vid="319"></i>
+                                </div>
+                                <div class="flex-1 min-w-0" vid="320">
+                                    <div class="flex items-center gap-3 mb-2" vid="321">
+                                        <span class="badge badge-sch text-[8px]" vid="322">SCHEDULED</span>
+                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="323">Promo</span>
+                                        <span class="text-gray-500 text-[10px] font-medium" vid="324">Oct 5 • 2:30 PM</span>
+                                    </div>
+                                    <h3 class="text-white font-bold text-base mb-2" vid="325">Winter Savings Promo</h3>
+                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="326">Beat the winter energy spike! ☃️ Install before December 1st and save 20% on your entire solar system. Limited spots available. DM us SOLAR20 to claim your discount today!</p>
+                                    <div class="mt-4 flex items-center gap-5" vid="327">
+                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="328">
+                                            <i class="ph-bold ph-sparkle" vid="329"></i> AI Caption
+                                        </button>
+                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="330">
+                                            <i class="ph-bold ph-key" vid="331"></i> Keywords
+                                        </button>
+                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="332">
+                                            <i class="ph-bold ph-arrows-clockwise" vid="333"></i> AI Rewrite
+                                        </button>
+                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="334">
+                                            <i class="ph-bold ph-trash" vid="335"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="ledger-card glass-card p-5" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="336">
+                            <div class="flex items-start gap-5" vid="337">
+                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="338">
+                                    <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-3xl" vid="339"></i>
+                                </div>
+                                <div class="flex-1 min-w-0" vid="340">
+                                    <div class="flex items-center gap-3 mb-2" vid="341">
+                                        <span class="badge badge-drf text-[8px]" vid="342">DRAFT</span>
+                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="343">Awareness</span>
+                                        <span class="text-gray-500 text-[10px] font-medium" vid="344">Oct 9 • 9:00 AM</span>
+                                    </div>
+                                    <h3 class="text-white font-bold text-base mb-2" vid="345">Eco-Vanguard Report</h3>
+                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="346">Our annual sustainability report is here. 47% reduction in carbon footprint across our client installations. 12,000 tons of CO2 offset this year alone.</p>
+                                    <div class="mt-4 flex items-center gap-5" vid="347">
+                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="348">
+                                            <i class="ph-bold ph-sparkle" vid="349"></i> AI Enhance
+                                        </button>
+                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="350">
+                                            <i class="ph-bold ph-smiley" vid="351"></i> AI Emojify
+                                        </button>
+                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="352">
+                                            <i class="ph-bold ph-trash" vid="353"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="ledger-card glass-card p-5" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="354">
+                            <div class="flex items-start gap-5" vid="355">
+                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="356">
+                                    <i class="ph-fill ph-infinity text-[#ffd700] text-3xl" vid="357"></i>
+                                </div>
+                                <div class="flex-1 min-w-0" vid="358">
+                                    <div class="flex items-center gap-3 mb-2" vid="359">
+                                        <span class="badge badge-sch text-[8px]" vid="360">SCHEDULED</span>
+                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="361">Engagement</span>
+                                        <span class="text-gray-500 text-[10px] font-medium" vid="362">Oct 14 • 11:00 AM</span>
+                                    </div>
+                                    <h3 class="text-white font-bold text-base mb-2" vid="363">Future Focus Poll</h3>
+                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="364">What's your #1 priority when considering solar? A) Lower energy bills B) Environmental impact C) Energy independence D) Home value increase. Vote in our poll and share why in the comments!</p>
+                                    <div class="mt-4 flex items-center gap-5" vid="365">
+                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="366">
+                                            <i class="ph-bold ph-sparkle" vid="367"></i> AI Enhance
+                                        </button>
+                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="368">
+                                            <i class="ph-bold ph-key" vid="369"></i> Keywords
+                                        </button>
+                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="370">
+                                            <i class="ph-bold ph-trash" vid="371"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            
+            <section id="view-inspo" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="372">
+                <div class="flex justify-between items-end mb-8" vid="373">
+                    <div vid="374">
+                        <h2 class="text-4xl font-bold text-white tracking-tight" vid="375">Inspo Vault</h2>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2" vid="376">Saved Links &amp; References</p>
+                    </div>
+                    <button class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm" vid="377">
+                        <i class="ph-bold ph-plus mr-1" vid="378"></i> Add Link
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 pb-4 content-start" vid="379">
+                    
+                    <div class="glass-card flex flex-col" vid="380">
+                        <div class="p-5 border-b border-white/5" vid="381">
+                            <div class="flex justify-between items-start mb-3" vid="382">
+                                <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider" vid="383">Article</span>
+                                <button onclick="inspoToPost('The Future of Solar: 2024 Industry Report', 'article', 'New breakthroughs in perovskite solar cells promise 40% efficiency gains.')" class="text-gray-500 hover:text-white transition-colors bg-[#120c1d] p-2 rounded-lg border border-white/5" title="Turn into post" vid="384">
+                                    <i class="ph-bold ph-paper-plane-tilt text-lg" vid="385"></i>
+                                </button>
+                            </div>
+                            <h3 class="text-white text-base font-bold mb-2 line-clamp-2" vid="386">The Future of Solar: 2024 Industry Report</h3>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="387">GreenTech Daily • Added Oct 1</p>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-between" vid="388">
+                            <p class="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-5" vid="389">New breakthroughs in perovskite solar cells promise 40% efficiency gains. Major energy companies are investing heavily...</p>
+                            <div class="flex items-center justify-between mt-auto" vid="390">
+                                <span class="text-[10px] text-gray-500 font-medium truncate max-w-[120px]" vid="391">greentech.com</span>
+                                <button onclick="inspoToPost('The Future of Solar: 2024 Industry Report', 'article', 'New breakthroughs in perovskite solar cells promise 40% efficiency gains.')" class="text-[#c77dff] text-xs font-bold hover:text-white transition-colors flex items-center gap-1.5" vid="392">
+                                    <i class="ph-bold ph-plus" vid="393"></i> Create Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="glass-card flex flex-col" vid="394">
+                        <div class="p-5 border-b border-white/5" vid="395">
+                            <div class="flex justify-between items-start mb-3" vid="396">
+                                <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider" vid="397">Video</span>
+                                <button onclick="inspoToPost('Tesla Solar Roof Process', 'video', 'Check out how fast the new V3 tiles can be installed.')" class="text-gray-500 hover:text-white transition-colors bg-[#120c1d] p-2 rounded-lg border border-white/5" title="Turn into post" vid="398">
+                                    <i class="ph-bold ph-paper-plane-tilt text-lg" vid="399"></i>
+                                </button>
+                            </div>
+                            <h3 class="text-white text-base font-bold mb-2 line-clamp-2" vid="400">Tesla's New Solar Roof Installation Process</h3>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="401">YouTube • Added Oct 3</p>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-between" vid="402">
+                            <div class="aspect-video bg-[#120c1d] border border-white/5 rounded-lg flex items-center justify-center mb-4" vid="403">
+                                <i class="ph-fill ph-play-circle text-gray-600 text-4xl" vid="404"></i>
+                            </div>
+                            <div class="flex items-center justify-between mt-auto" vid="405">
+                                <span class="text-[10px] text-gray-500 font-medium" vid="406">12:34 Duration</span>
+                                <button onclick="inspoToPost('Tesla Solar Roof Process', 'video', 'Check out how fast the new V3 tiles can be installed.')" class="text-[#c77dff] text-xs font-bold hover:text-white transition-colors flex items-center gap-1.5" vid="407">
+                                    <i class="ph-bold ph-plus" vid="408"></i> Create Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="glass-card flex flex-col" vid="409">
+                        <div class="p-5 border-b border-white/5" vid="410">
+                            <div class="flex justify-between items-start mb-3" vid="411">
+                                <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider" vid="412">Trend</span>
+                                <button onclick="inspoToPost('Viral Solar Hacks', 'trend', 'Have you tried any of these viral solar maintenance hacks?')" class="text-gray-500 hover:text-white transition-colors bg-[#120c1d] p-2 rounded-lg border border-white/5" title="Turn into post" vid="413">
+                                    <i class="ph-bold ph-paper-plane-tilt text-lg" vid="414"></i>
+                                </button>
+                            </div>
+                            <h3 class="text-white text-base font-bold mb-2 line-clamp-2" vid="415">Viral Solar Panel Hacks TikTok Compilation</h3>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="416">Social • Added Oct 5</p>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-between" vid="417">
+                            <p class="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-4" vid="418">Collection of trending DIY solar setups and maintenance tips gaining traction. 2.4M views across platforms.</p>
+                            <div class="flex items-center justify-between mt-auto" vid="419">
+                                <div class="flex gap-2" vid="420">
+                                    <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-400 font-medium" vid="421">#solarhacks</span>
+                                </div>
+                                <button onclick="inspoToPost('Viral Solar Hacks', 'trend', 'Have you tried any of these viral solar maintenance hacks?')" class="text-[#c77dff] text-xs font-bold hover:text-white transition-colors flex items-center gap-1.5" vid="422">
+                                    <i class="ph-bold ph-plus" vid="423"></i> Create Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section id="view-media" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="424">
+                <div class="flex justify-between items-end mb-8" vid="425">
+                    <div vid="426">
+                        <h2 class="text-4xl font-bold text-white tracking-tight" vid="427">Media Vault</h2>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2" vid="428">Image &amp; Video Assets</p>
+                    </div>
+                    <div class="flex gap-3" vid="429">
+                        <button class="px-5 py-2 bg-[#1a1128] border border-white/5 rounded-xl text-xs text-gray-300 font-semibold hover:text-white transition-colors flex items-center gap-2" vid="430">
+                            <i class="ph-bold ph-funnel text-sm" vid="431"></i> Filter
+                        </button>
+                        <button class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm flex items-center gap-2" vid="432">
+                            <i class="ph-bold ph-upload-simple text-sm" vid="433"></i> Upload
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 mb-6 overflow-x-auto pb-2" vid="434">
+                    <button class="px-5 py-2 bg-[#231738] text-white rounded-lg text-xs font-semibold whitespace-nowrap" vid="435">All Assets</button>
+                    <button class="px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors" vid="436">Images</button>
+                    <button class="px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors" vid="437">Videos</button>
+                    <button class="px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors" vid="438">Carousels</button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start" vid="439">
+                    
+                    <div class="glass-card overflow-hidden group" vid="440">
+                        <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4" vid="441">
+                            <i class="ph-fill ph-image text-gray-600 text-5xl" vid="442"></i>
+                            <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300" vid="443">IG Post</span>
+                            <div class="absolute inset-0 bg-[#2d1b4e]/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm" vid="444">
+                                <button class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" vid="445">
+                                    <i class="ph-bold ph-arrows-out-simple text-xl" vid="446"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-4" vid="447">
+                            <p class="text-white text-sm font-semibold truncate mb-1" vid="448">Solar Physics Infographic</p>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="449">Oct 2 • 1080x1080</p>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="glass-card overflow-hidden group" vid="450">
+                        <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4" vid="451">
+                            <i class="ph-fill ph-video text-gray-600 text-5xl" vid="452"></i>
+                            <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300" vid="453">Reel</span>
+                        </div>
+                        <div class="p-4" vid="454">
+                            <p class="text-white text-sm font-semibold truncate mb-1" vid="455">Winter Promo Video</p>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="456">Oct 5 • 15s</p>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="glass-card overflow-hidden group" vid="457">
+                        <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4" vid="458">
+                            <i class="ph-fill ph-images text-gray-600 text-5xl" vid="459"></i>
+                            <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300" vid="460">Carousel</span>
+                        </div>
+                        <div class="p-4" vid="461">
+                            <p class="text-white text-sm font-semibold truncate mb-1" vid="462">Wind Turbine Stats</p>
+                            <p class="text-gray-500 text-[10px] font-medium" vid="463">Oct 25 • 7 slides</p>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="glass-card overflow-hidden group opacity-60 hover:opacity-100 transition-opacity" vid="464">
+                        <div class="aspect-square bg-[#120c1d] border-b border-dashed border-gray-700 flex items-center justify-center" vid="465">
+                            <i class="ph-bold ph-plus text-gray-600 text-3xl" vid="466"></i>
+                        </div>
+                        <div class="p-4" vid="467">
+                            <p class="text-gray-400 text-sm font-semibold truncate mb-1" vid="468">Eco-Vanguard Cover</p>
+                            <p class="text-gray-600 text-[10px] font-medium" vid="469">Awaiting upload</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        
+        <aside class="w-[320px] bg-[#120c1d] border border-white/5 rounded-2xl flex flex-col shrink-0 z-40 overflow-hidden" vid="470">
+            <div class="p-6 border-b border-white/5" vid="471">
+                <h3 class="text-sm font-bold text-white tracking-widest uppercase" vid="472">Signals Overview</h3>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1" vid="473">
+                
+                <div class="mb-8" vid="474">
+                    <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase mb-4" vid="475">Content Pillars</h4>
+                    <div class="grid grid-cols-2 gap-3" vid="476">
+                        <div class="bg-[#181125] border border-white/5 rounded-lg px-3 py-2.5 flex items-center gap-2" vid="477"><div class="w-2 h-2 rounded-sm bg-[#00f0ff]" vid="478"></div><span class="text-xs text-gray-300 font-medium" vid="479">Education</span></div>
+                        <div class="bg-[#181125] border border-white/5 rounded-lg px-3 py-2.5 flex items-center gap-2" vid="480"><div class="w-2 h-2 rounded-sm bg-[#b25fff]" vid="481"></div><span class="text-xs text-gray-300 font-medium" vid="482">Promotional</span></div>
+                        <div class="bg-[#181125] border border-white/5 rounded-lg px-3 py-2.5 flex items-center gap-2" vid="483"><div class="w-2 h-2 rounded-sm bg-[#ffd700]" vid="484"></div><span class="text-xs text-gray-300 font-medium" vid="485">Engagement</span></div>
+                        <div class="bg-[#181125] border border-white/5 rounded-lg px-3 py-2.5 flex items-center gap-2" vid="486"><div class="w-2 h-2 rounded-sm bg-[#00ffaa]" vid="487"></div><span class="text-xs text-gray-300 font-medium" vid="488">Awareness</span></div>
+                    </div>
+                </div>
+
+                <div vid="489">
+                    <div class="flex justify-between items-center mb-4" vid="490">
+                        <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase" vid="491">Next In Queue</h4>
+                        <span class="text-[9px] font-bold text-[#ffd700] border border-[#ffd700]/20 bg-[#ffd700]/5 px-2 py-0.5 rounded" vid="492">3 Scheduled</span>
+                    </div>
+                    <div class="space-y-3" vid="493">
+                        
+                        <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="494">
+                            <div class="bg-[#120c1d] border border-[#ffd700]/20 rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0 text-[#ffd700]" vid="495">
+                                <span class="text-[9px] font-bold uppercase" vid="496">Oct</span>
+                                <span class="text-sm font-bold" vid="497">14</span>
+                            </div>
+                            <div class="min-w-0" vid="498">
+                                <p class="text-white text-sm font-bold truncate mb-1" vid="499">Future Focus Poll</p>
+                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium" vid="500">
+                                    <div class="flex gap-0.5 text-gray-400" vid="501"><i class="ph-fill ph-linkedin-logo" vid="502"></i><i class="ph-fill ph-instagram-logo" vid="503"></i></div>
+                                    <span vid="504">11:00 AM</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="505">
+                            <div class="bg-[#120c1d] border border-[#00f0ff]/20 rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0 text-[#00f0ff]" vid="506">
+                                <span class="text-[9px] font-bold uppercase" vid="507">Oct</span>
+                                <span class="text-sm font-bold" vid="508">18</span>
+                            </div>
+                            <div class="min-w-0" vid="509">
+                                <p class="text-white text-sm font-bold truncate mb-1" vid="510">Panel Maintenance Guide</p>
+                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium" vid="511">
+                                    <div class="text-gray-400" vid="512"><i class="ph-fill ph-instagram-logo" vid="513"></i></div>
+                                    <span vid="514">4:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors opacity-60" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="515">
+                            <div class="bg-[#120c1d] border border-gray-600/30 rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0 text-gray-500" vid="516">
+                                <span class="text-[9px] font-bold uppercase" vid="517">Oct</span>
+                                <span class="text-sm font-bold" vid="518">22</span>
+                            </div>
+                            <div class="min-w-0" vid="519">
+                                <p class="text-gray-300 text-sm font-bold truncate mb-1" vid="520">Q4 Discount Reveal</p>
+                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium" vid="521">
+                                    <span class="px-1.5 py-0.5 bg-gray-800 rounded font-bold" vid="522">DRAFT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <button class="w-full mt-6 py-3 border border-white/5 bg-[#181125] hover:bg-[#1a122a] transition-colors rounded-xl text-xs font-bold text-gray-300 tracking-widest uppercase" onclick="switchView('ledger')" vid="523">
+                        View Full Ledger
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    
+    <div id="scheduling-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" vid="524">
+        <div class="modal-content w-full max-w-2xl max-h-[90vh] flex flex-col" vid="525">
+            
+            <div class="p-6 border-b border-white/5 flex justify-between items-center" vid="526">
+                <div class="flex items-center gap-3" vid="527">
+                    <div class="w-10 h-10 rounded-xl bg-[#231738] flex items-center justify-center text-[#c77dff]" vid="528">
+                        <i class="ph-fill ph-paper-plane-tilt text-xl" vid="529"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight" vid="530">Post Scheduler</h2>
+                </div>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white p-2 rounded-xl hover:bg-white/5 transition-colors" vid="531">
+                    <i class="ph-bold ph-x text-xl" vid="532"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-6" vid="533">
+                
+                <div vid="534">
+                    <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="535">Content Title</label>
+                    <input type="text" id="modal-title" class="form-input text-sm font-medium" placeholder="Enter post title..." vid="536">
+                </div>
+
+                <div class="grid grid-cols-2 gap-6" vid="537">
+                    <div class="space-y-5" vid="538">
+                        <div vid="539">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="540">Platform</label>
+                            <select id="modal-platform" class="form-input appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2UyZThmMCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNNy4yNDcgMTEuMTRsLTQuNzk2LTUuNDgxYy0uNTY2LS42NDctLjEwNi0xLjY1OS43NTMtMS42NTloOS41OTJjLjg2IDAgMS4zMiAxLjAxMi43NTMgMS42NTlsLTQuNzk2IDUuNDhhMSAxIDAgMCAxLTEuNTA2IDB6Ii8+PC9zdmc+')] bg-no-repeat bg-[position:right_14px_center] pr-10 font-medium" vid="541">
+                                <option value="linkedin" vid="542">LinkedIn</option>
+                                <option value="instagram" vid="543">Instagram</option>
+                                <option value="both" vid="544">Both Platforms</option>
+                            </select>
+                        </div>
+                        <div vid="545">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="546">Post Type</label>
+                            <select id="modal-post-type" class="form-input appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2UyZThmMCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNNy4yNDcgMTEuMTRsLTQuNzk2LTUuNDgxYy0uNTY2LS42NDctLjEwNi0xLjY1OS43NTMtMS42NTloOS41OTJjLjg2IDAgMS4zMiAxLjAxMi43NTMgMS42NTlsLTQuNzk2IDUuNDhhMSAxIDAgMCAxLTEuNTA2IDB6Ii8+PC9zdmc+')] bg-no-repeat bg-[position:right_14px_center] pr-10 font-medium" vid="547">
+                                <option value="image" vid="548">Image Post</option>
+                                <option value="carousel" vid="549">Carousel</option>
+                                <option value="video" vid="550">Video / Reel</option>
+                                <option value="article" vid="551">Article Link</option>
+                                <option value="text" vid="552">Text Only</option>
+                                <option value="poll" vid="553">Poll</option>
+                            </select>
+                        </div>
+                        <div vid="554">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="555">Content Pillar</label>
+                            <div class="grid grid-cols-2 gap-2" vid="556">
+                                <button type="button" class="pillar-btn active edu px-3 py-2 text-[10px] font-bold uppercase tracking-wider" onclick="setPillar(this, 'edu')" vid="557">Education</button>
+                                <button type="button" class="pillar-btn promo px-3 py-2 text-[10px] font-bold uppercase tracking-wider" onclick="setPillar(this, 'promo')" vid="558">Promo</button>
+                                <button type="button" class="pillar-btn engage px-3 py-2 text-[10px] font-bold uppercase tracking-wider" onclick="setPillar(this, 'engage')" vid="559">Engage</button>
+                                <button type="button" class="pillar-btn aware px-3 py-2 text-[10px] font-bold uppercase tracking-wider" onclick="setPillar(this, 'aware')" vid="560">Awareness</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5" vid="561">
+                        <div vid="562">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="563">Scheduled Date &amp; Time</label>
+                            <input type="datetime-local" id="modal-date" class="form-input font-medium" value="2024-10-01T12:00" vid="564">
+                        </div>
+                        <div vid="565">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2" vid="566">Status</label>
+                            <select id="modal-status" class="form-input appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2UyZThmMCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNNy4yNDcgMTEuMTRsLTQuNzk2LTUuNDgxYy0uNTY2LS42NDctLjEwNi0xLjY1OS43NTMtMS42NTloOS41OTJjLjg2IDAgMS4zMiAxLjAxMi43NTMgMS42NTlsLTQuNzk2IDUuNDhhMSAxIDAgMCAxLTEuNTA2IDB6Ii8+PC9zdmc+')] bg-no-repeat bg-[position:right_14px_center] pr-10 font-medium" vid="567">
+                                <option value="draft" vid="568">Draft</option>
+                                <option value="scheduled" vid="569">Scheduled</option>
+                                <option value="published" vid="570">Published</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-6 mt-2" vid="571">
+                    <div class="w-32 h-32 rounded-xl border border-dashed border-gray-600 bg-[#181125] flex flex-col items-center justify-center text-gray-500 hover:text-white hover:border-white/20 transition-colors cursor-pointer shrink-0" vid="572">
+                        <i class="ph-bold ph-upload-simple text-3xl mb-2" vid="573"></i>
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-center" vid="574">Upload<br vid="575">Media</span>
+                    </div>
+                    <div class="flex-1 flex flex-col" vid="576">
+                        <div class="flex justify-between items-center mb-2" vid="577">
+                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500" vid="578">Caption / Description</label>
+                            <div class="flex gap-2" vid="579">
+                                <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('caption')" vid="580" title="AI Caption"><i class="ph-bold ph-sparkle" vid="581"></i></button>
+                                <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('keywords')" vid="582" title="Keywords"><i class="ph-bold ph-key" vid="583"></i></button>
+                                <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('rewrite')" vid="584" title="Rewrite"><i class="ph-bold ph-arrows-clockwise" vid="585"></i></button>
+                            </div>
+                        </div>
+                        <textarea class="form-input flex-1 resize-none font-medium text-sm leading-relaxed" placeholder="Write your compelling copy here..." vid="586"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-white/5 flex justify-end gap-4" vid="587">
+                <button onclick="closeModal()" class="px-6 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors border border-transparent" vid="588">Cancel</button>
+                <button onclick="closeModal()" class="px-6 py-2.5 bg-gradient-to-r from-[#9d4edd] to-[#c77dff] hover:opacity-90 text-white text-xs uppercase tracking-wider font-bold rounded-xl shadow-[0_0_20px_rgba(157,78,221,0.2)] transition-all flex items-center gap-2" vid="589">
+                    <i class="ph-bold ph-check text-sm" vid="590"></i> Save Post
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="ai-toast" class="fixed bottom-8 right-8 z-[110] opacity-0 pointer-events-none transition-opacity duration-300" vid="591">
+        <div class="bg-[#181125] px-5 py-4 rounded-xl border border-white/5 shadow-2xl flex items-center gap-4" vid="592">
+            <div class="w-10 h-10 rounded-full bg-[#2d1b4e] flex items-center justify-center text-[#c77dff]" vid="593">
+                <i id="ai-toast-icon" class="ph-bold ph-sparkle text-lg" vid="594"></i>
+            </div>
+            <div vid="595">
+                <p id="ai-toast-title" class="text-white text-sm font-bold tracking-wide" vid="596">AI Assistant</p>
+                <p id="ai-toast-text" class="text-gray-400 text-xs font-medium mt-0.5" vid="597">Generating caption...</p>
+            </div>
+        </div>
+    </div>
+
+/* StellarSync frontend script
+   Replace your current entire inline <script> block with this.
+   Then set APP_CONFIG.APP_SCRIPT_URL after you deploy the Apps Script web app.
+*/
+
+const APP_CONFIG = {
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzXtkoHHk6fkonZOua2IMCr0os-7Dr3DWKxM6jTiLQ1lAOaqVYeI5g0ppb9qVnM3jXW/exec",
+  ENABLE_REMOTE_SYNC: true,
+  STORAGE_KEY: "stellarsync_local_state_v1"
+};
+
+const DEFAULT_STATE = {
+  posts: [
+    {
+      id: "post-001",
+      title: "Solar Physics 101",
+      platform: "linkedin",
+      pillar: "edu",
+      date: "2024-10-02T10:00",
+      status: "published",
+      postType: "image",
+      description:
+        "Understanding how photovoltaic cells convert sunlight into electricity. A deep dive into the physics behind clean energy generation and why silicon wafers are the backbone of modern solar technology."
+    },
+    {
+      id: "post-002",
+      title: "Winter Savings Promo",
+      platform: "instagram",
+      pillar: "promo",
+      date: "2024-10-05T14:30",
+      status: "scheduled",
+      postType: "video",
+      description:
+        "Beat the winter energy spike! ☃️ Install before December 1st and save 20% on your entire solar system. Limited spots available. DM us SOLAR20 to claim your discount today!"
+    },
+    {
+      id: "post-003",
+      title: "Eco-Vanguard Report",
+      platform: "linkedin",
+      pillar: "aware",
+      date: "2024-10-09T09:00",
+      status: "draft",
+      postType: "article",
+      description:
+        "Our annual sustainability report is here. 47% reduction in carbon footprint across our client installations. 12,000 tons of CO2 offset this year alone."
+    },
+    {
+      id: "post-004",
+      title: "Future Focus Poll",
+      platform: "both",
+      pillar: "engage",
+      date: "2024-10-14T11:00",
+      status: "scheduled",
+      postType: "poll",
+      description:
+        "What's your #1 priority when considering solar? A) Lower energy bills B) Environmental impact C) Energy independence D) Home value increase. Vote in our poll and share why in the comments!"
+    },
+    {
+      id: "post-005",
+      title: "Panel Maintenance Guide",
+      platform: "instagram",
+      pillar: "edu",
+      date: "2024-10-18T16:00",
+      status: "scheduled",
+      postType: "carousel",
+      description:
+        "A practical maintenance guide for keeping solar panels performing well through seasonal changes."
+    },
+    {
+      id: "post-006",
+      title: "Q4 Discount Reveal",
+      platform: "linkedin",
+      pillar: "promo",
+      date: "2024-10-22T08:30",
+      status: "draft",
+      postType: "image",
+      description:
+        "Reveal the Q4 offer with a clean visual and a clear CTA tied to scheduling or consultation."
+    },
+    {
+      id: "post-007",
+      title: "Wind Turbine Stats",
+      platform: "instagram",
+      pillar: "aware",
+      date: "2024-10-25T13:00",
+      status: "published",
+      postType: "carousel",
+      description:
+        "A quick infographic carousel with digestible wind energy facts and performance comparisons."
+    },
+    {
+      id: "post-008",
+      title: "Community Q&A",
+      platform: "linkedin",
+      pillar: "engage",
+      date: "2024-10-29T15:00",
+      status: "draft",
+      postType: "text",
+      description:
+        "Invite the audience into a Q&A around clean energy myths, concerns, and practical adoption questions."
+    }
+  ],
+  inspo: [
+    {
+      id: "inspo-001",
+      title: "The Future of Solar: 2024 Industry Report",
+      type: "article",
+      description:
+        "New breakthroughs in perovskite solar cells promise 40% efficiency gains. Major energy companies are investing heavily..."
+    },
+    {
+      id: "inspo-002",
+      title: "Tesla Solar Roof Process",
+      type: "video",
+      description: "Check out how fast the new V3 tiles can be installed."
+    },
+    {
+      id: "inspo-003",
+      title: "Viral Solar Hacks",
+      type: "trend",
+      description: "Have you tried any of these viral solar maintenance hacks?"
+    }
+  ],
+  media: [
+    {
+      id: "asset-001",
+      title: "Solar Physics Infographic",
+      type: "image",
+      postId: "post-001"
+    },
+    {
+      id: "asset-002",
+      title: "Winter Promo Video",
+      type: "video",
+      postId: "post-002"
+    },
+    {
+      id: "asset-003",
+      title: "Wind Turbine Stats",
+      type: "carousel",
+      postId: "post-007"
+    }
+  ]
+};
+
+let appState = loadLocalState();
+let currentView = "calendar";
+let currentEditingPostId = null;
+
+const modal = document.getElementById("scheduling-modal");
+const titleInput = document.getElementById("modal-title");
+const platSelect = document.getElementById("modal-platform");
+const postTypeSelect = document.getElementById("modal-post-type");
+const dateInput = document.getElementById("modal-date");
+const statusSelect = document.getElementById("modal-status");
+const descInput = document.querySelector("#scheduling-modal textarea");
+const pillarBtns = Array.from(document.querySelectorAll(".pillar-btn"));
+const saveButton = document.querySelector("#scheduling-modal .bg-gradient-to-r.from-\\[\\#9d4edd\\].to-\\[\\#c77dff\\]") ||
+  document.querySelectorAll("#scheduling-modal button")[2];
+
+initApp();
+
+function initApp() {
+  seedStars();
+  cleanInvalidImportantToken();
+  setupPillarButtons();
+  setupModalControls();
+  setupNestedButtonProtection();
+  setupConstellationInteractions();
+  setupSaveHandler();
+  switchView("calendar");
+  syncRemoteIfConfigured();
+}
+
+function loadLocalState() {
+  try {
+    const raw = localStorage.getItem(APP_CONFIG.STORAGE_KEY);
+    if (!raw) return structuredClone(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+    return {
+      posts: Array.isArray(parsed.posts) ? parsed.posts : structuredClone(DEFAULT_STATE.posts),
+      inspo: Array.isArray(parsed.inspo) ? parsed.inspo : structuredClone(DEFAULT_STATE.inspo),
+      media: Array.isArray(parsed.media) ? parsed.media : structuredClone(DEFAULT_STATE.media)
+    };
+  } catch (err) {
+    console.warn("Failed to load local state, using defaults.", err);
+    return structuredClone(DEFAULT_STATE);
+  }
+}
+
+function persistLocalState() {
+  localStorage.setItem(APP_CONFIG.STORAGE_KEY, JSON.stringify(appState));
+}
+
+function structuredClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function seedStars() {
+  const starsContainer = document.getElementById("stars-container");
+  if (!starsContainer || starsContainer.dataset.seeded === "true") return;
+
+  for (let i = 0; i < 150; i += 1) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    const size = Math.random() < 0.1 ? 3 : Math.random() < 0.3 ? 2 : 1;
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.setProperty("--duration", `${2 + Math.random() * 5}s`);
+    star.style.setProperty("--delay", `${Math.random() * 5}s`);
+    star.style.setProperty("--opacity", `${0.1 + Math.random() * 0.4}`);
+    starsContainer.appendChild(star);
+  }
+
+  starsContainer.dataset.seeded = "true";
+}
+
+function cleanInvalidImportantToken() {
+  document.querySelectorAll("[class]").forEach((el) => {
+    if (el.className.includes("!important")) {
+      el.className = el.className.replace(/\s*!important/g, "").trim();
+    }
+  });
+}
+
+function setupPillarButtons() {
+  pillarBtns.forEach((btn) => {
+    if (!btn.dataset.pillar) {
+      const text = btn.textContent.trim().toLowerCase();
+      if (text.startsWith("edu")) btn.dataset.pillar = "edu";
+      if (text.startsWith("pro")) btn.dataset.pillar = "promo";
+      if (text.startsWith("eng")) btn.dataset.pillar = "engage";
+      if (text.startsWith("awa")) btn.dataset.pillar = "aware";
+    }
+
+    btn.setAttribute("type", "button");
+    btn.removeAttribute("onclick");
+    btn.addEventListener("click", () => setPillar(btn.dataset.pillar));
+  });
+}
+
+function getActivePillar() {
+  const active = pillarBtns.find((btn) => btn.classList.contains("active"));
+  return active?.dataset.pillar || "edu";
+}
+
+function setPillar(pillar) {
+  pillarBtns.forEach((btn) => {
+    btn.classList.remove("active", "edu", "promo", "engage", "aware");
+    if (btn.dataset.pillar === pillar) {
+      btn.classList.add("active", pillar);
+    }
+  });
+}
+
+function setupModalControls() {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      closeModal();
+    }
+  });
+}
+
+function openModal(
+  title = "",
+  platform = "linkedin",
+  pillarClass = "edu",
+  date = "",
+  status = "draft",
+  description = "",
+  postType = "text",
+  postId = null
+) {
+  currentEditingPostId = postId;
+  titleInput.value = title;
+  platSelect.value = platform || "linkedin";
+  dateInput.value = date || new Date().toISOString().slice(0, 16);
+  statusSelect.value = status || "draft";
+  postTypeSelect.value = postType || "text";
+  if (descInput) descInput.value = description || "";
+  setPillar(pillarClass || "edu");
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  modal.classList.remove("active");
+  document.body.style.overflow = "";
+  currentEditingPostId = null;
+}
+
+function setupSaveHandler() {
+  if (!saveButton) return;
+
+  saveButton.setAttribute("type", "button");
+  saveButton.removeAttribute("onclick");
+  saveButton.addEventListener("click", async () => {
+    const payload = {
+      id: currentEditingPostId || generateId("post"),
+      title: titleInput.value.trim(),
+      platform: platSelect.value,
+      pillar: getActivePillar(),
+      date: dateInput.value,
+      status: statusSelect.value,
+      postType: postTypeSelect.value,
+      description: descInput.value.trim()
+    };
+
+    if (!payload.title) {
+      showToast("Missing title", "Please add a content title.", "ph-warning-circle", "text-yellow-400");
+      return;
+    }
+
+    const existingIndex = appState.posts.findIndex((p) => p.id === payload.id);
+    if (existingIndex >= 0) {
+      appState.posts[existingIndex] = payload;
+    } else {
+      appState.posts.push(payload);
+    }
+
+    persistLocalState();
+    closeModal();
+    showToast("Saved", "Post saved locally.", "ph-check", "text-[#00ffaa]");
+
+    if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
+      try {
+        await apiSavePost(payload);
+        showToast("Synced", "Post synced to Google Sheets.", "ph-cloud-check", "text-[#00ffaa]");
+      } catch (err) {
+        console.error(err);
+        showToast("Local only", "Save worked locally. Remote sync failed.", "ph-warning", "text-yellow-400");
+      }
+    } else {
+      showToast("Sync not set", "Saved locally. Add Apps Script URL to enable sync.", "ph-plugs", "text-yellow-400");
+    }
+  });
+}
+
+function setupNestedButtonProtection() {
+  document.querySelectorAll(".ledger-card button, .glass-card button, .post-node button").forEach((btn) => {
+    btn.setAttribute("type", "button");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  });
+
+  document.querySelectorAll(".ledger-card").forEach((card) => {
+    const title = card.querySelector("h3")?.textContent?.trim();
+    if (!title) return;
+    const matched = appState.posts.find((post) => post.title === title);
+    if (!matched) return;
+
+    card.removeAttribute("onclick");
+    card.addEventListener("click", () => {
+      openModal(
+        matched.title,
+        matched.platform,
+        matched.pillar,
+        matched.date,
+        matched.status,
+        matched.description,
+        matched.postType,
+        matched.id
+      );
+    });
+
+    const buttons = card.querySelectorAll("button");
+    buttons.forEach((btn) => {
+      const label = btn.textContent.trim().toLowerCase();
+
+      if (label.includes("delete")) {
+        btn.addEventListener("click", async () => {
+          await deletePostById(matched.id);
+        });
+      }
+
+      if (label.includes("duplicate")) {
+        btn.addEventListener("click", async () => {
+          await duplicatePostById(matched.id);
+        });
+      }
+
+      if (label.includes("ai")) {
+        btn.addEventListener("click", () => {
+          showToast("AI Assistant", "This action is ready for your next prompt workflow.", "ph-sparkle");
+        });
+      }
+    });
+  });
+}
+
+async function deletePostById(postId) {
+  const target = appState.posts.find((p) => p.id === postId);
+  if (!target) return;
+
+  appState.posts = appState.posts.filter((p) => p.id !== postId);
+  persistLocalState();
+  showToast("Deleted", "Post removed locally.", "ph-trash", "text-red-400");
+
+  if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
+    try {
+      await apiDeletePost(postId);
+    } catch (err) {
+      console.error(err);
+      showToast("Remote issue", "Deleted locally. Remote delete failed.", "ph-warning", "text-yellow-400");
+    }
+  }
+}
+
+async function duplicatePostById(postId) {
+  const source = appState.posts.find((p) => p.id === postId);
+  if (!source) return;
+
+  const copy = {
+    ...source,
+    id: generateId("post"),
+    title: `${source.title} Copy`,
+    status: "draft"
+  };
+
+  appState.posts.push(copy);
+  persistLocalState();
+  showToast("Duplicated", "Post duplicated locally.", "ph-copy", "text-[#00ffaa]");
+
+  if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
+    try {
+      await apiDuplicatePost(postId);
+    } catch (err) {
+      console.error(err);
+      await apiSavePost(copy).catch((saveErr) => console.error(saveErr));
+    }
+  }
+}
+
+function switchView(viewName) {
+  currentView = viewName;
+
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    btn.classList.remove("bg-[#2d1b4e]", "text-white", "active");
+    btn.classList.add("text-gray-500", "hover:text-white", "hover:bg-[#1a1128]");
+  });
+
+  const activeBtn = document.getElementById(`nav-${viewName}`);
+  if (activeBtn) {
+    activeBtn.classList.remove("text-gray-500", "hover:text-white", "hover:bg-[#1a1128]");
+    activeBtn.classList.add("bg-[#2d1b4e]", "text-white", "active");
+  }
+
+  document.querySelectorAll(".view-section").forEach((section) => {
+    section.classList.add("hidden");
+    section.classList.remove("flex");
+  });
+
+  const targetView = document.getElementById(`view-${viewName}`);
+  if (targetView) {
+    targetView.classList.remove("hidden");
+    targetView.classList.add("flex");
+  }
+
+  if (viewName === "constellation") {
+    resetConstellationView();
+  }
+}
+
+function aiGenerate(type) {
+  const toast = document.getElementById("ai-toast");
+  const toastText = document.getElementById("ai-toast-text");
+  const captionField = descInput;
+
+  const aiText = {
+    caption:
+      "Here’s the core idea in plain language with a sharper hook, a clearer takeaway, and a stronger call to action.",
+    keywords:
+      "content strategy, publishing workflow, campaign planning, content calendar, platform strategy, editorial system, social media operations, content engine",
+    rewrite:
+      "This version sharpens the point, clarifies the value, and makes the post easier to understand at a glance.",
+    emoji: "✨ 📈 🪄 📣 🧠 🔮"
+  };
+
+  toastText.textContent =
+    type === "keywords" ? "Generating keywords..." :
+    type === "emoji" ? "Adding emojis..." :
+    "Generating caption...";
+
+  toast.classList.remove("opacity-0", "pointer-events-none");
+
+  setTimeout(() => {
+    if (captionField) {
+      const current = captionField.value;
+      if (type === "emoji") {
+        captionField.value = `${current} ${aiText[type]}`.trim();
+      } else if (type === "keywords") {
+        captionField.value = current
+          ? `${current}\n\nKeywords: ${aiText[type]}`
+          : `Keywords: ${aiText[type]}`;
+      } else {
+        captionField.value = aiText[type];
+      }
+    }
+
+    toastText.textContent =
+      type === "emoji" ? "Emojis added!" :
+      type === "keywords" ? "Keywords ready!" :
+      "Caption ready!";
+
+    setTimeout(() => {
+      toast.classList.add("opacity-0", "pointer-events-none");
+    }, 2000);
+  }, 1200);
+}
+
+function showToast(title, message, iconClass = "ph-sparkle", colorClass = "text-[#c77dff]") {
+  const toast = document.getElementById("ai-toast");
+  const toastTitle = document.getElementById("ai-toast-title");
+  const toastText = document.getElementById("ai-toast-text");
+  const iconEl = document.getElementById("ai-toast-icon");
+
+  if (toastTitle) toastTitle.textContent = title;
+  if (toastText) toastText.textContent = message;
+  if (iconEl) {
+    iconEl.className = `ph-bold ${iconClass} ${colorClass} text-lg`;
+  }
+
+  toast.classList.remove("opacity-0", "pointer-events-none");
+  setTimeout(() => {
+    toast.classList.add("opacity-0", "pointer-events-none");
+  }, 3000);
+}
+
+function inspoToPost(title, type, description) {
+  showToast("AI Assistant", "Creating post from inspiration...", "ph-magic-wand");
+
+  setTimeout(() => {
+    let platform = "linkedin";
+    let pillar = "edu";
+    let postType = "text";
+
+    if (["video", "image", "carousel", "visual"].includes(type.toLowerCase())) {
+      platform = "instagram";
+      pillar = "aware";
+      postType = type.toLowerCase() === "video" ? "video" : "carousel";
+    } else if (type.toLowerCase() === "trend") {
+      platform = "both";
+      pillar = "engage";
+      postType = "text";
+    } else if (type.toLowerCase() === "article") {
+      platform = "linkedin";
+      pillar = "edu";
+      postType = "article";
+    }
+
+    openModal(title, platform, pillar, "", "draft", description, postType, null);
+    showToast("Success", "Post created from inspo!", "ph-check", "text-[#00ffaa]");
+  }, 1000);
+}
+
+function generateId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+}
+
+/* Constellation interactions */
+const viewport = document.getElementById("starmap-viewport");
+const canvas = document.getElementById("starmap-canvas");
+let scale = 0.5;
+let panX = -200;
+let panY = -100;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let touchStartDistance = null;
+let touchStartScale = scale;
+
+function updateTransform() {
+  if (canvas) {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+}
+
+function resetConstellationView() {
+  scale = 0.5;
+  panX = -200;
+  panY = -100;
+  updateTransform();
+}
+
+function setupConstellationInteractions() {
+  if (!viewport || !canvas) return;
+
+  updateTransform();
+
+  viewport.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    viewport.style.cursor = "grabbing";
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDragging = false;
+    viewport.style.cursor = "grab";
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    updateTransform();
+  });
+
+  viewport.addEventListener(
+    "wheel",
+    (e) => {
+      e.preventDefault();
+      const delta = e.deltaY * -0.001;
+      const rect = viewport.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const oldScale = scale;
+
+      scale = Math.min(Math.max(0.2, scale + delta), 2);
+
+      if (scale !== oldScale) {
+        const ratio = 1 - scale / oldScale;
+        panX += (mouseX - panX) * ratio;
+        panY += (mouseY - panY) * ratio;
+        updateTransform();
+      }
+    },
+    { passive: false }
+  );
+
+  viewport.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        touchStartDistance = getTouchDistance(e.touches);
+        touchStartScale = scale;
+      }
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener(
+    "touchmove",
+    (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        panX = e.touches[0].clientX - startX;
+        panY = e.touches[0].clientY - startY;
+        updateTransform();
+      } else if (e.touches.length === 2 && touchStartDistance) {
+        const newDistance = getTouchDistance(e.touches);
+        const nextScale = touchStartScale * (newDistance / touchStartDistance);
+        scale = Math.min(Math.max(0.2, nextScale), 2);
+        updateTransform();
+      }
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener(
+    "touchend",
+    () => {
+      isDragging = false;
+      touchStartDistance = null;
+    },
+    { passive: true }
+  );
+
+  document.getElementById("zoom-in")?.addEventListener("click", () => {
+    scale = Math.min(2, scale + 0.2);
+    updateTransform();
+  });
+
+  document.getElementById("zoom-out")?.addEventListener("click", () => {
+    scale = Math.max(0.2, scale - 0.2);
+    updateTransform();
+  });
+
+  document.getElementById("zoom-reset")?.addEventListener("click", () => {
+    resetConstellationView();
+  });
+}
+
+function getTouchDistance(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/* Remote sync */
+function isRemoteConfigured() {
+  return (
+    APP_CONFIG.APP_SCRIPT_URL &&
+    APP_CONFIG.APP_SCRIPT_URL !== "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+  );
+}
+
+async function syncRemoteIfConfigured() {
+  if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return;
+
+  try {
+    const [posts, media, inspo] = await Promise.all([
+      apiGetPosts(),
+      apiGetMedia(),
+      apiGetInspo()
+    ]);
+
+    if (Array.isArray(posts) && posts.length) appState.posts = posts;
+    if (Array.isArray(media) && media.length) appState.media = media;
+    if (Array.isArray(inspo) && inspo.length) appState.inspo = inspo;
+
+    persistLocalState();
+    showToast("Connected", "Google Sheets data loaded.", "ph-cloud-check", "text-[#00ffaa]");
+  } catch (err) {
+    console.error(err);
+    showToast("Offline mode", "Using local data. Remote fetch failed.", "ph-warning", "text-yellow-400");
+  }
+}
+
+async function apiRequest(action, payload = {}) {
+  const url = APP_CONFIG.APP_SCRIPT_URL;
+  if (!isRemoteConfigured()) {
+    throw new Error("Apps Script URL is not configured.");
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+  if (!result.ok) {
+    throw new Error(result.error || "Unknown Apps Script error");
+  }
+
+  return result.data;
+}
+
+function apiGetPosts() {
+  return apiRequest("getPosts");
+}
+
+function apiGetMedia() {
+  return apiRequest("getMedia");
+}
+
+function apiGetInspo() {
+  return apiRequest("getInspo");
+}
+
+function apiGetDashboard() {
+  return apiRequest("getDashboard");
+}
+
+function apiSavePost(post) {
+  return apiRequest("savePost", { post });
+}
+
+function apiDeletePost(postId) {
+  return apiRequest("deletePost", { postId });
+}
+
+function apiDuplicatePost(postId) {
+  return apiRequest("duplicatePost", { postId });
+}
+
+/* Optional global exposure for existing inline HTML calls */
+window.openModal = function(title = "", platform = "linkedin", pillarClass = "edu", date = "", status = "draft", description = "", postType = "text") {
+  const matched = appState.posts.find((post) => {
+    return (
+      post.title === title &&
+      post.platform === platform &&
+      post.pillar === pillarClass &&
+      post.date === date &&
+      post.status === status
+    );
+  });
+
+  openModal(
+    title,
+    platform,
+    pillarClass,
+    date,
+    status,
+    description || matched?.description || "",
+    postType || matched?.postType || "text",
+    matched?.id || null
+  );
+};
+
+window.closeModal = closeModal;
+window.switchView = switchView;
+window.aiGenerate = aiGenerate;
+window.inspoToPost = inspoToPost;
+window.setPillar = setPillar;
+
+</body></html>
