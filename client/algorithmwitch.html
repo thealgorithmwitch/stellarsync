@@ -580,7 +580,7 @@
     </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw4dlqq7c-ZMmGHKpIFoZ0njKpdNGgNYQ1XiFaeqU1ajEEgj4Cr4ZlD1n7s2yAs34WQ/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby8H8AeYBhBBrZaA_R0e9k8f4x5asXCLsALUU4TBc2uEmD1hzWp9qSDoJtuh-OnyePE/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v4"
 };
@@ -833,12 +833,11 @@ async function promptCreateCampaignAt(x, y) {
     rerenderAll();
     showToast("Campaign created", "New constellation added.", "ph-check", "text-[#00ffaa]");
     return normalized;
-  } catch (err) {
-    console.error(err);
-    showToast("Campaign failed", err.message || "Could not create campaign.", "ph-warning", "text-yellow-400");
-    return null;
-  }
-}
+    } catch (err) {
+      console.error("Remote sync failed:", err);
+      showToast("Offline mode", String(err.message || err), "ph-warning", "text-yellow-400");
+    }
+    }
 
 function normalizePillar(value) {
   const v = String(value || "").toLowerCase();
