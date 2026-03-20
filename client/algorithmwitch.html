@@ -798,34 +798,7 @@
                         <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase" vid="491">Next In Queue</h4>
                         <span class="text-[9px] font-bold text-[#ffd700] border border-[#ffd700]/20 bg-[#ffd700]/5 px-2 py-0.5 rounded" vid="492">3 Scheduled</span>
                     </div>
-                    <div class="space-y-3" vid="493">
-                        
-                        <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="494">
-                            <div class="bg-[#120c1d] border border-[#ffd700]/20 rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0 text-[#ffd700]" vid="495">
-                                <span class="text-[9px] font-bold uppercase" vid="496">Oct</span>
-                                <span class="text-sm font-bold" vid="497">14</span>
-                            </div>
-                            <div class="min-w-0" vid="498">
-                                <p class="text-white text-sm font-bold truncate mb-1" vid="499">Future Focus Poll</p>
-                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium" vid="500">
-                                    <div class="flex gap-0.5 text-gray-400" vid="501"><i class="ph-fill ph-linkedin-logo" vid="502"></i><i class="ph-fill ph-instagram-logo" vid="503"></i></div>
-                                    <span vid="504">11:00 AM</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="505">
-                            <div class="bg-[#120c1d] border border-[#00f0ff]/20 rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0 text-[#00f0ff]" vid="506">
-                                <span class="text-[9px] font-bold uppercase" vid="507">Oct</span>
-                                <span class="text-sm font-bold" vid="508">18</span>
-                            </div>
-                            <div class="min-w-0" vid="509">
-                                <p class="text-white text-sm font-bold truncate mb-1" vid="510">Panel Maintenance Guide</p>
-                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium" vid="511">
-                                    <div class="text-gray-400" vid="512"><i class="ph-fill ph-instagram-logo" vid="513"></i></div>
-                                    <span vid="514">4:00 PM</span>
-                                </div>
-                            </div>
+                  <div id="queue-list" class="space-y-3">
                         </div>
 
                         <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors opacity-60" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="515">
@@ -964,11 +937,7 @@
         </div>
     </div>
 
-/* StellarSync frontend script
-   Replace your current entire inline <script> block with this.
-   Then set APP_CONFIG.APP_SCRIPT_URL after you deploy the Apps Script web app.
-*/
-
+<script>
 const APP_CONFIG = {
   APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxuyM2Nby3QQ_TiRJ9ikjavxJqNiwtdGYU9_UemzbdEe1eQJggS1ekhBwtkzZQph_j3/exec",
   ENABLE_REMOTE_SYNC: true,
@@ -1121,8 +1090,20 @@ const dateInput = document.getElementById("modal-date");
 const statusSelect = document.getElementById("modal-status");
 const descInput = document.querySelector("#scheduling-modal textarea");
 const pillarBtns = Array.from(document.querySelectorAll(".pillar-btn"));
-const saveButton = document.querySelector("#scheduling-modal .bg-gradient-to-r.from-\\[\\#9d4edd\\].to-\\[\\#c77dff\\]") ||
+const saveButton =
+  document.querySelector("#scheduling-modal .bg-gradient-to-r.from-\\[\\#9d4edd\\].to-\\[\\#c77dff\\]") ||
   document.querySelectorAll("#scheduling-modal button")[2];
+
+const viewport = document.getElementById("starmap-viewport");
+const canvas = document.getElementById("starmap-canvas");
+let scale = 0.5;
+let panX = -200;
+let panY = -100;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let touchStartDistance = null;
+let touchStartScale = scale;
 
 initApp();
 
@@ -1135,22 +1116,39 @@ function initApp() {
   setupConstellationInteractions();
   setupSaveHandler();
   switchView("calendar");
+
+  renderQueue(
+    appState.posts
+      .filter(post => post.status === "scheduled" && post.date)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .map(post => ({
+        postId: post.id,
+        title: post.title,
+        platform: post.platform,
+        pillar: post.pillar,
+        scheduledAt: post.date,
+        status: post.status,
+        queueDateLabel: formatLocalQueueDate(post.date),
+        queueTimeLabel: formatLocalQueueTime(post.date)
+      }))
+  );
+
   syncRemoteIfConfigured();
 }
 
 function loadLocalState() {
   try {
     const raw = localStorage.getItem(APP_CONFIG.STORAGE_KEY);
-    if (!raw) return structuredClone(DEFAULT_STATE);
+    if (!raw) return structuredCloneState(DEFAULT_STATE);
     const parsed = JSON.parse(raw);
     return {
-      posts: Array.isArray(parsed.posts) ? parsed.posts : structuredClone(DEFAULT_STATE.posts),
-      inspo: Array.isArray(parsed.inspo) ? parsed.inspo : structuredClone(DEFAULT_STATE.inspo),
-      media: Array.isArray(parsed.media) ? parsed.media : structuredClone(DEFAULT_STATE.media)
+      posts: Array.isArray(parsed.posts) ? parsed.posts : structuredCloneState(DEFAULT_STATE.posts),
+      inspo: Array.isArray(parsed.inspo) ? parsed.inspo : structuredCloneState(DEFAULT_STATE.inspo),
+      media: Array.isArray(parsed.media) ? parsed.media : structuredCloneState(DEFAULT_STATE.media)
     };
   } catch (err) {
     console.warn("Failed to load local state, using defaults.", err);
-    return structuredClone(DEFAULT_STATE);
+    return structuredCloneState(DEFAULT_STATE);
   }
 }
 
@@ -1158,7 +1156,7 @@ function persistLocalState() {
   localStorage.setItem(APP_CONFIG.STORAGE_KEY, JSON.stringify(appState));
 }
 
-function structuredClone(obj) {
+function structuredCloneState(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
@@ -1292,6 +1290,23 @@ function setupSaveHandler() {
     }
 
     persistLocalState();
+
+    renderQueue(
+      appState.posts
+        .filter(post => post.status === "scheduled" && post.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .map(post => ({
+          postId: post.id,
+          title: post.title,
+          platform: post.platform,
+          pillar: post.pillar,
+          scheduledAt: post.date,
+          status: post.status,
+          queueDateLabel: formatLocalQueueDate(post.date),
+          queueTimeLabel: formatLocalQueueTime(post.date)
+        }))
+    );
+
     closeModal();
     showToast("Saved", "Post saved locally.", "ph-check", "text-[#00ffaa]");
 
@@ -1368,6 +1383,23 @@ async function deletePostById(postId) {
 
   appState.posts = appState.posts.filter((p) => p.id !== postId);
   persistLocalState();
+
+  renderQueue(
+    appState.posts
+      .filter(post => post.status === "scheduled" && post.date)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .map(post => ({
+        postId: post.id,
+        title: post.title,
+        platform: post.platform,
+        pillar: post.pillar,
+        scheduledAt: post.date,
+        status: post.status,
+        queueDateLabel: formatLocalQueueDate(post.date),
+        queueTimeLabel: formatLocalQueueTime(post.date)
+      }))
+  );
+
   showToast("Deleted", "Post removed locally.", "ph-trash", "text-red-400");
 
   if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
@@ -1393,6 +1425,23 @@ async function duplicatePostById(postId) {
 
   appState.posts.push(copy);
   persistLocalState();
+
+  renderQueue(
+    appState.posts
+      .filter(post => post.status === "scheduled" && post.date)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .map(post => ({
+        postId: post.id,
+        title: post.title,
+        platform: post.platform,
+        pillar: post.pillar,
+        scheduledAt: post.date,
+        status: post.status,
+        queueDateLabel: formatLocalQueueDate(post.date),
+        queueTimeLabel: formatLocalQueueTime(post.date)
+      }))
+  );
+
   showToast("Duplicated", "Post duplicated locally.", "ph-copy", "text-[#00ffaa]");
 
   if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
@@ -1531,18 +1580,6 @@ function generateId(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
-/* Constellation interactions */
-const viewport = document.getElementById("starmap-viewport");
-const canvas = document.getElementById("starmap-canvas");
-let scale = 0.5;
-let panX = -200;
-let panY = -100;
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let touchStartDistance = null;
-let touchStartScale = scale;
-
 function updateTransform() {
   if (canvas) {
     canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
@@ -1666,7 +1703,6 @@ function getTouchDistance(touches) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/* Remote sync */
 function isRemoteConfigured() {
   return (
     APP_CONFIG.APP_SCRIPT_URL &&
@@ -1678,17 +1714,46 @@ async function syncRemoteIfConfigured() {
   if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return;
 
   try {
-    const [posts, media, inspo] = await Promise.all([
+    const [posts, media, inspo, queue] = await Promise.all([
       apiGetPosts(),
       apiGetMedia(),
-      apiGetInspo()
+      apiGetInspo(),
+      apiGetQueue()
     ]);
 
-    if (Array.isArray(posts) && posts.length) appState.posts = posts;
-    if (Array.isArray(media) && media.length) appState.media = media;
-    if (Array.isArray(inspo) && inspo.length) appState.inspo = inspo;
+    if (Array.isArray(posts) && posts.length) {
+      appState.posts = posts.map(post => ({
+        id: post.postId,
+        title: post.title,
+        platform: post.platform,
+        pillar: post.pillar,
+        date: post.scheduledAt,
+        status: post.status,
+        postType: post.postType,
+        description: post.description || ""
+      }));
+    }
+
+    if (Array.isArray(media) && media.length) {
+      appState.media = media.map(asset => ({
+        id: asset.assetId,
+        title: asset.assetName,
+        type: asset.assetType,
+        postId: asset.linkedPostId
+      }));
+    }
+
+    if (Array.isArray(inspo) && inspo.length) {
+      appState.inspo = inspo.map(item => ({
+        id: item.inspoId,
+        title: item.title,
+        type: item.inspoType,
+        description: item.createPostDescription || item.summary || ""
+      }));
+    }
 
     persistLocalState();
+    renderQueue(queue || []);
     showToast("Connected", "Google Sheets data loaded.", "ph-cloud-check", "text-[#00ffaa]");
   } catch (err) {
     console.error(err);
@@ -1696,17 +1761,13 @@ async function syncRemoteIfConfigured() {
   }
 }
 
-async function apiRequest(action, payload = {}) {
+async function apiGet(action) {
   const url = APP_CONFIG.APP_SCRIPT_URL;
-  if (!isRemoteConfigured()) {
-    throw new Error("Apps Script URL is not configured.");
-  }
+  if (!isRemoteConfigured()) throw new Error("Apps Script URL is not configured.");
 
-  const response = await fetch(url, {
-    method: "POST",
-    mode: "cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, ...payload })
+  const response = await fetch(`${url}?action=${encodeURIComponent(action)}`, {
+    method: "GET",
+    mode: "cors"
   });
 
   if (!response.ok) {
@@ -1718,38 +1779,177 @@ async function apiRequest(action, payload = {}) {
     throw new Error(result.error || "Unknown Apps Script error");
   }
 
-  return result.data;
+  return result;
 }
 
-function apiGetPosts() {
-  return apiRequest("getPosts");
+async function apiPost(action, payload = {}) {
+  const url = APP_CONFIG.APP_SCRIPT_URL;
+  if (!isRemoteConfigured()) throw new Error("Apps Script URL is not configured.");
+
+  const response = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, payload })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+  if (!result.ok) {
+    throw new Error(result.error || "Unknown Apps Script error");
+  }
+
+  return result;
 }
 
-function apiGetMedia() {
-  return apiRequest("getMedia");
+async function apiGetPosts() {
+  const result = await apiGet("getPosts");
+  return result.items || [];
 }
 
-function apiGetInspo() {
-  return apiRequest("getInspo");
+async function apiGetMedia() {
+  const result = await apiGet("getMedia");
+  return result.items || [];
 }
 
-function apiGetDashboard() {
-  return apiRequest("getDashboard");
+async function apiGetInspo() {
+  const result = await apiGet("getInspo");
+  return result.items || [];
 }
 
-function apiSavePost(post) {
-  return apiRequest("savePost", { post });
+async function apiGetQueue() {
+  const result = await apiGet("getQueue");
+  return result.items || [];
 }
 
-function apiDeletePost(postId) {
-  return apiRequest("deletePost", { postId });
+async function apiGetDashboard() {
+  const result = await apiGet("getDashboard");
+  return result.summary || {};
 }
 
-function apiDuplicatePost(postId) {
-  return apiRequest("duplicatePost", { postId });
+async function apiSavePost(post) {
+  return apiPost("savePost", {
+    postId: post.id || null,
+    title: post.title || "",
+    platform: post.platform || "linkedin",
+    pillar: post.pillar || "edu",
+    scheduledAt: post.date || "",
+    status: post.status || "draft",
+    postType: post.postType || "text",
+    description: post.description || ""
+  });
 }
 
-/* Optional global exposure for existing inline HTML calls */
+async function apiDeletePost(postId) {
+  return apiPost("deletePost", { postId });
+}
+
+async function apiDuplicatePost(postId) {
+  const source = appState.posts.find(p => p.id === postId);
+  if (!source) throw new Error("Missing source post for duplicate.");
+
+  return apiPost("duplicatePost", {
+    duplicate: {
+      title: `${source.title} Copy`,
+      platform: source.platform,
+      pillar: source.pillar,
+      scheduledAt: source.date,
+      status: "draft",
+      postType: source.postType,
+      description: source.description
+    }
+  });
+}
+
+function renderQueue(queueItems) {
+  const queueList = document.getElementById("queue-list");
+  if (!queueList) return;
+
+  const items = (queueItems || []).slice(0, 3);
+
+  queueList.innerHTML = items.map(item => {
+    const pillarColor =
+      item.pillar === "edu" ? "#00f0ff" :
+      item.pillar === "promo" ? "#b25fff" :
+      item.pillar === "engage" ? "#ffd700" :
+      "#00ffaa";
+
+    const platformIcons =
+      item.platform === "both"
+        ? `<div class="flex gap-0.5 text-gray-400"><i class="ph-fill ph-linkedin-logo"></i><i class="ph-fill ph-instagram-logo"></i></div>`
+        : item.platform === "instagram"
+        ? `<div class="text-gray-400"><i class="ph-fill ph-instagram-logo"></i></div>`
+        : `<div class="text-gray-400"><i class="ph-fill ph-linkedin-logo"></i></div>`;
+
+    const dateParts = (item.queueDateLabel || "").split(" ");
+    const month = dateParts[0] || "";
+    const day = dateParts[1] || "";
+
+    return `
+      <div class="bg-[#181125] border border-white/5 rounded-xl p-4 flex gap-4 items-center cursor-pointer hover:border-white/10 transition-colors"
+           onclick="openModalFromQueue('${escapeHtml(item.postId)}')">
+        <div class="bg-[#120c1d] rounded-lg w-12 h-12 flex flex-col items-center justify-center shrink-0"
+             style="color:${pillarColor}; border:1px solid ${pillarColor}33;">
+          <span class="text-[9px] font-bold uppercase">${month}</span>
+          <span class="text-sm font-bold">${day}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-white text-sm font-bold truncate mb-1">${escapeHtml(item.title)}</p>
+          <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+            ${platformIcons}
+            <span>${escapeHtml(item.queueTimeLabel || "")}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const badge = document.querySelector('[vid="492"]');
+  if (badge) {
+    badge.textContent = `${items.length} Scheduled`;
+  }
+}
+
+function openModalFromQueue(postId) {
+  const matched = appState.posts.find(post => post.id === postId);
+  if (!matched) return;
+
+  openModal(
+    matched.title,
+    matched.platform,
+    matched.pillar,
+    matched.date,
+    matched.status,
+    matched.description,
+    matched.postType,
+    matched.id
+  );
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatLocalQueueDate(value) {
+  const d = new Date(value);
+  if (isNaN(d)) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatLocalQueueTime(value) {
+  const d = new Date(value);
+  if (isNaN(d)) return "";
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
 window.openModal = function(title = "", platform = "linkedin", pillarClass = "edu", date = "", status = "draft", description = "", postType = "text") {
   const matched = appState.posts.find((post) => {
     return (
@@ -1778,5 +1978,8 @@ window.switchView = switchView;
 window.aiGenerate = aiGenerate;
 window.inspoToPost = inspoToPost;
 window.setPillar = setPillar;
+window.openModalFromQueue = openModalFromQueue;
+</script>
 
-</body></html>
+</body>
+</html>
