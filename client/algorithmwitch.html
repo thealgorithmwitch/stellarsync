@@ -1064,6 +1064,26 @@ function initApp() {
   setupMediaUpload();
   switchView("calendar");
 
+  renderQueue(
+    appState.posts
+      .filter(post => post.status === "scheduled" && post.date)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .map(post => ({
+        postId: post.id,
+        title: post.title,
+        platform: post.platform,
+        pillar: post.pillar,
+        scheduledAt: post.date,
+        status: post.status,
+        queueDateLabel: formatLocalQueueDate(post.date),
+        queueTimeLabel: formatLocalQueueTime(post.date)
+      }))
+  );
+
+  renderMedia();
+  syncRemoteIfConfigured();
+}
+
 function setupMediaFilters() {
   const buttons = Array.from(document.querySelectorAll(".media-filter-btn"));
   buttons.forEach((btn) => {
@@ -1198,26 +1218,6 @@ function fileToBase64(file) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-}
-
-  renderQueue(
-    appState.posts
-      .filter(post => post.status === "scheduled" && post.date)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .map(post => ({
-        postId: post.id,
-        title: post.title,
-        platform: post.platform,
-        pillar: post.pillar,
-        scheduledAt: post.date,
-        status: post.status,
-        queueDateLabel: formatLocalQueueDate(post.date),
-        queueTimeLabel: formatLocalQueueTime(post.date)
-      }))
-  );
-
-  renderMedia();
-  syncRemoteIfConfigured();
 }
 
 function loadLocalState() {
@@ -1678,13 +1678,6 @@ function updateTransform() {
   }
 }
 
-function resetConstellationView() {
-  scale = 0.5;
-  panX = -200;
-  panY = -100;
-  updateTransform();
-}
-
 function setupConstellationInteractions() {
   if (!viewport || !canvas) return;
 
@@ -1805,6 +1798,29 @@ function getTouchDistance(touches) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+function centerConstellationView() {
+  if (!viewport || !canvas) return;
+
+  const viewportRect = viewport.getBoundingClientRect();
+  const canvasWidth = 2000;
+  const canvasHeight = 1200;
+
+  scale = Math.min(
+    viewportRect.width / canvasWidth,
+    viewportRect.height / canvasHeight,
+    0.85
+  );
+
+  panX = (viewportRect.width - canvasWidth * scale) / 2;
+  panY = (viewportRect.height - canvasHeight * scale) / 2;
+
+  updateTransform();
+}
+
+function resetConstellationView() {
+  centerConstellationView();
+}
+
 function isRemoteConfigured() {
   return (
     APP_CONFIG.APP_SCRIPT_URL &&
@@ -1845,7 +1861,8 @@ async function syncRemoteIfConfigured() {
         assetBadge: asset.assetBadge || "",
         meta: asset.assetMeta || "",
         status: asset.assetStatus || "",
-        placeholderIcon: asset.placeholderIcon || ""
+        placeholderIcon: asset.placeholderIcon || "",
+        fileUrl: asset.fileUrl || ""
       }));
     }
 
@@ -1862,6 +1879,7 @@ async function syncRemoteIfConfigured() {
     renderQueue(queue || []);
     renderMedia();
     showToast("Connected", "Google Sheets data loaded.", "ph-cloud-check", "text-[#00ffaa]");
+  } catch (err) {
     console.error(err);
     showToast("Offline mode", "Using local data. Remote fetch failed.", "ph-warning", "text-yellow-400");
   }
