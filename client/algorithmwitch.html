@@ -623,18 +623,18 @@
             </section>
 
             
-            <section id="view-inspo" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="372">
-                <div class="flex justify-between items-end mb-8" vid="373">
-                    <div vid="374">
-                        <h2 class="text-4xl font-bold text-white tracking-tight" vid="375">Inspo Vault</h2>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2" vid="376">Saved Links &amp; References</p>
-                    </div>
-                    <button class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm" vid="377">
-                        <i class="ph-bold ph-plus mr-1" vid="378"></i> Add Link
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 pb-4 content-start" vid="379">
+<section id="view-inspo" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <h2 class="text-4xl font-bold text-white tracking-tight">Inspo Vault</h2>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Saved Links &amp; References</p>
+    </div>
+    <button id="inspo-add-link-btn" class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm">
+      <i class="ph-bold ph-plus mr-1"></i> Add Link
+    </button>
+  </div>
+
+  <div id="inspo-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 pb-4 content-start">          
                     
                     <div class="glass-card flex flex-col" vid="380">
                         <div class="p-5 border-b border-white/5" vid="381">
@@ -711,31 +711,39 @@
             </section>
 
             
-<section id="view-media" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="424">
-    <div class="flex justify-between items-end mb-8">
-        <div>
-            <h2 class="text-4xl font-bold text-white tracking-tight">Media Vault</h2>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Image &amp; Video Assets</p>
-        </div>
-        <div class="flex gap-3">
-            <button class="px-5 py-2 bg-[#1a1128] border border-white/5 rounded-xl text-xs text-gray-300 font-semibold hover:text-white transition-colors flex items-center gap-2">
-                <i class="ph-bold ph-funnel text-sm"></i> Filter
-            </button>
-            <button id="media-upload-btn" class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm flex items-center gap-2">
-                <i class="ph-bold ph-upload-simple text-sm"></i> Upload
-            </button>
-            <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
-        </div>
-    </div>
-    
-    <div id="media-filter-bar" class="flex gap-4 mb-6 overflow-x-auto pb-2">
-        <button data-media-filter="all" class="media-filter-btn px-5 py-2 bg-[#231738] text-white rounded-lg text-xs font-semibold whitespace-nowrap">All Assets</button>
-        <button data-media-filter="image" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Images</button>
-        <button data-media-filter="video" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Videos</button>
-        <button data-media-filter="carousel" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Carousels</button>
+<section id="view-media" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <h2 class="text-4xl font-bold text-white tracking-tight">Media Vault</h2>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Image &amp; Video Assets</p>
     </div>
 
-    <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start"></div>
+    <div class="flex gap-3 items-center">
+      <select id="media-filter-mode" class="form-input w-[150px] text-xs font-medium">
+        <option value="all">All Media</option>
+        <option value="type">Filter by Type</option>
+        <option value="campaign">Filter by Campaign</option>
+      </select>
+
+      <select id="media-filter-select" class="form-input w-[220px] text-xs font-medium">
+        <option value="all">All Assets</option>
+      </select>
+
+      <button id="media-upload-btn" class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm flex items-center gap-2">
+        <i class="ph-bold ph-upload-simple text-sm"></i> Upload
+      </button>
+      <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
+    </div>
+  </div>
+
+  <div id="media-filter-bar" class="flex gap-4 mb-6 overflow-x-auto pb-2">
+    <button data-media-filter="all" class="media-filter-btn px-5 py-2 bg-[#231738] text-white rounded-lg text-xs font-semibold whitespace-nowrap">All Assets</button>
+    <button data-media-filter="image" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Images</button>
+    <button data-media-filter="video" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Videos</button>
+    <button data-media-filter="carousel" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">Carousels</button>
+  </div>
+
+  <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start"></div>
 </section>
         </main>
         
@@ -845,22 +853,27 @@
                     </div>
                 </div>
 
-                <div class="flex gap-6 mt-2" vid="571">
-                    <div class="w-32 h-32 rounded-xl border border-dashed border-gray-600 bg-[#181125] flex flex-col items-center justify-center text-gray-500 hover:text-white hover:border-white/20 transition-colors cursor-pointer shrink-0" vid="572">
-                        <i class="ph-bold ph-upload-simple text-3xl mb-2" vid="573"></i>
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-center" vid="574">Upload<br vid="575">Media</span>
+                <div class="flex gap-6 mt-2">
+                  <div class="w-32 shrink-0">
+                    <button id="modal-media-upload-trigger" type="button" class="w-32 h-32 rounded-xl border border-dashed border-gray-600 bg-[#181125] flex flex-col items-center justify-center text-gray-500 hover:text-white hover:border-white/20 transition-colors cursor-pointer">
+                      <i class="ph-bold ph-upload-simple text-3xl mb-2"></i>
+                      <span class="text-[9px] font-bold uppercase tracking-widest text-center">Upload<br>Media</span>
+                    </button>
+                    <input id="modal-media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
+                    <p id="modal-media-status" class="text-[10px] text-gray-500 mt-2 leading-tight">No media linked</p>
+                  </div>
+                
+                  <div class="flex-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-2">
+                      <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500">Caption / Description</label>
+                      <div class="flex gap-2">
+                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('caption')" title="AI Caption"><i class="ph-bold ph-sparkle"></i></button>
+                        <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('keywords')" title="Keywords"><i class="ph-bold ph-key"></i></button>
+                        <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('rewrite')" title="Rewrite"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                      </div>
                     </div>
-                    <div class="flex-1 flex flex-col" vid="576">
-                        <div class="flex justify-between items-center mb-2" vid="577">
-                            <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500" vid="578">Caption / Description</label>
-                            <div class="flex gap-2" vid="579">
-                                <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('caption')" vid="580" title="AI Caption"><i class="ph-bold ph-sparkle" vid="581"></i></button>
-                                <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('keywords')" vid="582" title="Keywords"><i class="ph-bold ph-key" vid="583"></i></button>
-                                <button class="text-gray-500 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors" onclick="aiGenerate('rewrite')" vid="584" title="Rewrite"><i class="ph-bold ph-arrows-clockwise" vid="585"></i></button>
-                            </div>
-                        </div>
-                        <textarea class="form-input flex-1 resize-none font-medium text-sm leading-relaxed" placeholder="Write your compelling copy here..." vid="586"></textarea>
-                    </div>
+                    <textarea class="form-input flex-1 resize-none font-medium text-sm leading-relaxed" placeholder="Write your compelling copy here..."></textarea>
+                  </div>
                 </div>
             </div>
 
