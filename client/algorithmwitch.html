@@ -186,441 +186,106 @@
         <main class="flex-1 w-full h-full overflow-hidden relative" vid="50">
             
             
-            <section id="view-calendar" class="view-section w-full h-full p-8 flex flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="51">
-                <div class="mb-8 flex justify-between items-start" vid="52">
-                    <div vid="53">
-                        <h2 class="text-4xl font-bold text-white tracking-tight flex items-baseline gap-3" vid="54">October <span class="text-2xl font-medium text-gray-500 tracking-normal" vid="55">2024</span></h2>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2 flex items-center gap-1.5" vid="56"><i class="ph-fill ph-calendar-blank text-[#c77dff]" vid="57"></i> Content Calendar</p>
-                    </div>
-                    <div class="flex items-center gap-4" vid="58">
-                        <div class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1" vid="59">
-                            <button class="px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm" vid="60">Mo</button>
-                            <button class="px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors" vid="61">Wk</button>
-                        </div>
-                        <div class="flex gap-1" vid="62">
-                            <button class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors" vid="63"><i class="ph-bold ph-caret-left" vid="64"></i></button>
-                            <button class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors" vid="65"><i class="ph-bold ph-caret-right" vid="66"></i></button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto custom-scrollbar" vid="67">
-                    
-                    <div class="grid grid-cols-7 mb-4 text-center" vid="68">
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="69">Sun</span>
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="70">Mon</span>
-                        <span class="text-[10px] font-bold text-[#c77dff] tracking-wider uppercase" vid="71">Tue</span>
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="72">Wed</span>
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="73">Thu</span>
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="74">Fri</span>
-                        <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase" vid="75">Sat</span>
-                    </div>
-                    
-                    <div class="cal-grid" vid="76">
-                        
-                        <div class="cal-cell empty" vid="77"><span class="text-xs text-gray-600 font-medium" vid="78">29</span></div>
-                        <div class="cal-cell empty" vid="79"><span class="text-xs text-gray-600 font-medium" vid="80">30</span></div>
-                        
-                        <div class="cal-cell" vid="81"><span class="text-xs text-gray-300 font-medium" vid="82">1</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="83">
-                            <span class="text-xs text-gray-300 font-medium" vid="84">2</span>
-                            <div class="post-pill edu mt-1" vid="85">
-                                <div class="flex items-center gap-1.5 w-full" vid="86">
-                                    <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-xs" vid="87"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#00f0ff] ml-auto" vid="88"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="89">Solar ...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="90"><span class="text-xs text-gray-300 font-medium" vid="91">3</span></div>
-                        <div class="cal-cell" vid="92"><span class="text-xs text-gray-300 font-medium" vid="93">4</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="94">
-                            <span class="text-xs text-gray-300 font-medium" vid="95">5</span>
-                            <div class="post-pill promo mt-1" vid="96">
-                                <div class="flex items-center gap-1.5 w-full" vid="97">
-                                    <i class="ph-fill ph-instagram-logo text-[#b25fff] text-xs" vid="98"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="99"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="100">Winte...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="101"><span class="text-xs text-gray-300 font-medium" vid="102">6</span></div>
-                        <div class="cal-cell" vid="103"><span class="text-xs text-gray-300 font-medium" vid="104">7</span></div>
-                        <div class="cal-cell" vid="105"><span class="text-xs text-gray-300 font-medium" vid="106">8</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="107">
-                            <span class="text-xs text-gray-300 font-medium" vid="108">9</span>
-                            <div class="post-pill aware mt-1" vid="109">
-                                <div class="flex items-center gap-1.5 w-full" vid="110">
-                                    <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-xs" vid="111"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#94a3b8] ml-auto" vid="112"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="113">Eco-V...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="114"><span class="text-xs text-gray-300 font-medium" vid="115">10</span></div>
-                        <div class="cal-cell" vid="116"><span class="text-xs text-gray-300 font-medium" vid="117">11</span></div>
-                        <div class="cal-cell" vid="118"><span class="text-xs text-gray-300 font-medium" vid="119">12</span></div>
-                        <div class="cal-cell" vid="120"><span class="text-xs text-gray-300 font-medium" vid="121">13</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="122">
-                            <span class="text-xs text-gray-300 font-medium" vid="123">14</span>
-                            <div class="post-pill engage mt-1" vid="124">
-                                <div class="flex items-center gap-1.5 w-full" vid="125">
-                                    <div class="flex" vid="126">
-                                        <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xs" vid="127"></i>
-                                        <i class="ph-fill ph-instagram-logo text-[#ffd700] text-xs -ml-1" vid="128"></i>
-                                    </div>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="129"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="130">Futur...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="131"><span class="text-xs text-gray-300 font-medium" vid="132">15</span></div>
-                        <div class="cal-cell" vid="133"><span class="text-xs text-gray-300 font-medium" vid="134">16</span></div>
-                        <div class="cal-cell" vid="135"><span class="text-xs text-gray-300 font-medium" vid="136">17</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="137">
-                            <span class="text-xs text-gray-300 font-medium" vid="138">18</span>
-                            <div class="post-pill edu mt-1" vid="139">
-                                <div class="flex items-center gap-1.5 w-full" vid="140">
-                                    <i class="ph-fill ph-instagram-logo text-[#00f0ff] text-xs" vid="141"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#ffd700] ml-auto" vid="142"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="143">Panel...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="144"><span class="text-xs text-gray-300 font-medium" vid="145">19</span></div>
-                        <div class="cal-cell" vid="146"><span class="text-xs text-gray-300 font-medium" vid="147">20</span></div>
-                        <div class="cal-cell" vid="148"><span class="text-xs text-gray-300 font-medium" vid="149">21</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="150">
-                            <span class="text-xs text-gray-300 font-medium" vid="151">22</span>
-                            <div class="post-pill promo mt-1" vid="152">
-                                <div class="flex items-center gap-1.5 w-full" vid="153">
-                                    <i class="ph-fill ph-linkedin-logo text-[#b25fff] text-xs" vid="154"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#94a3b8] ml-auto" vid="155"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="156">Q4 Di...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="157"><span class="text-xs text-gray-300 font-medium" vid="158">23</span></div>
-                        <div class="cal-cell" vid="159"><span class="text-xs text-gray-300 font-medium" vid="160">24</span></div>
-                        
-                        <div class="cal-cell relative cursor-pointer group ring-1 ring-[#c77dff]/50 bg-[#1c132d] !important" onclick="openModal('Wind Turbine Stats', 'instagram', 'aware', '2024-10-25T13:00', 'published')" vid="161">
-                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-[#c77dff] rounded-full shadow-[0_0_10px_#c77dff]" vid="162"></div>
-                            <span class="text-xs text-white font-bold" vid="163">25</span>
-                            <div class="post-pill aware mt-1" vid="164">
-                                <div class="flex items-center gap-1.5 w-full" vid="165">
-                                    <i class="ph-fill ph-instagram-logo text-[#00ffaa] text-xs" vid="166"></i>
-                                    <div class="w-1.5 h-1.5 rounded-full bg-[#00ffaa] ml-auto" vid="167"></div>
-                                </div>
-                                <span class="text-[9px] text-gray-300 truncate w-full block mt-0.5" vid="168">Turbi...</span>
-                            </div>
-                        </div>
-                        <div class="cal-cell" vid="169"><span class="text-xs text-gray-300 font-medium" vid="170">26</span></div>
-                        <div class="cal-cell empty" vid="171"><span class="text-xs text-gray-600 font-medium" vid="172">27</span></div>
-                        <div class="cal-cell empty" vid="173"><span class="text-xs text-gray-600 font-medium" vid="174">28</span></div>
-                        <div class="cal-cell empty" vid="175"><span class="text-xs text-gray-600 font-medium" vid="176">29</span></div>
-                        <div class="cal-cell empty" vid="177"><span class="text-xs text-gray-600 font-medium" vid="178">30</span></div>
-                        <div class="cal-cell empty" vid="179"><span class="text-xs text-gray-600 font-medium" vid="180">31</span></div>
-                    </div>
+        <section id="view-calendar" class="view-section w-full h-full p-8 flex flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
+          <div class="mb-8 flex justify-between items-start">
+            <div>
+              <h2 class="text-4xl font-bold text-white tracking-tight flex items-baseline gap-3">
+                <span id="calendar-month-name">Month</span>
+                <span id="calendar-year-name" class="text-2xl font-medium text-gray-500 tracking-normal">2024</span>
+              </h2>
+              <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2 flex items-center gap-1.5">
+                <i class="ph-fill ph-calendar-blank text-[#c77dff]"></i> Content Calendar
+              </p>
+            </div>
+        
+            <div class="flex items-center gap-4">
+              <div class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1">
+                <button id="calendar-mode-month" class="px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm">Mo</button>
+                <button id="calendar-mode-week" class="px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors">Wk</button>
+              </div>
+              <div class="flex gap-1">
+                <button id="calendar-prev-btn" class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
+                  <i class="ph-bold ph-caret-left"></i>
+                </button>
+                <button id="calendar-next-btn" class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
+                  <i class="ph-bold ph-caret-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="grid grid-cols-7 mb-4 text-center">
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Sun</span>
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Mon</span>
+              <span class="text-[10px] font-bold text-[#c77dff] tracking-wider uppercase">Tue</span>
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Wed</span>
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Thu</span>
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Fri</span>
+              <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Sat</span>
+            </div>
+        
+            <div id="calendar-grid" class="cal-grid"></div>
+          </div>
+        </section>
+            
+<section id="view-constellation" class="view-section hidden w-full h-full flex-col overflow-hidden bg-transparent border border-white/5 rounded-2xl">
+  <div class="absolute top-6 left-6 z-30 flex gap-2">
+    <button id="zoom-in" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Zoom in">
+      <i class="ph-bold ph-magnifying-glass-plus text-lg"></i>
+    </button>
+    <button id="zoom-out" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Zoom out">
+      <i class="ph-bold ph-magnifying-glass-minus text-lg"></i>
+    </button>
+    <button id="zoom-reset" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Reset view">
+      <i class="ph-bold ph-corners-out text-lg"></i>
+    </button>
+    <button id="zoom-fullscreen" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Fullscreen">
+      <i class="ph-bold ph-arrows-out text-lg"></i>
+    </button>
+  </div>
 
-                </div>
-            </section>
+  <div class="absolute top-6 right-6 z-30 bg-[#1a1128] border border-white/5 px-4 py-2 rounded-xl">
+    <span class="text-xs uppercase font-bold text-[#c77dff] tracking-widest flex items-center gap-2">
+      <i class="ph-fill ph-planet"></i> Constellation
+    </span>
+  </div>
+
+  <div id="starmap-viewport" class="w-full h-full overflow-hidden relative">
+    <div id="starmap-canvas" class="starmap-container absolute top-0 left-0 w-[2200px] h-[1400px] origin-top-left">
+      <svg class="pipeline-svg" viewBox="0 0 2200 1400" preserveAspectRatio="none">
+        <path d="M 180 220 Q 500 140 850 220 T 1400 220" class="pipeline-path stroke-[#00f0ff]"></path>
+        <path d="M 180 480 Q 520 560 920 480 T 1500 480" class="pipeline-path stroke-[#b25fff]"></path>
+        <path d="M 180 760 Q 520 680 980 760 T 1580 760" class="pipeline-path stroke-[#00ffaa]"></path>
+        <path d="M 180 1040 Q 520 1120 920 1040 T 1480 1040" class="pipeline-path stroke-[#ffd700]"></path>
+      </svg>
+
+      <div id="constellation-layer"></div>
+    </div>
+  </div>
+</section>
 
             
-            <section id="view-constellation" class="view-section hidden w-full h-full flex-col overflow-hidden bg-transparent border border-white/5 rounded-2xl" vid="181">
-                
-                    <div class="absolute top-6 left-6 z-30 flex gap-2" vid="182">
-                        <button id="zoom-in" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Zoom in">
-                            <i class="ph-bold ph-magnifying-glass-plus text-lg"></i>
-                        </button>
-                        <button id="zoom-out" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Zoom out">
-                            <i class="ph-bold ph-magnifying-glass-minus text-lg"></i>
-                        </button>
-                        <button id="zoom-reset" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Reset view">
-                            <i class="ph-bold ph-corners-out text-lg"></i>
-                        </button>
-                        <button id="zoom-fullscreen" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Fullscreen">
-                            <i class="ph-bold ph-arrows-out text-lg"></i>
-                        </button>
-                    </div>
-                <div class="absolute top-6 right-6 z-30 bg-[#1a1128] border border-white/5 px-4 py-2 rounded-xl" vid="189">
-                    <span class="text-xs uppercase font-bold text-[#c77dff] tracking-widest flex items-center gap-2" vid="190"><i class="ph-fill ph-planet" vid="191"></i> Constellation</span>
-                </div>
+ <section id="view-ledger" class="view-section hidden w-full h-full flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="p-8 border-b border-white/5 flex justify-between items-end">
+    <div>
+      <h2 class="text-4xl font-bold text-white tracking-tight">Content Ledger</h2>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Detailed View with Captions</p>
+    </div>
+    <div class="flex gap-2">
+      <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Filter">
+        <i class="ph-bold ph-faders text-lg"></i>
+      </button>
+      <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Sort">
+        <i class="ph-bold ph-sort-ascending text-lg"></i>
+      </button>
+    </div>
+  </div>
 
-                <div id="starmap-viewport" class="w-full h-full overflow-hidden relative" vid="192">
-                    <div id="starmap-canvas" class="starmap-container absolute top-0 left-0 w-[2000px] h-[1200px] transform origin-top-left transition-transform duration-75 ease-out" vid="193">
-                        
-                        <svg class="pipeline-svg" vid="194">
-                            <path d="M 150 200 Q 300 150 450 200 T 800 200" class="pipeline-path stroke-[#00f0ff]" vid="195"></path>
-                            <path d="M 150 400 Q 350 450 550 400 T 950 400" class="pipeline-path stroke-[#b25fff]" vid="196"></path>
-                            <path d="M 150 600 Q 400 550 650 600 T 1100 600" class="pipeline-path stroke-[#00ffaa]" vid="197"></path>
-                            <path d="M 150 800 Q 300 850 500 800 T 900 800" class="pipeline-path stroke-[#ffd700]" vid="198"></path>
-                        </svg>
-
-                        <div class="map-node hub-node border-l-4 border-l-[#00f0ff]" style="left: 150px; top: 200px;" vid="199">
-                            <h3 class="font-bold text-white text-sm mb-1" vid="200">Solar Tech 101</h3>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="201">Education</p>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#00f0ff]" style="left: 450px; top: 200px;" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="202">
-                            <div class="flex justify-between items-center mb-3" vid="203">
-                                <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-xl" vid="204"></i>
-                                <span class="badge badge-pub" vid="205">Published</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="206">Solar Physics 101</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="207">Oct 2 • Infographic</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="208">
-                                <div class="w-full h-full flex items-center justify-center text-[#00f0ff]/40" vid="209"><i class="ph-fill ph-image text-2xl" vid="210"></i></div>
-                            </div>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#00f0ff]" style="left: 800px; top: 200px;" onclick="openModal('Panel Maintenance Guide', 'instagram', 'edu', '2024-10-18T16:00', 'scheduled')" vid="211">
-                            <div class="flex justify-between items-center mb-3" vid="212">
-                                <i class="ph-fill ph-instagram-logo text-[#00f0ff] text-xl" vid="213"></i>
-                                <span class="badge badge-sch" vid="214">Scheduled</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="215">Panel Maintenance Guide</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="216">Oct 18 • Carousel</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="217">
-                                <div class="w-full h-full flex items-center justify-center text-[#00f0ff]/40" vid="218"><i class="ph-fill ph-images text-2xl" vid="219"></i></div>
-                            </div>
-                        </div>
-
-                        <div class="map-node hub-node border-l-4 border-l-[#b25fff]" style="left: 150px; top: 400px;" vid="220">
-                            <h3 class="font-bold text-white text-sm mb-1" vid="221">Winter Savings</h3>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="222">Promo</p>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#b25fff]" style="left: 550px; top: 400px;" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="223">
-                            <div class="flex justify-between items-center mb-3" vid="224">
-                                <i class="ph-fill ph-instagram-logo text-[#b25fff] text-xl" vid="225"></i>
-                                <span class="badge badge-sch" vid="226">Scheduled</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="227">Winter Savings Promo</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="228">Oct 5 • Video</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="229">
-                                <div class="w-full h-full flex items-center justify-center text-[#b25fff]/40" vid="230"><i class="ph-fill ph-video-camera text-2xl" vid="231"></i></div>
-                            </div>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#b25fff]" style="left: 950px; top: 400px;" onclick="openModal('Q4 Discount Reveal', 'linkedin', 'promo', '2024-10-22T08:30', 'draft')" vid="232">
-                            <div class="flex justify-between items-center mb-3" vid="233">
-                                <i class="ph-fill ph-linkedin-logo text-[#b25fff] text-xl" vid="234"></i>
-                                <span class="badge badge-drf" vid="235">Draft</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="236">Q4 Discount Reveal</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="237">Oct 22 • Image</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-dashed border-gray-700" vid="238">
-                                <div class="w-full h-full flex items-center justify-center text-gray-500 text-[10px] font-bold" vid="239">AWAITING ASSET</div>
-                            </div>
-                        </div>
-
-                        <div class="map-node hub-node border-l-4 border-l-[#00ffaa]" style="left: 150px; top: 600px;" vid="240">
-                            <h3 class="font-bold text-white text-sm mb-1" vid="241">Eco-Vanguard</h3>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="242">Awareness</p>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#00ffaa]" style="left: 650px; top: 600px;" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="243">
-                            <div class="flex justify-between items-center mb-3" vid="244">
-                                <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-xl" vid="245"></i>
-                                <span class="badge badge-drf" vid="246">Draft</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="247">Eco-Vanguard Report</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="248">Oct 9 • Article Link</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5 p-3 flex flex-col gap-1.5 justify-center" vid="249">
-                                <div class="w-full h-1.5 bg-white/10 rounded" vid="250"></div>
-                                <div class="w-3/4 h-1.5 bg-white/10 rounded" vid="251"></div>
-                                <div class="w-1/2 h-1.5 bg-[#00ffaa]/30 rounded mt-1" vid="252"></div>
-                            </div>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#00ffaa]" style="left: 1100px; top: 600px;" onclick="openModal('Wind Turbine Stats', 'instagram', 'aware', '2024-10-25T13:00', 'published')" vid="253">
-                            <div class="flex justify-between items-center mb-3" vid="254">
-                                <i class="ph-fill ph-instagram-logo text-[#00ffaa] text-xl" vid="255"></i>
-                                <span class="badge badge-pub" vid="256">Published</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="257">Wind Turbine Stats</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="258">Oct 25 • Infographic</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5" vid="259">
-                                <div class="w-full h-full flex items-center justify-center text-[#00ffaa]/40" vid="260"><i class="ph-fill ph-chart-pie-slice text-2xl" vid="261"></i></div>
-                            </div>
-                        </div>
-
-                        <div class="map-node hub-node border-l-4 border-l-[#ffd700]" style="left: 150px; top: 800px;" vid="262">
-                            <h3 class="font-bold text-white text-sm mb-1" vid="263">Future Focus</h3>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold" vid="264">Engagement</p>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#ffd700]" style="left: 500px; top: 800px;" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="265">
-                            <div class="flex justify-between items-center mb-3" vid="266">
-                                <div class="flex gap-1" vid="267">
-                                    <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xl" vid="268"></i>
-                                    <i class="ph-fill ph-instagram-logo text-[#ffd700] text-xl" vid="269"></i>
-                                </div>
-                                <span class="badge badge-sch" vid="270">Scheduled</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="271">Future Focus Poll</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="272">Oct 14 • Text/Poll</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden p-3 flex flex-col justify-center gap-2 border border-white/5" vid="273">
-                                <div class="w-full h-2 bg-[#ffd700]/20 rounded-full" vid="274"><div class="w-[60%] h-full bg-[#ffd700] rounded-full" vid="275"></div></div>
-                                <div class="w-full h-2 bg-white/10 rounded-full" vid="276"><div class="w-[40%] h-full bg-white/30 rounded-full" vid="277"></div></div>
-                            </div>
-                        </div>
-                        <div class="map-node post-node border-l-4 border-[#ffd700]" style="left: 900px; top: 800px;" onclick="openModal('Community Q&amp;A', 'linkedin', 'engage', '2024-10-29T15:00', 'draft')" vid="278">
-                            <div class="flex justify-between items-center mb-3" vid="279">
-                                <i class="ph-fill ph-linkedin-logo text-[#ffd700] text-xl" vid="280"></i>
-                                <span class="badge badge-drf" vid="281">Draft</span>
-                            </div>
-                            <h4 class="text-sm text-white font-semibold mb-1 truncate" vid="282">Community Q&amp;A</h4>
-                            <p class="text-[10px] text-gray-400 mb-3" vid="283">Oct 29 • Live Event Link</p>
-                            <div class="h-16 bg-[#120c1d] rounded-lg overflow-hidden border border-white/5 flex items-center justify-center" vid="284">
-                                <i class="ph-fill ph-users-three text-[#ffd700]/40 text-3xl" vid="285"></i>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            
-            <section id="view-ledger" class="view-section hidden w-full h-full flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl" vid="286">
-                <div class="p-8 border-b border-white/5 flex justify-between items-end" vid="287">
-                    <div vid="288">
-                        <h2 class="text-4xl font-bold text-white tracking-tight" vid="289">Content Ledger</h2>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2" vid="290">Detailed View with Captions</p>
-                    </div>
-                    <div class="flex gap-2" vid="291">
-                        <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Filter" vid="292">
-                            <i class="ph-bold ph-faders text-lg" vid="293"></i>
-                        </button>
-                        <button class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center" title="Sort" vid="294">
-                            <i class="ph-bold ph-sort-ascending text-lg" vid="295"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-8" vid="296">
-                    <div class="space-y-4" vid="297">
-                        
-                        <div class="ledger-card glass-card p-5" onclick="openModal('Solar Physics 101', 'linkedin', 'edu', '2024-10-02T10:00', 'published')" vid="298">
-                            <div class="flex items-start gap-5" vid="299">
-                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="300">
-                                    <i class="ph-fill ph-linkedin-logo text-[#00f0ff] text-3xl" vid="301"></i>
-                                </div>
-                                <div class="flex-1 min-w-0" vid="302">
-                                    <div class="flex items-center gap-3 mb-2" vid="303">
-                                        <span class="badge badge-pub text-[8px]" vid="304">PUBLISHED</span>
-                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="305">Education</span>
-                                        <span class="text-gray-500 text-[10px] font-medium" vid="306">Oct 2 • 10:00 AM</span>
-                                    </div>
-                                    <h3 class="text-white font-bold text-base mb-2" vid="307">Solar Physics 101</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="308">Understanding how photovoltaic cells convert sunlight into electricity. A deep dive into the physics behind clean energy generation and why silicon wafers are the backbone of modern solar technology.</p>
-                                    <div class="mt-4 flex items-center gap-5" vid="309">
-                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="310">
-                                            <i class="ph-bold ph-sparkle" vid="311"></i> AI Enhance
-                                        </button>
-                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="312">
-                                            <i class="ph-bold ph-copy" vid="313"></i> Duplicate
-                                        </button>
-                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="314">
-                                            <i class="ph-bold ph-trash" vid="315"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="ledger-card glass-card p-5" onclick="openModal('Winter Savings Promo', 'instagram', 'promo', '2024-10-05T14:30', 'scheduled')" vid="316">
-                            <div class="flex items-start gap-5" vid="317">
-                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="318">
-                                    <i class="ph-fill ph-instagram-logo text-[#b25fff] text-3xl" vid="319"></i>
-                                </div>
-                                <div class="flex-1 min-w-0" vid="320">
-                                    <div class="flex items-center gap-3 mb-2" vid="321">
-                                        <span class="badge badge-sch text-[8px]" vid="322">SCHEDULED</span>
-                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="323">Promo</span>
-                                        <span class="text-gray-500 text-[10px] font-medium" vid="324">Oct 5 • 2:30 PM</span>
-                                    </div>
-                                    <h3 class="text-white font-bold text-base mb-2" vid="325">Winter Savings Promo</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="326">Beat the winter energy spike! ☃️ Install before December 1st and save 20% on your entire solar system. Limited spots available. DM us SOLAR20 to claim your discount today!</p>
-                                    <div class="mt-4 flex items-center gap-5" vid="327">
-                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="328">
-                                            <i class="ph-bold ph-sparkle" vid="329"></i> AI Caption
-                                        </button>
-                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="330">
-                                            <i class="ph-bold ph-key" vid="331"></i> Keywords
-                                        </button>
-                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="332">
-                                            <i class="ph-bold ph-arrows-clockwise" vid="333"></i> AI Rewrite
-                                        </button>
-                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="334">
-                                            <i class="ph-bold ph-trash" vid="335"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="ledger-card glass-card p-5" onclick="openModal('Eco-Vanguard Report', 'linkedin', 'aware', '2024-10-09T09:00', 'draft')" vid="336">
-                            <div class="flex items-start gap-5" vid="337">
-                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="338">
-                                    <i class="ph-fill ph-linkedin-logo text-[#00ffaa] text-3xl" vid="339"></i>
-                                </div>
-                                <div class="flex-1 min-w-0" vid="340">
-                                    <div class="flex items-center gap-3 mb-2" vid="341">
-                                        <span class="badge badge-drf text-[8px]" vid="342">DRAFT</span>
-                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="343">Awareness</span>
-                                        <span class="text-gray-500 text-[10px] font-medium" vid="344">Oct 9 • 9:00 AM</span>
-                                    </div>
-                                    <h3 class="text-white font-bold text-base mb-2" vid="345">Eco-Vanguard Report</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="346">Our annual sustainability report is here. 47% reduction in carbon footprint across our client installations. 12,000 tons of CO2 offset this year alone.</p>
-                                    <div class="mt-4 flex items-center gap-5" vid="347">
-                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="348">
-                                            <i class="ph-bold ph-sparkle" vid="349"></i> AI Enhance
-                                        </button>
-                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="350">
-                                            <i class="ph-bold ph-smiley" vid="351"></i> AI Emojify
-                                        </button>
-                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="352">
-                                            <i class="ph-bold ph-trash" vid="353"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="ledger-card glass-card p-5" onclick="openModal('Future Focus Poll', 'both', 'engage', '2024-10-14T11:00', 'scheduled')" vid="354">
-                            <div class="flex items-start gap-5" vid="355">
-                                <div class="w-14 h-14 rounded-xl bg-[#120c1d] border border-white/5 flex items-center justify-center shrink-0" vid="356">
-                                    <i class="ph-fill ph-infinity text-[#ffd700] text-3xl" vid="357"></i>
-                                </div>
-                                <div class="flex-1 min-w-0" vid="358">
-                                    <div class="flex items-center gap-3 mb-2" vid="359">
-                                        <span class="badge badge-sch text-[8px]" vid="360">SCHEDULED</span>
-                                        <span class="px-2 py-1 bg-[#120c1d] border border-white/5 rounded text-[9px] text-gray-300 font-medium" vid="361">Engagement</span>
-                                        <span class="text-gray-500 text-[10px] font-medium" vid="362">Oct 14 • 11:00 AM</span>
-                                    </div>
-                                    <h3 class="text-white font-bold text-base mb-2" vid="363">Future Focus Poll</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed line-clamp-2" vid="364">What's your #1 priority when considering solar? A) Lower energy bills B) Environmental impact C) Energy independence D) Home value increase. Vote in our poll and share why in the comments!</p>
-                                    <div class="mt-4 flex items-center gap-5" vid="365">
-                                        <button class="text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors" vid="366">
-                                            <i class="ph-bold ph-sparkle" vid="367"></i> AI Enhance
-                                        </button>
-                                        <button class="text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors" vid="368">
-                                            <i class="ph-bold ph-key" vid="369"></i> Keywords
-                                        </button>
-                                        <button class="text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto" vid="370">
-                                            <i class="ph-bold ph-trash" vid="371"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
+  <div class="flex-1 overflow-y-auto custom-scrollbar p-8">
+    <div id="ledger-list" class="space-y-4"></div>
+  </div>
+</section>
 
             
 <section id="view-inspo" class="view-section hidden w-full h-full p-8 flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
