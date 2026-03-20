@@ -589,25 +589,34 @@ const DEFAULT_STATE = {
   posts: [],
   campaigns: [],
   inspo: [
-    {
-      id: "inspo-001",
-      title: "The Future of Solar: 2024 Industry Report",
-      type: "article",
-      description: "New breakthroughs in perovskite solar cells promise 40% efficiency gains. Major energy companies are investing heavily..."
-    },
-    {
-      id: "inspo-002",
-      title: "Tesla Solar Roof Process",
-      type: "video",
-      description: "Check out how fast the new V3 tiles can be installed."
-    },
-    {
-      id: "inspo-003",
-      title: "Viral Solar Hacks",
-      type: "trend",
-      description: "Have you tried any of these viral solar maintenance hacks?"
-    }
-  ],
+  {
+    id: "inspo-001",
+    title: "The Future of Solar: 2024 Industry Report",
+    type: "article",
+    description: "New breakthroughs in perovskite solar cells promise 40% efficiency gains. Major energy companies are investing heavily...",
+    sourceLabel: "GreenTech Daily",
+    domainOrMeta: "greentech.com",
+    notes: "greentech.com"
+  },
+  {
+    id: "inspo-002",
+    title: "Tesla Solar Roof Process",
+    type: "video",
+    description: "Check out how fast the new V3 tiles can be installed.",
+    sourceLabel: "YouTube",
+    domainOrMeta: "youtube.com",
+    notes: "youtube.com"
+  },
+  {
+    id: "inspo-003",
+    title: "Viral Solar Hacks",
+    type: "trend",
+    description: "Have you tried any of these viral solar maintenance hacks?",
+    sourceLabel: "Social",
+    domainOrMeta: "#solarhacks",
+    notes: "#solarhacks"
+  }
+],
   media: []
 };
 
@@ -688,9 +697,59 @@ function rerenderAll() {
   renderQueue(getScheduledQueue());
   populateMediaFilterDropdown();
   renderMedia();
+  renderInspo();
   renderConstellation();
 }
 
+function inspoTypeLabel(type) {
+  const t = String(type || "").toLowerCase();
+  if (t === "video") return "Video";
+  if (t === "trend") return "Trend";
+  if (t === "article") return "Article";
+  if (t === "podcast") return "Podcast";
+  return capitalize(t || "Reference");
+}
+
+function inspoMetaLabel(item) {
+  const source = item.sourceLabel || "";
+  const domain = item.domainOrMeta || "";
+  return [source, domain].filter(Boolean).join(" • ");
+}
+
+function inferInspoPostSettings(type) {
+  const t = String(type || "").toLowerCase();
+
+  if (["video", "image", "carousel", "visual"].includes(t)) {
+    return {
+      platform: "instagram",
+      pillar: "aware",
+      postType: t === "video" ? "video" : "carousel"
+    };
+  }
+
+  if (t === "trend") {
+    return {
+      platform: "both",
+      pillar: "engage",
+      postType: "text"
+    };
+  }
+
+  if (t === "article") {
+    return {
+      platform: "linkedin",
+      pillar: "edu",
+      postType: "article"
+    };
+  }
+
+  return {
+    platform: "linkedin",
+    pillar: "edu",
+    postType: "text"
+  };
+}
+    
 function getInitialCalendarCursor() {
   const posts = Array.isArray(appState.posts) ? appState.posts : [];
   const datedPosts = posts
@@ -1987,31 +2046,119 @@ function showToast(title, message, iconClass = "ph-sparkle", colorClass = "text-
   }, 3000);
 }
 
-function inspoToPost(title, type, description) {
+function inspoToPost(inspoIdOrTitle, type, description) {
+  const item = (appState.inspo || []).find(entry => entry.id === inspoIdOrTitle);
+
+  const source = item || {
+    id: "",
+    title: inspoIdOrTitle,
+    type,
+    description
+  };
+
   showToast("AI Assistant", "Creating post from inspiration...", "ph-magic-wand");
 
   setTimeout(() => {
-    let platform = "linkedin";
-    let pillar = "edu";
-    let postType = "text";
+    const settings = inferInspoPostSettings(source.type);
 
-    if (["video", "image", "carousel", "visual"].includes(String(type).toLowerCase())) {
-      platform = "instagram";
-      pillar = "aware";
-      postType = String(type).toLowerCase() === "video" ? "video" : "carousel";
-    } else if (String(type).toLowerCase() === "trend") {
-      platform = "both";
-      pillar = "engage";
-      postType = "text";
-    } else if (String(type).toLowerCase() === "article") {
-      platform = "linkedin";
-      pillar = "edu";
-      postType = "article";
-    }
+    openPostModal(
+      source.title || "",
+      settings.platform,
+      settings.pillar,
+      "",
+      "draft",
+      source.description || "",
+      settings.postType,
+      null
+    );
 
-    openPostModal(title, platform, pillar, "", "draft", description, postType, null);
     showToast("Success", "Post created from inspo!", "ph-check", "text-[#00ffaa]");
-  }, 1000);
+  }, 700);
+}
+
+function renderInspo() {
+  const grid = document.getElementById("inspo-grid");
+  if (!grid) return;
+
+  const items = [...(appState.inspo || [])];
+
+  if (!items.length) {
+    grid.innerHTML = `
+      <div class="col-span-3 glass-card p-8 text-center">
+        <p class="text-gray-400 text-sm">No saved inspiration yet.</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const type = String(item.type || "").toLowerCase();
+    const label = inspoTypeLabel(type);
+    const meta = inspoMetaLabel(item);
+    const description = item.description || "";
+    const url = item.url || item.domainOrMeta || item.notes || "";
+
+    const previewBlock =
+      type === "video"
+        ? `
+          <div class="aspect-video bg-[#120c1d] border border-white/5 rounded-lg flex items-center justify-center mb-4">
+            <i class="ph-fill ph-play-circle text-gray-600 text-4xl"></i>
+          </div>
+        `
+        : `
+          <p class="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-5">
+            ${escapeHtml(description || "No summary saved yet.")}
+          </p>
+        `;
+
+    const footerLeft =
+      type === "trend"
+        ? `<span class="text-[10px] text-gray-500 font-medium truncate max-w-[140px]">${escapeHtml(url || "Trend reference")}</span>`
+        : type === "video"
+        ? `<span class="text-[10px] text-gray-500 font-medium truncate max-w-[140px]">${escapeHtml(url || "Video reference")}</span>`
+        : `<span class="text-[10px] text-gray-500 font-medium truncate max-w-[140px]">${escapeHtml(url || "Saved reference")}</span>`;
+
+    return `
+      <div class="glass-card flex flex-col">
+        <div class="p-5 border-b border-white/5">
+          <div class="flex justify-between items-start mb-3">
+            <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider">
+              ${escapeHtml(label)}
+            </span>
+            <button
+              type="button"
+              onclick="inspoToPost('${escapeHtml(item.id)}')"
+              class="text-gray-500 hover:text-white transition-colors bg-[#120c1d] p-2 rounded-lg border border-white/5"
+              title="Turn into post">
+              <i class="ph-bold ph-paper-plane-tilt text-lg"></i>
+            </button>
+          </div>
+
+          <h3 class="text-white text-base font-bold mb-2 line-clamp-2">
+            ${escapeHtml(item.title || "Untitled inspiration")}
+          </h3>
+
+          <p class="text-gray-500 text-[10px] font-medium">
+            ${escapeHtml(meta || "Saved reference")}
+          </p>
+        </div>
+
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          ${previewBlock}
+
+          <div class="flex items-center justify-between mt-auto gap-3">
+            ${footerLeft}
+            <button
+              type="button"
+              onclick="inspoToPost('${escapeHtml(item.id)}')"
+              class="text-[#c77dff] text-xs font-bold hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
+              <i class="ph-bold ph-plus"></i> Create Post
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 async function apiUpdateCampaignPosition(campaignId, x, y) {
@@ -2084,12 +2231,20 @@ async function syncRemoteIfConfigured() {
       }));
     }
 
-    if (Array.isArray(inspo) && inspo.length) {
+    if (Array.isArray(inspo)) {
       appState.inspo = inspo.map(item => ({
         id: item.inspoId,
         title: item.title,
         type: item.inspoType,
-        description: item.createPostDescription || item.summary || ""
+        description: item.createPostDescription || item.summary || "",
+        sourceLabel: item.sourceLabel || "",
+        domainOrMeta: item.domainOrMeta || "",
+        suggestedPlatform: item.suggestedPlatform || "",
+        suggestedPillar: item.suggestedPillar || "",
+        createPostTitle: item.createPostTitle || "",
+        createPostType: item.createPostType || "",
+        notes: item.notes || "",
+        url: item.notes || item.domainOrMeta || ""
       }));
     }
 
