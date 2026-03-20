@@ -1044,6 +1044,9 @@ let appState = loadLocalState();
 let currentView = "calendar";
 let currentEditingPostId = null;
 let currentMediaFilter = "all";
+let currentMediaFilterMode = "all";
+let currentMediaFilterValue = "all";
+let currentModalAsset = null;
 
 const modal = document.getElementById("scheduling-modal");
 const titleInput = document.getElementById("modal-title");
@@ -1053,12 +1056,22 @@ const dateInput = document.getElementById("modal-date");
 const statusSelect = document.getElementById("modal-status");
 const descInput = document.querySelector("#scheduling-modal textarea");
 const pillarBtns = Array.from(document.querySelectorAll(".pillar-btn"));
-const saveButton =
-  document.querySelector("#scheduling-modal .bg-gradient-to-r.from-\\[\\#9d4edd\\].to-\\[\\#c77dff\\]") ||
-  document.querySelectorAll("#scheduling-modal button")[2];
+const saveButton = document.getElementById("save-post-btn");
+
+const mediaFilterModeSelect = document.getElementById("media-filter-mode");
+const mediaFilterSelect = document.getElementById("media-filter-select");
+const mediaUploadBtn = document.getElementById("media-upload-btn");
+const mediaUploadInput = document.getElementById("media-upload-input");
+
+const modalMediaUploadTrigger = document.getElementById("modal-media-upload-trigger");
+const modalMediaUploadInput = document.getElementById("modal-media-upload-input");
+const modalMediaStatus = document.getElementById("modal-media-status");
+
+const inspoAddLinkBtn = document.getElementById("inspo-add-link-btn");
 
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
+
 let scale = 0.5;
 let panX = -200;
 let panY = -100;
@@ -1080,6 +1093,8 @@ function initApp() {
   setupSaveHandler();
   setupMediaFilters();
   setupMediaUpload();
+  setupModalMediaUpload();
+  setupInspoAddLink();
   switchView("calendar");
 
   renderQueue(
@@ -1098,17 +1113,19 @@ function initApp() {
       }))
   );
 
+  populateMediaFilterDropdown();
   renderMedia();
   syncRemoteIfConfigured();
 }
 
 function setupMediaFilters() {
-  const buttons = Array.from(document.querySelectorAll(".media-filter-btn"));
-  buttons.forEach((btn) => {
+  const chipButtons = Array.from(document.querySelectorAll(".media-filter-btn"));
+
+  chipButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       currentMediaFilter = btn.dataset.mediaFilter || "all";
 
-      buttons.forEach((b) => {
+      chipButtons.forEach((b) => {
         b.classList.remove("bg-[#231738]", "text-white", "font-semibold");
         b.classList.add("bg-transparent", "text-gray-500", "font-medium");
       });
@@ -1119,16 +1136,76 @@ function setupMediaFilters() {
       renderMedia();
     });
   });
+
+  if (mediaFilterModeSelect) {
+    mediaFilterModeSelect.addEventListener("change", () => {
+      currentMediaFilterMode = mediaFilterModeSelect.value || "all";
+      currentMediaFilterValue = "all";
+      populateMediaFilterDropdown();
+      renderMedia();
+    });
+  }
+
+  if (mediaFilterSelect) {
+    mediaFilterSelect.addEventListener("change", () => {
+      currentMediaFilterValue = mediaFilterSelect.value || "all";
+      renderMedia();
+    });
+  }
+}
+
+function populateMediaFilterDropdown() {
+  if (!mediaFilterSelect) return;
+
+  let options = [`<option value="all">All Assets</option>`];
+
+  if (currentMediaFilterMode === "type") {
+    const types = [...new Set((appState.media || []).map(item => (item.type || "").toLowerCase()).filter(Boolean))];
+    options = [`<option value="all">All Types</option>`].concat(
+      types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type.charAt(0).toUpperCase() + type.slice(1))}</option>`)
+    );
+  }
+
+  if (currentMediaFilterMode === "campaign") {
+    const campaigns = [...new Set((appState.media || []).map(item => item.campaign || linkedPostCampaignLabel(item)).filter(Boolean))];
+    options = [`<option value="all">All Campaigns</option>`].concat(
+      campaigns.map(campaign => `<option value="${escapeHtml(campaign)}">${escapeHtml(campaign)}</option>`)
+    );
+  }
+
+  if (currentMediaFilterMode === "all") {
+    options = [`<option value="all">All Assets</option>`];
+  }
+
+  mediaFilterSelect.innerHTML = options.join("");
+  mediaFilterSelect.value = "all";
+}
+
+function linkedPostCampaignLabel(item) {
+  const linkedPost = (appState.posts || []).find(post => post.id === item.postId);
+  return linkedPost?.hubTitle || linkedPost?.title || "";
 }
 
 function renderMedia() {
   const grid = document.getElementById("media-grid");
   if (!grid) return;
 
-  const items = (appState.media || []).filter((item) => {
-    if (currentMediaFilter === "all") return true;
-    return (item.type || "").toLowerCase() === currentMediaFilter;
-  });
+  let items = [...(appState.media || [])];
+
+  if (currentMediaFilter !== "all") {
+    items = items.filter(item => (item.type || "").toLowerCase() === currentMediaFilter);
+  }
+
+  if (currentMediaFilterMode === "type" && currentMediaFilterValue !== "all") {
+    items = items.filter(item => (item.type || "").toLowerCase() === currentMediaFilterValue.toLowerCase());
+  }
+
+  if (currentMediaFilterMode === "campaign" && currentMediaFilterValue !== "all") {
+    items = items.filter(item => {
+      const campaign = item.campaign || linkedPostCampaignLabel(item);
+      return campaign === currentMediaFilterValue;
+    });
+  }
 
   if (!items.length) {
     grid.innerHTML = `
@@ -1138,6 +1215,45 @@ function renderMedia() {
     `;
     return;
   }
+
+  grid.innerHTML = items.map((item) => {
+    const type = (item.type || "").toLowerCase();
+    const icon =
+      type === "video" ? "ph-video-camera" :
+      type === "carousel" ? "ph-images" :
+      "ph-image";
+
+    const badge =
+      item.assetBadge || (
+        type === "video" ? "Reel" :
+        type === "carousel" ? "Carousel" :
+        "Image"
+      );
+
+    const campaign = item.campaign || linkedPostCampaignLabel(item);
+    const metaLine = [item.meta || "", campaign].filter(Boolean).join(" • ");
+
+    return `
+      <div class="glass-card overflow-hidden group">
+        <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4">
+          <i class="ph-fill ${icon} text-gray-600 text-5xl"></i>
+          <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300">${escapeHtml(badge)}</span>
+
+          <div class="absolute inset-0 bg-[#2d1b4e]/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+            <button type="button" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" onclick="openMediaAsset('${escapeHtml(item.id)}')">
+              <i class="ph-bold ph-arrows-out-simple text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <p class="text-white text-sm font-semibold truncate mb-1">${escapeHtml(item.title || "Untitled asset")}</p>
+          <p class="text-gray-500 text-[10px] font-medium">${escapeHtml(metaLine)}</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
 
   grid.innerHTML = items.map((item) => {
     const type = (item.type || "").toLowerCase();
