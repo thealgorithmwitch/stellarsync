@@ -2224,19 +2224,6 @@ function setupLedgerControls() {
     });
   });
 }
-
-function populateMediaCampaignFilter() {
-  const select = document.getElementById("media-filter-campaign");
-  if (!select) return;
-
-  const options = ['<option value="all">All Campaigns</option>']
-    .concat((appState.campaigns || [])
-      .filter(c => !c.isArchived)
-      .map(c => `<option value="${escapeHtml(c.campaignName)}">${escapeHtml(c.campaignName)}</option>`));
-
-  select.innerHTML = options.join("");
-  select.value = mediaFilters.campaign || "all";
-}
     
 function setupMediaAdvancedFilters() {
   const toggle = document.getElementById("media-filter-toggle");
@@ -2265,13 +2252,6 @@ function setupMediaAdvancedFilters() {
       type: "all",
       campaign: "all"
     };
-    if (mediaFilters.campaign !== "all") {
-  items = items.filter(item => {
-    const linkedPost = (appState.posts || []).find(post => post.id === item.postId);
-    const campaignName = item.campaign || item.campaignName || linkedPost?.campaignName || linkedPost?.hubTitle || "";
-    return String(campaignName) === mediaFilters.campaign;
-  });
-}
 
     if (typeSelect) typeSelect.value = "all";
     if (campaignSelectEl) campaignSelectEl.value = "all";
