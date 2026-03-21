@@ -1981,14 +1981,18 @@ function renderMedia() {
     items = items.filter(item => String(item.type || "").toLowerCase() === currentMediaFilter);
   }
 
-  if (currentMediaFilterMode === "type" && currentMediaFilterValue !== "all") {
-    items = items.filter(item => String(item.type || "").toLowerCase() === String(currentMediaFilterValue).toLowerCase());
+  if (mediaFilters.type !== "all") {
+    items = items.filter(item => String(item.type || "").toLowerCase() === mediaFilters.type);
   }
 
-  if (currentMediaFilterMode === "campaign" && currentMediaFilterValue !== "all") {
+  if (mediaFilters.campaign !== "all") {
     items = items.filter(item => {
-      const campaign = item.campaign || linkedPostCampaignLabel(item);
-      return campaign === currentMediaFilterValue;
+      const campaignId = String(item.campaignId || item.campaign || "");
+      const linkedPost = (appState.posts || []).find(post => post.id === item.postId);
+      return (
+        campaignId === mediaFilters.campaign ||
+        String(linkedPost?.campaignId || "") === mediaFilters.campaign
+      );
     });
   }
 
@@ -2006,17 +2010,20 @@ function renderMedia() {
     const icon =
       type === "video" ? "ph-video-camera" :
       type === "carousel" ? "ph-images" :
+      type === "article" ? "ph-article" :
       "ph-image";
 
     const badge =
       item.assetBadge || (
         type === "video" ? "Reel" :
         type === "carousel" ? "Carousel" :
+        type === "article" ? "Article" :
         "Image"
       );
 
-    const campaign = item.campaign || linkedPostCampaignLabel(item);
-    const metaLine = [item.meta || "", campaign].filter(Boolean).join(" • ");
+    const linkedPost = (appState.posts || []).find(post => post.id === item.postId);
+    const campaignLabel = item.campaignName || linkedPost?.campaignName || linkedPost?.hubTitle || "";
+    const metaLine = [item.meta || "", campaignLabel].filter(Boolean).join(" • ");
 
     return `
       <div class="glass-card overflow-hidden group">
@@ -2121,6 +2128,148 @@ function openModalById(postId) {
     matched.postType,
     matched.id
   );
+}
+
+function setupLedgerControls() {
+  const filterToggle = document.getElementById("ledger-filter-toggle");
+  const filterDropdown = document.getElementById("ledger-filter-dropdown");
+  const sortToggle = document.getElementById("ledger-sort-toggle");
+  const sortDropdown = document.getElementById("ledger-sort-dropdown");
+
+  const pillarSelect = document.getElementById("ledger-filter-pillar");
+  const campaignSelectEl = document.getElementById("ledger-filter-campaign");
+  const typeSelect = document.getElementById("ledger-filter-type");
+  const statusSelectEl = document.getElementById("ledger-filter-status");
+
+  const applyBtn = document.getElementById("ledger-filter-apply");
+  const resetBtn = document.getElementById("ledger-filter-reset");
+
+  filterToggle?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sortDropdown?.classList.add("hidden");
+    populateLedgerCampaignFilter();
+    filterDropdown?.classList.toggle("hidden");
+  });
+
+  sortToggle?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    filterDropdown?.classList.add("hidden");
+    sortDropdown?.classList.toggle("hidden");
+  });
+
+  applyBtn?.addEventListener("click", () => {
+    ledgerFilters.pillar = pillarSelect?.value || "all";
+    ledgerFilters.campaign = campaignSelectEl?.value || "all";
+    ledgerFilters.type = typeSelect?.value || "all";
+    ledgerFilters.status = statusSelectEl?.value || "all";
+    renderLedger();
+    filterDropdown?.classList.add("hidden");
+    showToast("Filter applied", "Ledger filters updated.", "ph-check", "text-[#00ffaa]");
+  });
+
+  resetBtn?.addEventListener("click", () => {
+    ledgerFilters = {
+      pillar: "all",
+      campaign: "all",
+      type: "all",
+      status: "all"
+    };
+
+    if (pillarSelect) pillarSelect.value = "all";
+    if (campaignSelectEl) campaignSelectEl.value = "all";
+    if (typeSelect) typeSelect.value = "all";
+    if (statusSelectEl) statusSelectEl.value = "all";
+
+    renderLedger();
+    filterDropdown?.classList.add("hidden");
+    showToast("Filters cleared", "Ledger filters reset.", "ph-eraser", "text-gray-400");
+  });
+
+  document.querySelectorAll(".ledger-sort-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      ledgerSortMode = btn.dataset.ledgerSort || "newest";
+      renderLedger();
+      sortDropdown?.classList.add("hidden");
+      showToast("Sorted", "Ledger order updated.", "ph-sort-ascending", "text-[#00f0ff]");
+    });
+  });
+}
+
+function populateLedgerCampaignFilter() {
+  const select = document.getElementById("ledger-filter-campaign");
+  if (!select) return;
+
+  const options = ['<option value="all">All Campaigns</option>']
+    .concat((appState.campaigns || [])
+      .filter(c => !c.isArchived)
+      .map(c => `<option value="${escapeHtml(c.campaignId)}">${escapeHtml(c.campaignName)}</option>`));
+
+  select.innerHTML = options.join("");
+  select.value = ledgerFilters.campaign || "all";
+}
+
+function setupMediaAdvancedFilters() {
+  const toggle = document.getElementById("media-filter-toggle");
+  const dropdown = document.getElementById("media-filter-dropdown");
+  const typeSelect = document.getElementById("media-filter-type");
+  const campaignSelectEl = document.getElementById("media-filter-campaign");
+  const applyBtn = document.getElementById("media-filter-apply");
+  const resetBtn = document.getElementById("media-filter-reset");
+
+  toggle?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    populateMediaCampaignFilter();
+    dropdown?.classList.toggle("hidden");
+  });
+
+  applyBtn?.addEventListener("click", () => {
+    mediaFilters.type = typeSelect?.value || "all";
+    mediaFilters.campaign = campaignSelectEl?.value || "all";
+    renderMedia();
+    dropdown?.classList.add("hidden");
+    showToast("Filter applied", "Media filters updated.", "ph-check", "text-[#00ffaa]");
+  });
+
+  resetBtn?.addEventListener("click", () => {
+    mediaFilters = {
+      type: "all",
+      campaign: "all"
+    };
+
+    if (typeSelect) typeSelect.value = "all";
+    if (campaignSelectEl) campaignSelectEl.value = "all";
+
+    renderMedia();
+    dropdown?.classList.add("hidden");
+    showToast("Filters cleared", "Media filters reset.", "ph-eraser", "text-gray-400");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#ledger-filter-dropdown") && !e.target.closest("#ledger-filter-toggle")) {
+      document.getElementById("ledger-filter-dropdown")?.classList.add("hidden");
+    }
+
+    if (!e.target.closest("#ledger-sort-dropdown") && !e.target.closest("#ledger-sort-toggle")) {
+      document.getElementById("ledger-sort-dropdown")?.classList.add("hidden");
+    }
+
+    if (!e.target.closest("#media-filter-dropdown") && !e.target.closest("#media-filter-toggle")) {
+      document.getElementById("media-filter-dropdown")?.classList.add("hidden");
+    }
+  });
+}
+
+function populateMediaCampaignFilter() {
+  const select = document.getElementById("media-filter-campaign");
+  if (!select) return;
+
+  const options = ['<option value="all">All Campaigns</option>']
+    .concat((appState.campaigns || [])
+      .filter(c => !c.isArchived)
+      .map(c => `<option value="${escapeHtml(c.campaignId)}">${escapeHtml(c.campaignName)}</option>`));
+
+  select.innerHTML = options.join("");
+  select.value = mediaFilters.campaign || "all";
 }
     
 function openPostModal(
