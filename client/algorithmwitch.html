@@ -644,9 +644,6 @@ const modalMediaStatus = document.getElementById("modal-media-status");
 
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
-const constellationLayer = document.getElementById("constellation-layer");
-const constellationLines = document.getElementById("constellation-lines");
-const addCampaignBtn = document.getElementById("add-campaign-btn");
 
 const inspoModal = document.getElementById("inspo-modal");
 const inspoModalCard = document.getElementById("inspo-modal-card");
@@ -841,95 +838,6 @@ function deriveDomainLabel(url) {
   }
 }
 
-function renderInspo() {
-  const grid = document.getElementById("inspo-grid");
-  if (!grid) return;
-
-  const items = [...(appState.inspo || [])];
-
-  if (!items.length) {
-    grid.innerHTML = `
-      <div class="col-span-3 glass-card p-8 text-center">
-        <p class="text-gray-400 text-sm">No saved inspiration yet.</p>
-      </div>
-    `;
-    return;
-  }
-
-  grid.innerHTML = items.map(item => {
-    const type = String(item.type || "").toLowerCase();
-    const label = inspoTypeLabel(type);
-    const meta = [item.sourceLabel || "", item.domainOrMeta || ""].filter(Boolean).join(" • ");
-    const description = item.description || "";
-    const footer = item.url || item.domainOrMeta || item.notes || "Saved reference";
-
-    const preview =
-      type === "video"
-        ? `
-          <div class="aspect-video bg-[#120c1d] border border-white/5 rounded-lg flex items-center justify-center mb-4">
-            <i class="ph-fill ph-play-circle text-gray-600 text-4xl"></i>
-          </div>
-        `
-        : `
-          <p class="text-gray-400 text-xs leading-relaxed line-clamp-3 mb-5">
-            ${escapeHtml(description || "No summary saved yet.")}
-          </p>
-        `;
-
-    return `
-      <div class="glass-card flex flex-col">
-        <div class="p-5 border-b border-white/5">
-          <div class="flex justify-between items-start mb-3">
-            <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider">
-              ${escapeHtml(label)}
-            </span>
-            <button
-              type="button"
-              onclick="inspoToPost('${escapeHtml(item.id)}')"
-              class="text-gray-500 hover:text-white transition-colors bg-[#120c1d] p-2 rounded-lg border border-white/5"
-              title="Turn into post">
-              <i class="ph-bold ph-paper-plane-tilt text-lg"></i>
-            </button>
-          </div>
-
-          <h3 class="text-white text-base font-bold mb-2 line-clamp-2">
-            ${escapeHtml(item.title || "Untitled inspiration")}
-          </h3>
-
-          <p class="text-gray-500 text-[10px] font-medium">
-            ${escapeHtml(meta || "Saved reference")}
-          </p>
-        </div>
-
-        <div class="p-5 flex-1 flex flex-col justify-between">
-          ${preview}
-
-          <div class="flex items-center justify-between mt-auto gap-3">
-            <span class="text-[10px] text-gray-500 font-medium truncate max-w-[140px]">
-              ${escapeHtml(footer)}
-            </span>
-            <button
-              type="button"
-              onclick="inspoToPost('${escapeHtml(item.id)}')"
-              class="text-[#c77dff] text-xs font-bold hover:text-white transition-colors flex items-center gap-1.5 shrink-0">
-              <i class="ph-bold ph-plus"></i> Create Post
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function inspoTypeLabel(type) {
-  const t = String(type || "").toLowerCase();
-  if (t === "video") return "Video";
-  if (t === "trend") return "Trend";
-  if (t === "article") return "Article";
-  if (t === "image") return "Image";
-  return capitalize(t || "Reference");
-}
-
 function inspoMetaLabel(item) {
   const source = item.sourceLabel || "";
   const domain = item.domainOrMeta || "";
@@ -1019,45 +927,6 @@ function populateCampaignDropdown() {
 
   campaignSelect.innerHTML = options.join("");
 }
-
-async function promptCreateCampaignAt(x, y) {
-  const campaignName = window.prompt("Campaign name");
-  if (!campaignName) return null;
-
-  const pillar = normalizePillar(window.prompt("Pillar: edu, promo, engage, aware", "edu") || "edu");
-  const color = defaultCampaignColor(pillar);
-
-  try {
-    const result = await apiSaveCampaign({
-      campaignName,
-      pillar,
-      color,
-      x,
-      y,
-      isArchived: false
-    });
-
-    const normalized = {
-      campaignId: result.campaign.campaignId,
-      campaignName: result.campaign.campaignName,
-      pillar: result.campaign.pillar,
-      color: result.campaign.color,
-      x: Number(result.campaign.x || x),
-      y: Number(result.campaign.y || y),
-      isArchived: !!result.campaign.isArchived,
-      createdAt: result.campaign.createdAt || ""
-    };
-
-    appState.campaigns.push(normalized);
-    persistLocalState();
-    rerenderAll();
-    showToast("Campaign created", "New constellation added.", "ph-check", "text-[#00ffaa]");
-    return normalized;
-    } catch (err) {
-      console.error("Remote sync failed:", err);
-      showToast("Offline mode", String(err.message || err), "ph-warning", "text-yellow-400");
-    }
-    }
 
 function normalizePillar(value) {
   const v = String(value || "").toLowerCase();
@@ -1797,87 +1666,6 @@ function setupMediaUpload() {
   });
 }
 
-function wireConstellationRootDots() {
-  const dots = Array.from(document.querySelectorAll(".constellation-root-dot"));
-  dots.forEach(dot => {
-    const campaignId = dot.dataset.campaignId;
-    if (!campaignId) return;
-
-    let dragMoved = false;
-    let dragging = false;
-    let startClientX = 0;
-    let startClientY = 0;
-    let startWorldX = 0;
-    let startWorldY = 0;
-
-    dot.addEventListener("pointerdown", (e) => {
-      e.stopPropagation();
-
-      const campaign = (appState.campaigns || []).find(c => c.campaignId === campaignId);
-      if (!campaign) return;
-
-      dragging = true;
-      dragMoved = false;
-      startClientX = e.clientX;
-      startClientY = e.clientY;
-      startWorldX = Number(campaign.x || 0);
-      startWorldY = Number(campaign.y || 0);
-
-      if (dot.setPointerCapture) {
-        try { dot.setPointerCapture(e.pointerId); } catch (_) {}
-      }
-    });
-
-    dot.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-
-      const dx = (e.clientX - startClientX) / scale;
-      const dy = (e.clientY - startClientY) / scale;
-
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
-        dragMoved = true;
-      }
-
-      const campaign = (appState.campaigns || []).find(c => c.campaignId === campaignId);
-      if (!campaign) return;
-
-      campaign.x = Math.round(startWorldX + dx);
-      campaign.y = Math.round(startWorldY + dy);
-
-      renderConstellation();
-    });
-
-    dot.addEventListener("pointerup", async (e) => {
-      e.stopPropagation();
-
-      const campaign = (appState.campaigns || []).find(c => c.campaignId === campaignId);
-      if (!campaign) {
-        dragging = false;
-        return;
-      }
-
-      if (dragMoved) {
-        persistLocalState();
-        try {
-          await apiUpdateCampaignPosition(campaign.campaignId, campaign.x, campaign.y);
-          showToast("Campaign moved", "Constellation position updated.", "ph-check", "text-[#00ffaa]");
-        } catch (err) {
-          console.error(err);
-          showToast("Move failed", err.message || "Could not save campaign position.", "ph-warning", "text-yellow-400");
-        }
-      } else {
-        await editCampaignById(campaignId);
-      }
-
-      dragging = false;
-    });
-
-    dot.addEventListener("pointercancel", () => {
-      dragging = false;
-    });
-  });
-}
-
 async function editCampaignById(campaignId) {
   const campaign = (appState.campaigns || []).find(c => c.campaignId === campaignId);
   if (!campaign) return;
@@ -2559,10 +2347,6 @@ function renderInspo() {
   }).join("");
 }
 
-async function apiUpdateCampaignPosition(campaignId, x, y) {
-  return apiPost("updateCampaignPosition", { campaignId, x, y });
-}
-    
 async function apiUpdateCampaign(campaign) {
   return apiPost("saveCampaign", campaign);
 }
