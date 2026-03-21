@@ -345,18 +345,25 @@
                     </div>
                 </div>
 
-                <div vid="489">
-                    <div class="flex justify-between items-center mb-4" vid="490">
-                        <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase" vid="491">Next In Queue</h4>
-                        <span class="text-[9px] font-bold text-[#ffd700] border border-[#ffd700]/20 bg-[#ffd700]/5 px-2 py-0.5 rounded" vid="492">3 Scheduled</span>
-                    </div>
-                  <div id="queue-list" class="space-y-3">
-
-                    </div>
-                    
-                    <button class="w-full mt-6 py-3 border border-white/5 bg-[#181125] hover:bg-[#1a122a] transition-colors rounded-xl text-xs font-bold text-gray-300 tracking-widest uppercase" onclick="switchView('ledger')" vid="523">
-                        View Full Ledger
-                    </button>
+                <div>
+                  <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Next In Queue</h4>
+                    <span
+                      id="queue-count-badge"
+                      class="text-[9px] font-bold text-[#ffd700] border border-[#ffd700]/20 bg-[#ffd700]/5 px-2 py-0.5 rounded"
+                    >
+                      0 Scheduled
+                    </span>
+                  </div>
+                
+                  <div id="queue-list" class="space-y-3"></div>
+                
+                  <button
+                    class="w-full mt-6 py-3 border border-white/5 bg-[#181125] hover:bg-[#1a122a] transition-colors rounded-xl text-xs font-bold text-gray-300 tracking-widest uppercase"
+                    onclick="switchView('ledger')"
+                  >
+                    View Full Ledger
+                  </button>
                 </div>
             </div>
         </aside>
@@ -695,7 +702,7 @@ function inspoTypeLabel(type) {
   if (t === "video") return "Video";
   if (t === "trend") return "Trend";
   if (t === "article") return "Article";
-  if (t === "podcast") return "Podcast";
+  if (t === "image") return "Image";
   return capitalize(t || "Reference");
 }
 
@@ -871,14 +878,6 @@ function getScheduledQueue() {
 }
 
 function setupCampaignControls() {
-  addCampaignBtnModal?.addEventListener("click", async () => {
-    const campaign = await promptCreateCampaignRow();
-    if (campaign && campaignSelect) {
-      campaignSelect.value = campaign.campaignId;
-    }
-  });
-}
-
   addCampaignBtnModal?.addEventListener("click", async () => {
     const campaign = await promptCreateCampaignRow();
     if (campaign && campaignSelect) {
@@ -1926,10 +1925,11 @@ function openPostModal(
 
   if (titleInput) titleInput.value = title;
   if (platSelect) platSelect.value = platform || "linkedin";
-  if dateInput.value = date || formatDateTimeLocal(new Date());
+  if (dateInput) dateInput.value = date || formatDateTimeLocal(new Date());
   if (statusSelect) statusSelect.value = status || "draft";
   if (postTypeSelect) postTypeSelect.value = postType || "text";
   if (descInput) descInput.value = description || "";
+
   setPillar(pillarClass || "edu");
 
   const matched = (appState.posts || []).find(post => post.id === postId);
@@ -2518,6 +2518,8 @@ async function apiSaveInspo(inspo) {
 
 function renderQueue(queueItems) {
   const queueList = document.getElementById("queue-list");
+  const badge = document.getElementById("queue-count-badge");
+
   if (!queueList) return;
 
   const items = (queueItems || []).slice(0, 3);
@@ -2555,8 +2557,9 @@ function renderQueue(queueItems) {
     `;
   }).join("");
 
-  const badge = document.querySelector('[vid="492"]');
-  if (badge) badge.textContent = `${items.length} Scheduled`;
+  if (badge) {
+    badge.textContent = `${items.length} Scheduled`;
+  }
 }
 
 function loadLocalState() {
