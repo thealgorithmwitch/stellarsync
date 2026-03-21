@@ -844,40 +844,6 @@ function inspoMetaLabel(item) {
   return [source, domain].filter(Boolean).join(" • ");
 }
 
-function inferInspoPostSettings(type) {
-  const t = String(type || "").toLowerCase();
-
-  if (["video", "image", "carousel", "visual"].includes(t)) {
-    return {
-      platform: "instagram",
-      pillar: "aware",
-      postType: t === "video" ? "video" : "carousel"
-    };
-  }
-
-  if (t === "trend") {
-    return {
-      platform: "both",
-      pillar: "engage",
-      postType: "text"
-    };
-  }
-
-  if (t === "article") {
-    return {
-      platform: "linkedin",
-      pillar: "edu",
-      postType: "article"
-    };
-  }
-
-  return {
-    platform: "linkedin",
-    pillar: "edu",
-    postType: "text"
-  };
-}
-    
 function getInitialCalendarCursor() {
   const posts = Array.isArray(appState.posts) ? appState.posts : [];
   const datedPosts = posts
@@ -905,9 +871,13 @@ function getScheduledQueue() {
 }
 
 function setupCampaignControls() {
-  addCampaignBtn?.addEventListener("click", async () => {
-    await promptCreateCampaignRow();
+  addCampaignBtnModal?.addEventListener("click", async () => {
+    const campaign = await promptCreateCampaignRow();
+    if (campaign && campaignSelect) {
+      campaignSelect.value = campaign.campaignId;
+    }
   });
+}
 
   addCampaignBtnModal?.addEventListener("click", async () => {
     const campaign = await promptCreateCampaignRow();
@@ -1195,20 +1165,6 @@ function wireLedgerActions() {
       await deletePostById(postId);
     });
   });
-}
-
-function buildConstellationGroups() {
-  const campaigns = appState.campaigns || [];
-  const posts = appState.posts || [];
-
-  return campaigns
-    .filter(campaign => !campaign.isArchived)
-    .map(campaign => ({
-      ...campaign,
-      posts: posts
-        .filter(post => post.campaignId === campaign.campaignId)
-        .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
-    }));
 }
 
 function buildConstellationRows() {
@@ -1680,16 +1636,15 @@ async function editCampaignById(campaignId) {
   const nextArchived = String(archiveAnswer).trim().toLowerCase().startsWith("y");
   const nextColor = defaultCampaignColor(nextPillar);
 
-  const updated = {
-    campaignId: campaign.campaignId,
-    campaignName: nextName.trim() || campaign.campaignName,
-    pillar: nextPillar,
-    color: nextColor,
-    x: campaign.x,
-    y: campaign.y,
-    isArchived: nextArchived,
-    createdAt: campaign.createdAt || ""
-  };
+    const updated = {
+      campaignId: campaign.campaignId,
+      campaignName: nextName.trim() || campaign.campaignName,
+      pillar: nextPillar,
+      color: nextColor,
+      sortOrder: Number(campaign.sortOrder || 0),
+      isArchived: nextArchived,
+      createdAt: campaign.createdAt || ""
+    };
 
   try {
     await apiUpdateCampaign(updated);
@@ -1971,7 +1926,7 @@ function openPostModal(
 
   if (titleInput) titleInput.value = title;
   if (platSelect) platSelect.value = platform || "linkedin";
-  if (dateInput) dateInput.value = date || new Date().toISOString().slice(0, 16);
+  if dateInput.value = date || formatDateTimeLocal(new Date());
   if (statusSelect) statusSelect.value = status || "draft";
   if (postTypeSelect) postTypeSelect.value = postType || "text";
   if (descInput) descInput.value = description || "";
@@ -1996,6 +1951,16 @@ function openPostModal(
 
   modal?.classList.add("active");
   document.body.style.overflow = "hidden";
+}
+    
+function formatDateTimeLocal(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function closeModal() {
