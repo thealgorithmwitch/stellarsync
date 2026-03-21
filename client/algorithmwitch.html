@@ -109,6 +109,14 @@
 
         .ledger-row { transition: background 0.2s; border-bottom: 1px solid var(--panel-border); }
         .ledger-row:hover { background: #160f24; }
+        .ledger-menu-item:hover > .ledger-submenu {
+          display: block;
+        }
+
+        #view-ledger .border-b {
+          position: relative;
+          z-index: 60;
+        }
 
         .form-input { width: 100%; background: #181125; border: 1px solid var(--panel-border); border-radius: 0.5rem; padding: 10px 14px; color: white; font-size: 13px; outline: none; transition: border-color 0.2s; }
         .form-input:focus { border-color: rgba(255,255,255,0.2); }
@@ -255,128 +263,174 @@
   </div>
 </section>
             
- <section id="view-ledger" class="view-section hidden w-full h-full flex-col overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
-  <div class="p-8 border-b border-white/5 flex justify-between items-end">
+<section id="view-ledger" class="view-section hidden w-full h-full flex-col overflow-visible bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="p-8 border-b border-white/5 flex justify-between items-end relative z-[60]">
     <div>
       <h2 class="text-4xl font-bold text-white tracking-tight">Content Ledger</h2>
       <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Detailed View with Captions</p>
     </div>
-<div class="flex gap-2">
-  <div class="relative">
-    <button
-      id="ledger-filter-toggle"
-      type="button"
-      class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center"
-      title="Filter"
-    >
-      <i class="ph-bold ph-faders text-lg"></i>
-    </button>
 
-    <div
-      id="ledger-filter-dropdown"
-      class="hidden absolute top-full left-0 mt-2 w-72 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-    >
-      <div class="p-3 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
-        <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Filter By</p>
+    <div class="flex gap-2">
+      <div class="relative">
+        <button
+          id="ledger-filter-toggle"
+          type="button"
+          class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center"
+          title="Filter"
+        >
+          <i class="ph-bold ph-faders text-lg"></i>
+        </button>
+
+        <div
+          id="ledger-filter-dropdown"
+          class="hidden absolute top-full left-0 mt-2 w-64 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-[90] overflow-visible"
+        >
+          <div class="p-3 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
+            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Filter By</p>
+          </div>
+
+          <div class="p-2">
+            <div class="relative ledger-menu-item">
+              <button type="button" class="w-full px-3 py-3 rounded-lg hover:bg-[#181125] text-left flex items-center justify-between text-gray-300 hover:text-white transition-all">
+                <span class="text-xs font-medium flex items-center gap-2">
+                  <i class="ph-bold ph-triangle text-[#c77dff]"></i>
+                  Pillar
+                </span>
+                <span id="ledger-filter-pillarlbl" class="text-[10px] text-gray-500 mr-2">All</span>
+                <i class="ph-bold ph-caret-right text-gray-500"></i>
+              </button>
+
+              <div class="ledger-submenu hidden absolute left-full top-0 ml-2 w-48 bg-[#181125] border border-white/10 rounded-xl shadow-2xl z-[95] overflow-hidden">
+                <div class="p-2">
+                  <button type="button" data-filter-key="pillar" data-filter-value="all" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div> All Pillars
+                  </button>
+                  <button type="button" data-filter-key="pillar" data-filter-value="edu" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-[#00f0ff] transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[#00f0ff]"></div> Education
+                  </button>
+                  <button type="button" data-filter-key="pillar" data-filter-value="promo" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-[#b25fff] transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[#b25fff]"></div> Promotional
+                  </button>
+                  <button type="button" data-filter-key="pillar" data-filter-value="engage" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-[#ffd700] transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[#ffd700]"></div> Engagement
+                  </button>
+                  <button type="button" data-filter-key="pillar" data-filter-value="aware" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-[#00ffaa] transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[#00ffaa]"></div> Awareness
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative ledger-menu-item">
+              <button type="button" class="w-full px-3 py-3 rounded-lg hover:bg-[#181125] text-left flex items-center justify-between text-gray-300 hover:text-white transition-all">
+                <span class="text-xs font-medium flex items-center gap-2">
+                  <i class="ph-bold ph-planet text-[#c77dff]"></i>
+                  Campaign
+                </span>
+                <span id="ledger-filter-campaignlbl" class="text-[10px] text-gray-500 mr-2">All</span>
+                <i class="ph-bold ph-caret-right text-gray-500"></i>
+              </button>
+
+              <div id="ledger-campaign-submenu" class="ledger-submenu hidden absolute left-full top-0 ml-2 w-52 bg-[#181125] border border-white/10 rounded-xl shadow-2xl z-[95] overflow-hidden">
+                <div class="p-2">
+                  <button type="button" data-filter-key="campaign" data-filter-value="all" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div> All Campaigns
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative ledger-menu-item">
+              <button type="button" class="w-full px-3 py-3 rounded-lg hover:bg-[#181125] text-left flex items-center justify-between text-gray-300 hover:text-white transition-all">
+                <span class="text-xs font-medium flex items-center gap-2">
+                  <i class="ph-bold ph-file-text text-[#c77dff]"></i>
+                  Type
+                </span>
+                <span id="ledger-filter-typelbl" class="text-[10px] text-gray-500 mr-2">All</span>
+                <i class="ph-bold ph-caret-right text-gray-500"></i>
+              </button>
+
+              <div class="ledger-submenu hidden absolute left-full top-0 ml-2 w-48 bg-[#181125] border border-white/10 rounded-xl shadow-2xl z-[95] overflow-hidden">
+                <div class="p-2">
+                  <button type="button" data-filter-key="type" data-filter-value="all" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">All Types</button>
+                  <button type="button" data-filter-key="type" data-filter-value="image" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Image Post</button>
+                  <button type="button" data-filter-key="type" data-filter-value="carousel" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Carousel</button>
+                  <button type="button" data-filter-key="type" data-filter-value="video" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Video / Reel</button>
+                  <button type="button" data-filter-key="type" data-filter-value="article" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Article Link</button>
+                  <button type="button" data-filter-key="type" data-filter-value="text" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Text Only</button>
+                  <button type="button" data-filter-key="type" data-filter-value="poll" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Poll</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative ledger-menu-item">
+              <button type="button" class="w-full px-3 py-3 rounded-lg hover:bg-[#181125] text-left flex items-center justify-between text-gray-300 hover:text-white transition-all">
+                <span class="text-xs font-medium flex items-center gap-2">
+                  <i class="ph-bold ph-list-checks text-[#c77dff]"></i>
+                  Status
+                </span>
+                <span id="ledger-filter-statuslbl" class="text-[10px] text-gray-500 mr-2">All</span>
+                <i class="ph-bold ph-caret-right text-gray-500"></i>
+              </button>
+
+              <div class="ledger-submenu hidden absolute left-full top-0 ml-2 w-44 bg-[#181125] border border-white/10 rounded-xl shadow-2xl z-[95] overflow-hidden">
+                <div class="p-2">
+                  <button type="button" data-filter-key="status" data-filter-value="all" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">All Statuses</button>
+                  <button type="button" data-filter-key="status" data-filter-value="draft" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Draft</button>
+                  <button type="button" data-filter-key="status" data-filter-value="scheduled" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Scheduled</button>
+                  <button type="button" data-filter-key="status" data-filter-value="published" class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all">Published</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 border-t border-white/5 bg-[#0f0a18]">
+            <button
+              id="ledger-filter-reset"
+              type="button"
+              class="w-full py-2 text-[10px] font-bold text-gray-500 hover:text-white transition-colors"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="p-3 space-y-4">
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Pillar</label>
-          <select id="ledger-filter-pillar" class="form-input text-xs font-medium">
-            <option value="all">All Pillars</option>
-            <option value="edu">Education</option>
-            <option value="promo">Promotional</option>
-            <option value="engage">Engagement</option>
-            <option value="aware">Awareness</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Campaign</label>
-          <select id="ledger-filter-campaign" class="form-input text-xs font-medium">
-            <option value="all">All Campaigns</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Type</label>
-          <select id="ledger-filter-type" class="form-input text-xs font-medium">
-            <option value="all">All Types</option>
-            <option value="image">Image Post</option>
-            <option value="carousel">Carousel</option>
-            <option value="video">Video / Reel</option>
-            <option value="article">Article Link</option>
-            <option value="text">Text Only</option>
-            <option value="poll">Poll</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Status</label>
-          <select id="ledger-filter-status" class="form-input text-xs font-medium">
-            <option value="all">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="p-3 border-t border-white/5 bg-[#0f0a18] flex justify-between gap-2">
+      <div class="relative">
         <button
-          id="ledger-filter-reset"
+          id="ledger-sort-toggle"
           type="button"
-          class="flex-1 py-2 text-[10px] font-bold text-gray-500 hover:text-white transition-colors"
+          class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center"
+          title="Sort"
         >
-          Clear All Filters
+          <i class="ph-bold ph-sort-ascending text-lg"></i>
         </button>
-        <button
-          id="ledger-filter-apply"
-          type="button"
-          class="px-4 py-2 bg-[#2d1b4e] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#3d246c] transition-colors"
+
+        <div
+          id="ledger-sort-dropdown"
+          class="hidden absolute top-full left-0 mt-2 w-52 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-[90] overflow-visible"
         >
-          Apply
-        </button>
+          <div class="p-3 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
+            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Sort By</p>
+          </div>
+
+          <div class="p-2">
+            <button type="button" data-ledger-sort="newest" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+              <i class="ph-bold ph-arrow-down text-[#00f0ff]"></i> Newest First
+            </button>
+            <button type="button" data-ledger-sort="oldest" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+              <i class="ph-bold ph-arrow-up text-[#ffd700]"></i> Oldest First
+            </button>
+            <button type="button" data-ledger-sort="scheduled" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+              <i class="ph-bold ph-calendar-blank text-[#c77dff]"></i> Scheduled First
+            </button>
+            <button type="button" data-ledger-sort="status" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
+              <i class="ph-bold ph-list-checks text-[#00ffaa]"></i> Status
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="relative">
-    <button
-      id="ledger-sort-toggle"
-      type="button"
-      class="w-10 h-10 rounded-xl bg-[#1a1128] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center"
-      title="Sort"
-    >
-      <i class="ph-bold ph-sort-ascending text-lg"></i>
-    </button>
-
-    <div
-      id="ledger-sort-dropdown"
-      class="hidden absolute top-full left-0 mt-2 w-52 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-    >
-      <div class="p-3 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
-        <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Sort By</p>
-      </div>
-
-      <div class="p-2">
-        <button type="button" data-ledger-sort="newest" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="ph-bold ph-arrow-down text-[#00f0ff]"></i> Newest First
-        </button>
-        <button type="button" data-ledger-sort="oldest" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="ph-bold ph-arrow-up text-[#ffd700]"></i> Oldest First
-        </button>
-        <button type="button" data-ledger-sort="scheduled" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="ph-bold ph-calendar-blank text-[#c77dff]"></i> Scheduled First
-        </button>
-        <button type="button" data-ledger-sort="status" class="ledger-sort-btn w-full px-3 py-2.5 rounded-lg hover:bg-[#181125] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2">
-          <i class="ph-bold ph-list-checks text-[#00ffaa]"></i> Status
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
   </div>
 
   <div class="flex-1 overflow-y-auto custom-scrollbar p-8">
@@ -2158,19 +2212,42 @@ function setupLedgerControls() {
   const filterDropdown = document.getElementById("ledger-filter-dropdown");
   const sortToggle = document.getElementById("ledger-sort-toggle");
   const sortDropdown = document.getElementById("ledger-sort-dropdown");
-
-  const pillarSelect = document.getElementById("ledger-filter-pillar");
-  const campaignSelectEl = document.getElementById("ledger-filter-campaign");
-  const typeSelect = document.getElementById("ledger-filter-type");
-  const statusSelectEl = document.getElementById("ledger-filter-status");
-
-  const applyBtn = document.getElementById("ledger-filter-apply");
   const resetBtn = document.getElementById("ledger-filter-reset");
+
+  const pillarLabel = document.getElementById("ledger-filter-pillarlbl");
+  const campaignLabel = document.getElementById("ledger-filter-campaignlbl");
+  const typeLabel = document.getElementById("ledger-filter-typelbl");
+  const statusLabel = document.getElementById("ledger-filter-statuslbl");
+
+  const labelMaps = {
+    pillar: {
+      all: "All",
+      edu: "Education",
+      promo: "Promotional",
+      engage: "Engagement",
+      aware: "Awareness"
+    },
+    type: {
+      all: "All",
+      image: "Image",
+      carousel: "Carousel",
+      video: "Video",
+      article: "Article",
+      text: "Text",
+      poll: "Poll"
+    },
+    status: {
+      all: "All",
+      draft: "Draft",
+      scheduled: "Scheduled",
+      published: "Published"
+    }
+  };
 
   filterToggle?.addEventListener("click", (e) => {
     e.stopPropagation();
     sortDropdown?.classList.add("hidden");
-    populateLedgerCampaignFilter();
+    populateLedgerCampaignMenu();
     filterDropdown?.classList.toggle("hidden");
   });
 
@@ -2180,14 +2257,38 @@ function setupLedgerControls() {
     sortDropdown?.classList.toggle("hidden");
   });
 
-  applyBtn?.addEventListener("click", () => {
-    ledgerFilters.pillar = pillarSelect?.value || "all";
-    ledgerFilters.campaign = campaignSelectEl?.value || "all";
-    ledgerFilters.type = typeSelect?.value || "all";
-    ledgerFilters.status = statusSelectEl?.value || "all";
-    renderLedger();
-    filterDropdown?.classList.add("hidden");
-    showToast("Filter applied", "Ledger filters updated.", "ph-check", "text-[#00ffaa]");
+  document.querySelectorAll(".ledger-filter-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.filterKey;
+      const value = btn.dataset.filterValue;
+
+      if (!key) return;
+
+      ledgerFilters[key] = value || "all";
+
+      if (key === "pillar" && pillarLabel) {
+        pillarLabel.textContent = labelMaps.pillar[value] || "All";
+      }
+
+      if (key === "campaign" && campaignLabel) {
+        campaignLabel.textContent =
+          value === "all"
+            ? "All"
+            : ((appState.campaigns || []).find(c => c.campaignId === value)?.campaignName || "All");
+      }
+
+      if (key === "type" && typeLabel) {
+        typeLabel.textContent = labelMaps.type[value] || "All";
+      }
+
+      if (key === "status" && statusLabel) {
+        statusLabel.textContent = labelMaps.status[value] || "All";
+      }
+
+      renderLedger();
+      filterDropdown?.classList.add("hidden");
+      showToast("Filter applied", "Ledger filters updated.", "ph-check", "text-[#00ffaa]");
+    });
   });
 
   resetBtn?.addEventListener("click", () => {
@@ -2198,23 +2299,37 @@ function setupLedgerControls() {
       status: "all"
     };
 
-    if (pillarSelect) pillarSelect.value = "all";
-    if (campaignSelectEl) campaignSelectEl.value = "all";
-    if (typeSelect) typeSelect.value = "all";
-    if (statusSelectEl) statusSelectEl.value = "all";
+    if (pillarLabel) pillarLabel.textContent = "All";
+    if (campaignLabel) campaignLabel.textContent = "All";
+    if (typeLabel) typeLabel.textContent = "All";
+    if (statusLabel) statusLabel.textContent = "All";
 
     renderLedger();
     filterDropdown?.classList.add("hidden");
     showToast("Filters cleared", "Ledger filters reset.", "ph-eraser", "text-gray-400");
   });
 
-  document.querySelectorAll(".ledger-sort-btn").forEach(btn => {
+  document.querySelectorAll(".ledger-sort-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       ledgerSortMode = btn.dataset.ledgerSort || "newest";
       renderLedger();
       sortDropdown?.classList.add("hidden");
       showToast("Sorted", "Ledger order updated.", "ph-sort-ascending", "text-[#00f0ff]");
     });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#ledger-filter-dropdown") && !e.target.closest("#ledger-filter-toggle")) {
+      filterDropdown?.classList.add("hidden");
+    }
+
+    if (!e.target.closest("#ledger-sort-dropdown") && !e.target.closest("#ledger-sort-toggle")) {
+      sortDropdown?.classList.add("hidden");
+    }
+
+    if (!e.target.closest("#media-filter-dropdown") && !e.target.closest("#media-filter-toggle")) {
+      document.getElementById("media-filter-dropdown")?.classList.add("hidden");
+    }
   });
 }
     
@@ -2323,6 +2438,57 @@ function openPostModal(
 
   modal?.classList.add("active");
   document.body.style.overflow = "hidden";
+}
+
+function populateLedgerCampaignMenu() {
+  const submenu = document.getElementById("ledger-campaign-submenu");
+  if (!submenu) return;
+
+  const campaigns = (appState.campaigns || []).filter(c => !c.isArchived);
+
+  submenu.innerHTML = `
+    <div class="p-2">
+      <button
+        type="button"
+        data-filter-key="campaign"
+        data-filter-value="all"
+        class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+      >
+        <div class="w-2 h-2 rounded-full bg-gray-500"></div> All Campaigns
+      </button>
+
+      ${campaigns.map(c => `
+        <button
+          type="button"
+          data-filter-key="campaign"
+          data-filter-value="${escapeHtml(c.campaignId)}"
+          class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+        >
+          <div class="w-2 h-2 rounded-full" style="background:${escapeHtml(c.color || pillarColor(c.pillar || 'edu'))}"></div>
+          ${escapeHtml(c.campaignName)}
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  submenu.querySelectorAll(".ledger-filter-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const value = btn.dataset.filterValue || "all";
+      ledgerFilters.campaign = value;
+
+      const campaignLabel = document.getElementById("ledger-filter-campaignlbl");
+      if (campaignLabel) {
+        campaignLabel.textContent =
+          value === "all"
+            ? "All"
+            : ((appState.campaigns || []).find(c => c.campaignId === value)?.campaignName || "All");
+      }
+
+      renderLedger();
+      document.getElementById("ledger-filter-dropdown")?.classList.add("hidden");
+      showToast("Filter applied", "Ledger filters updated.", "ph-check", "text-[#00ffaa]");
+    });
+  });
 }
     
 function formatDateTimeLocal(date) {
