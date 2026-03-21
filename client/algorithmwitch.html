@@ -642,8 +642,6 @@ const modalMediaUploadTrigger = document.getElementById("modal-media-upload-trig
 const modalMediaUploadInput = document.getElementById("modal-media-upload-input");
 const modalMediaStatus = document.getElementById("modal-media-status");
 
-const inspoAddLinkBtn = document.getElementById("inspo-add-link-btn");
-
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
 const constellationLayer = document.getElementById("constellation-layer");
@@ -1628,30 +1626,75 @@ function setupConstellationInteractions() {
 
   viewport.style.cursor = "grab";
 
+  viewport.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button")) return;
+
+    isDragging = true;
+    pointerStartX = e.clientX;
+    pointerStartY = e.clientY;
+    startPanX = panX;
+    startPanY = panY;
+    viewport.style.cursor = "grabbing";
+
+    if (viewport.setPointerCapture) {
+      try {
+        viewport.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    }
+  });
+
+  viewport.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+
+    const dx = e.clientX - pointerStartX;
+    const dy = e.clientY - pointerStartY;
+
+    panX = startPanX + dx;
+    panY = startPanY + dy;
+    updateTransform();
+  });
+
+  viewport.addEventListener("pointerup", () => {
+    isDragging = false;
+    viewport.style.cursor = "grab";
+  });
+
+  viewport.addEventListener("pointercancel", () => {
+    isDragging = false;
+    viewport.style.cursor = "grab";
+  });
+
+  viewport.addEventListener("wheel", (e) => {
+    e.preventDefault();
+
+    const rect = viewport.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX - panX) / scale;
+    const worldY = (mouseY - panY) / scale;
+
+    const zoomAmount = e.deltaY < 0 ? 1.08 : 0.92;
+    scale = clamp(scale * zoomAmount, 0.35, 2.2);
+
+    panX = mouseX - worldX * scale;
+    panY = mouseY - worldY * scale;
+
+    updateTransform();
+  }, { passive: false });
+
   document.getElementById("zoom-in")?.addEventListener("click", () => zoomConstellation(1.15));
   document.getElementById("zoom-out")?.addEventListener("click", () => zoomConstellation(0.87));
   document.getElementById("zoom-reset")?.addEventListener("click", () => fitConstellation());
-
-  document.getElementById("zoom-fullscreen")?.addEventListener("click", async () => {
-    const section = document.getElementById("view-constellation");
-    if (!section) return;
-
-    if (!document.fullscreenElement) {
-      if (section.requestFullscreen) await section.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) await document.exitFullscreen();
-    }
-
-    setTimeout(() => fitConstellation(), 100);
-  });
 
   window.addEventListener("resize", () => {
     if (currentView === "constellation") fitConstellation();
   });
 
-  setTimeout(() => fitConstellation(), 50);
+  setTimeout(() => {
+    if (currentView === "constellation") fitConstellation();
+  }, 50);
 }
-
 function zoomConstellation(multiplier) {
   if (!viewport) return;
 
@@ -1945,44 +1988,6 @@ function getCurrentModalCampaignLabel() {
   const campaignId = campaignSelect?.value || "";
   const campaign = (appState.campaigns || []).find(item => item.campaignId === campaignId);
   return campaign?.campaignName || "";
-}
-
-function setupInspoAddLink() {
-  const input = document.getElementById("inspo-link-input");
-  if (!inspoAddLinkBtn || !input) return;
-
-  inspoAddLinkBtn.addEventListener("click", async () => {
-    const url = input.value.trim();
-    if (!url) return;
-
-    const title = window.prompt("Link title") || url;
-    const summary = window.prompt("Short summary") || "";
-    const type = window.prompt("Type: article, video, trend", "article") || "article";
-
-    const payload = {
-      inspoType: type,
-      title,
-      sourceLabel: "Added manually",
-      summary,
-      domainOrMeta: url,
-      suggestedPlatform: type === "video" ? "instagram" : "linkedin",
-      suggestedPillar: type === "trend" ? "engage" : "edu",
-      createPostTitle: title,
-      createPostDescription: summary,
-      createPostType: type === "video" ? "video" : type === "article" ? "article" : "text",
-      notes: url
-    };
-
-    try {
-      await apiSaveInspo(payload);
-      input.value = "";
-      await syncRemoteIfConfigured();
-      showToast("Saved", "Link added to Inspo.", "ph-check", "text-[#00ffaa]");
-    } catch (err) {
-      console.error(err);
-      showToast("Save failed", err.message || "Could not add inspo link.", "ph-warning", "text-yellow-400");
-    }
-  });
 }
 
 function populateMediaFilterDropdown() {
