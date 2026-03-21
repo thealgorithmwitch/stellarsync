@@ -407,86 +407,87 @@
       <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Image &amp; Video Assets</p>
     </div>
 
-<div class="flex gap-3 items-center">
-  <div class="relative">
-    <button
-      id="media-filter-toggle"
-      type="button"
-      class="px-5 py-2 bg-[#1a1128] border border-white/5 rounded-xl text-xs text-gray-300 font-semibold hover:text-white transition-colors flex items-center gap-2"
-    >
-      <i class="ph-bold ph-funnel text-sm"></i> Filter
-    </button>
-
-    <div
-      id="media-filter-dropdown"
-      class="hidden absolute top-full right-0 mt-2 w-80 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-    >
-      <div class="p-4 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
-        <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Filter Assets</p>
-      </div>
-
-      <div class="p-4 space-y-4">
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Type</label>
-          <select id="media-filter-type" class="form-input text-xs font-medium">
-            <option value="all">All Types</option>
-            <option value="image">Image Post</option>
-            <option value="video">Video / Reel</option>
-            <option value="carousel">Carousel</option>
-            <option value="article">Article Link</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Campaign</label>
-          <select id="media-filter-campaign" class="form-input text-xs font-medium">
-            <option value="all">All Campaigns</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="p-3 border-t border-white/5 bg-[#0f0a18] flex justify-between gap-2">
+    <div class="flex gap-3 items-center">
+      <div class="relative">
         <button
-          id="media-filter-reset"
+          id="media-filter-toggle"
           type="button"
-          class="text-[10px] font-bold text-gray-500 hover:text-white transition-colors"
+          class="px-5 py-2 bg-[#1a1128] border border-white/5 rounded-xl text-xs text-gray-300 font-semibold hover:text-white transition-colors flex items-center gap-2"
         >
-          Reset
+          <i class="ph-bold ph-funnel text-sm"></i> Filter
         </button>
-        <button
-          id="media-filter-apply"
-          type="button"
-          class="px-4 py-2 bg-[#2d1b4e] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#3d246c] transition-colors"
+
+        <div
+          id="media-filter-dropdown"
+          class="hidden absolute top-full right-0 mt-2 w-80 bg-[#120c1d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
         >
-          Apply
-        </button>
+          <div class="p-4 border-b border-white/5 bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
+            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Filter Assets</p>
+          </div>
+
+          <div class="p-4 space-y-4">
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Type</label>
+              <select id="media-filter-type" class="form-input text-xs font-medium">
+                <option value="all">All Types</option>
+                <option value="image">Image Post</option>
+                <option value="video">Video / Reel</option>
+                <option value="carousel">Carousel</option>
+                <option value="article">Article Link</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-gray-500 tracking-wider mb-2">Campaign</label>
+              <select id="media-filter-campaign" class="form-input text-xs font-medium">
+                <option value="all">All Campaigns</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="p-3 border-t border-white/5 bg-[#0f0a18] flex justify-between gap-2">
+            <button
+              id="media-filter-reset"
+              type="button"
+              class="text-[10px] font-bold text-gray-500 hover:text-white transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              id="media-filter-apply"
+              type="button"
+              class="px-4 py-2 bg-[#2d1b4e] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#3d246c] transition-colors"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
       </div>
+
+      <button
+        id="media-upload-btn"
+        class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm flex items-center gap-2"
+      >
+        <i class="ph-bold ph-upload-simple text-sm"></i> Upload
+      </button>
+      <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
     </div>
   </div>
 
-  <button
-    id="media-upload-btn"
-    class="px-5 py-2 bg-[#2d1b4e] border border-[#a855f7]/30 rounded-xl text-xs text-white font-bold hover:bg-[#3d246c] transition-colors shadow-sm flex items-center gap-2"
-  >
-    <i class="ph-bold ph-upload-simple text-sm"></i> Upload
-  </button>
-  <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
-</div>
-
-<div id="media-filter-bar" class="flex gap-4 mb-6 overflow-x-auto pb-2">
-  <button data-media-filter="all" class="media-filter-btn px-5 py-2 bg-[#231738] text-white rounded-lg text-xs font-semibold whitespace-nowrap">
-    All Assets
-  </button>
-  <button data-media-filter="image" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
-    Images
-  </button>
-  <button data-media-filter="video" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
-    Videos
-  </button>
-  <button data-media-filter="carousel" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
-    Carousels
-  </button>
-</div>
+  <div id="media-filter-bar" class="flex gap-4 mb-6 overflow-x-auto pb-2">
+    <button data-media-filter="all" class="media-filter-btn px-5 py-2 bg-[#231738] text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+      All Assets
+    </button>
+    <button data-media-filter="image" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
+      Images
+    </button>
+    <button data-media-filter="video" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
+      Videos
+    </button>
+    <button data-media-filter="carousel" class="media-filter-btn px-5 py-2 bg-transparent text-gray-500 hover:text-white rounded-lg text-xs font-medium whitespace-nowrap transition-colors">
+      Carousels
+    </button>
+  </div>
 
   <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start"></div>
 </section>
