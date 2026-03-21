@@ -827,6 +827,8 @@ const mediaUploadInput = document.getElementById("media-upload-input");
 const modalMediaUploadTrigger = document.getElementById("modal-media-upload-trigger");
 const modalMediaUploadInput = document.getElementById("modal-media-upload-input");
 const modalMediaStatus = document.getElementById("modal-media-status");
+const mediaFilterModeSelect = document.getElementById("media-filter-mode");
+const mediaFilterSelect = document.getElementById("media-filter-select");
 
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
@@ -1786,18 +1788,6 @@ function setupMediaFilters() {
 
       renderMedia();
     });
-  });
-
-  mediaFilterModeSelect?.addEventListener("change", () => {
-    currentMediaFilterMode = mediaFilterModeSelect.value || "all";
-    currentMediaFilterValue = "all";
-    populateMediaFilterDropdown();
-    renderMedia();
-  });
-
-  mediaFilterSelect?.addEventListener("change", () => {
-    currentMediaFilterValue = mediaFilterSelect.value || "all";
-    renderMedia();
   });
 }
 
