@@ -772,7 +772,7 @@
         </div>
     </div>
 
-    <div id="campaign-modal" class="fixed inset-0 z-[105] flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+ <div id="campaign-modal" class="fixed inset-0 z-[105] flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
   <div id="campaign-modal-card" class="modal-content w-full max-w-md bg-[#120c1d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden scale-95 transition-transform duration-300">
     <div class="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-[#1a1128] to-[#120c1d]">
       <div class="flex items-center gap-3">
@@ -811,18 +811,20 @@
         <i class="ph-bold ph-check text-sm"></i> Create Campaign
       </button>
     </div>
-    
-    <div id="ai-toast" class="fixed bottom-8 right-8 z-[110] opacity-0 pointer-events-none transition-opacity duration-300" vid="591">
-        <div class="bg-[#181125] px-5 py-4 rounded-xl border border-white/5 shadow-2xl flex items-center gap-4" vid="592">
-            <div class="w-10 h-10 rounded-full bg-[#2d1b4e] flex items-center justify-center text-[#c77dff]" vid="593">
-                <i id="ai-toast-icon" class="ph-bold ph-sparkle text-lg" vid="594"></i>
-            </div>
-            <div vid="595">
-                <p id="ai-toast-title" class="text-white text-sm font-bold tracking-wide" vid="596">AI Assistant</p>
-                <p id="ai-toast-text" class="text-gray-400 text-xs font-medium mt-0.5" vid="597">Generating caption...</p>
-            </div>
-        </div>
+  </div>
+</div>
+
+<div id="ai-toast" class="fixed bottom-8 right-8 z-[110] opacity-0 pointer-events-none transition-opacity duration-300">
+  <div class="bg-[#181125] px-5 py-4 rounded-xl border border-white/5 shadow-2xl flex items-center gap-4">
+    <div class="w-10 h-10 rounded-full bg-[#2d1b4e] flex items-center justify-center text-[#c77dff]">
+      <i id="ai-toast-icon" class="ph-bold ph-sparkle text-lg"></i>
     </div>
+    <div>
+      <p id="ai-toast-title" class="text-white text-sm font-bold tracking-wide">AI Assistant</p>
+      <p id="ai-toast-text" class="text-gray-400 text-xs font-medium mt-0.5">Generating caption...</p>
+    </div>
+  </div>
+</div>
 <script>
 const APP_CONFIG = {
   APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby8H8AeYBhBBrZaA_R0e9k8f4x5asXCLsALUU4TBc2uEmD1hzWp9qSDoJtuh-OnyePE/exec",
@@ -1143,12 +1145,33 @@ function getScheduledQueue() {
     }));
 }
 
+const campaignModal = document.getElementById("campaign-modal");
+const campaignModalCard = document.getElementById("campaign-modal-card");
+const closeCampaignModalBtn = document.getElementById("close-campaign-modal-btn");
+const cancelCampaignBtn = document.getElementById("cancel-campaign-btn");
+const saveCampaignBtn = document.getElementById("save-campaign-btn");
+const campaignNameInput = document.getElementById("campaign-name-input");
+const campaignPillarInput = document.getElementById("campaign-pillar-input");
+
+let campaignModalTargetSelect = null;
+
 function setupCampaignControls() {
-  addCampaignBtnModal?.addEventListener("click", async () => {
-    const campaign = await promptCreateCampaignRow();
-    if (campaign && campaignSelect) {
-      campaignSelect.value = campaign.campaignId;
-    }
+  addCampaignBtnModal?.addEventListener("click", () => {
+    campaignModalTargetSelect = campaignSelect || null;
+    openCampaignModal();
+  });
+
+document.getElementById("constellation-create-campaign-btn")?.addEventListener("click", () => {
+  campaignModalTargetSelect = null;
+  openCampaignModal();
+});
+
+  closeCampaignModalBtn?.addEventListener("click", closeCampaignModal);
+  cancelCampaignBtn?.addEventListener("click", closeCampaignModal);
+  saveCampaignBtn?.addEventListener("click", saveCampaignFromModal);
+
+  campaignModal?.addEventListener("click", (e) => {
+    if (e.target === campaignModal) closeCampaignModal();
   });
 }
 
@@ -1179,6 +1202,80 @@ function defaultCampaignColor(pillar) {
          pillar === "promo" ? "#b25fff" :
          pillar === "engage" ? "#ffd700" :
          "#00ffaa";
+}
+
+function openCampaignModal(defaultPillar = "edu") {
+  if (!campaignModal || !campaignModalCard) return;
+
+  if (campaignNameInput) campaignNameInput.value = "";
+  if (campaignPillarInput) campaignPillarInput.value = defaultPillar;
+
+  campaignModal.classList.remove("opacity-0", "pointer-events-none");
+  campaignModalCard.classList.remove("scale-95");
+  campaignModalCard.classList.add("scale-100");
+}
+
+function closeCampaignModal() {
+  if (!campaignModal || !campaignModalCard) return;
+
+  campaignModal.classList.add("opacity-0", "pointer-events-none");
+  campaignModalCard.classList.remove("scale-100");
+  campaignModalCard.classList.add("scale-95");
+
+  setTimeout(() => {
+    if (campaignNameInput) campaignNameInput.value = "";
+    if (campaignPillarInput) campaignPillarInput.value = "edu";
+  }, 200);
+}
+
+async function saveCampaignFromModal() {
+  const campaignName = campaignNameInput?.value.trim() || "";
+  const pillar = normalizePillar(campaignPillarInput?.value || "edu");
+
+  if (!campaignName) {
+    showToast("Missing name", "Please enter a campaign name.", "ph-warning", "text-yellow-400");
+    return;
+  }
+
+  const color = defaultCampaignColor(pillar);
+
+  const nextSortOrder = ((appState.campaigns || []).reduce((max, item) => {
+    return Math.max(max, Number(item.sortOrder || 0));
+  }, 0)) + 1;
+
+  try {
+    const result = await apiSaveCampaign({
+      campaignName,
+      pillar,
+      color,
+      sortOrder: nextSortOrder,
+      isArchived: false
+    });
+
+    const normalized = {
+      campaignId: result.campaign.campaignId,
+      campaignName: result.campaign.campaignName,
+      pillar: result.campaign.pillar || pillar,
+      color: result.campaign.color || color,
+      sortOrder: Number(result.campaign.sortOrder || nextSortOrder),
+      isArchived: !!result.campaign.isArchived,
+      createdAt: result.campaign.createdAt || ""
+    };
+
+    appState.campaigns.push(normalized);
+    persistLocalState();
+    rerenderAll();
+
+    if (campaignModalTargetSelect) {
+      campaignModalTargetSelect.value = normalized.campaignId;
+    }
+
+    closeCampaignModal();
+    showToast("Campaign created", "New campaign added.", "ph-check", "text-[#00ffaa]");
+  } catch (err) {
+    console.error(err);
+    showToast("Campaign failed", err.message || "Could not create campaign.", "ph-warning", "text-yellow-400");
+  }
 }
 
 function setupCalendarControls() {
