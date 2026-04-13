@@ -9,20 +9,22 @@
     <script src="https://unpkg.com/@phosphor-icons/web" vid="9"></script>
     <style vid="10">
   main {
-    overflow: visible !important;
-  }
-
-  #view-ledger,
-  #view-ledger > div,
-  #view-constellation,
-  #view-constellation > div {
-    overflow: visible !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
   }
 
   #view-constellation,
   #view-constellation #starmap-viewport,
   #view-constellation #starmap-canvas {
     background: transparent !important;
+  }
+
+  #view-constellation {
+    overflow: hidden !important;
+  }
+
+  #view-constellation > .absolute {
+    overflow: visible !important;
   }
 
   .ledger-toolbar {
@@ -159,6 +161,8 @@
         .cal-cell { background: #160f24 !important; border: 1px solid rgba(255,255,255,0.02) !important; border-radius: 0.75rem !important; min-height: 90px; padding: 0.75rem !important; display: flex; flex-direction: column; gap: 6px; transition: background-color 0.2s; }
         .cal-cell:hover { background: #1a122a !important; }
         .cal-cell.empty { background: rgba(22, 15, 36, 0.3) !important; border-color: transparent !important; }
+        .calendar-today-cell { border-color: rgba(199,125,255,0.45) !important; box-shadow: inset 0 0 0 1px rgba(199,125,255,0.25); background: rgba(45, 27, 78, 0.45) !important; }
+        .calendar-today-label { color: #ffffff !important; font-weight: 700 !important; }
         
         .post-pill { padding: 0.35rem 0.5rem !important; border-radius: 0.5rem !important; border-left: none !important; font-size: 10px; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; background: #221835 !important; }
         .post-pill.edu { background: rgba(0, 240, 255, 0.08) !important; border: 1px solid rgba(0, 240, 255, 0.15) !important; }
@@ -374,7 +378,7 @@
   </div>
 </section>
             
-<section id="view-ledger" class="view-section hidden w-full h-full min-h-0 flex-col bg-[#120c1d] border border-white/5 rounded-2xl overflow-visible">
+<section id="view-ledger" class="view-section hidden w-full h-full min-h-0 flex-col bg-[#120c1d] border border-white/5 rounded-2xl overflow-hidden">
   <div class="ledger-toolbar p-8 border-b border-white/5 flex justify-between items-end">
     <div>
       <h2 class="text-4xl font-bold text-white tracking-tight">Content Ledger</h2>
@@ -528,7 +532,7 @@
     </div>
   </div>
 
-  <div class="flex-1 overflow-y-auto custom-scrollbar p-8">
+  <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-8">
     <div id="ledger-list" class="space-y-4"></div>
   </div>
 </section>
@@ -618,6 +622,12 @@
       >
         <i class="ph-bold ph-upload-simple text-sm"></i> Upload
       </button>
+      <button
+        id="media-link-btn"
+        class="px-5 py-2 bg-[#1a1128] border border-white/5 rounded-xl text-xs text-gray-300 font-bold hover:text-white hover:bg-[#231738] transition-colors shadow-sm flex items-center gap-2"
+      >
+        <i class="ph-bold ph-link-simple text-sm"></i> Add Link
+      </button>
       <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
     </div>
   </div>
@@ -637,7 +647,7 @@
     </button>
   </div>
 
-  <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start"></div>
+  <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 content-start"></div>
 </section>
 
 <section id="view-performance" class="view-section hidden w-full h-full p-8 min-h-0 flex-col overflow-y-auto custom-scrollbar bg-[#120c1d] border border-white/5 rounded-2xl">
@@ -1152,6 +1162,7 @@ const pillarBtns = Array.from(document.querySelectorAll(".pillar-btn"));
 const saveButton = document.getElementById("save-post-btn");
 
 const mediaUploadBtn = document.getElementById("media-upload-btn");
+const mediaLinkBtn = document.getElementById("media-link-btn");
 const mediaUploadInput = document.getElementById("media-upload-input");
 
 const modalMediaUploadTrigger = document.getElementById("modal-media-upload-trigger");
@@ -1196,6 +1207,13 @@ const CANONICAL_PILLAR_MAP = {
   auth: "authority",
   authority: "authority",
   authoritative: "authority",
+  dist: "distribution",
+  distribute: "distribution",
+  distribution: "distribution",
+  ident: "identity",
+  identity: "identity",
+  app: "application",
+  application: "application",
   edu: "education",
   education: "education",
   educational: "education",
@@ -2197,12 +2215,6 @@ function inspoMetaLabel(item) {
 }
 
 function getInitialCalendarCursor() {
-  const posts = Array.isArray(appState.posts) ? appState.posts : [];
-  const datedPosts = posts
-    .filter(post => post.date && !isNaN(new Date(post.date)))
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  if (datedPosts.length) return new Date(datedPosts[0].date);
   return new Date();
 }
 
@@ -2464,13 +2476,13 @@ function renderCalendarCell(dateObj, inCurrentMonth = true, isWeekMode = false) 
   const cellClasses = [
     "cal-cell",
     !inCurrentMonth ? "empty" : "",
-    isTodayValue ? "ring-1 ring-[#c77dff]/50 bg-[#1c132d]" : ""
+    isTodayValue ? "calendar-today-cell" : ""
   ].filter(Boolean).join(" ");
 
   const dateLabelClass = !inCurrentMonth
     ? "text-xs text-gray-600 font-medium"
     : isTodayValue
-    ? "text-xs text-white font-bold"
+    ? "text-xs font-bold calendar-today-label"
     : "text-xs text-gray-300 font-medium";
 
   return `
@@ -3044,37 +3056,91 @@ function setupMediaFilters() {
 }
 
 function setupMediaUpload() {
-  if (!mediaUploadBtn || !mediaUploadInput) return;
+  if (mediaUploadBtn && mediaUploadInput && !mediaUploadBtn.dataset.bound) {
+    mediaUploadBtn.addEventListener("click", () => mediaUploadInput.click());
+    mediaUploadBtn.dataset.bound = "true";
+  }
 
-  mediaUploadBtn.addEventListener("click", () => mediaUploadInput.click());
+  if (mediaUploadInput && !mediaUploadInput.dataset.bound) {
+    mediaUploadInput.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-  mediaUploadInput.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+      try {
+        showToast("Uploading", "Uploading media...", "ph-upload-simple", "text-[#c77dff]");
+        const base64Data = await fileToBase64(file);
 
-    try {
-      showToast("Uploading", "Uploading media...", "ph-upload-simple", "text-[#c77dff]");
-      const base64Data = await fileToBase64(file);
+        await apiPost("uploadMedia", {
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data,
+          assetBadge: file.type.startsWith("video/") ? "Reel" : "Image",
+          assetMeta: "",
+          linkedPostId: "",
+          campaign: ""
+        });
 
-      await apiPost("uploadMedia", {
-        fileName: file.name,
-        mimeType: file.type,
-        base64Data,
-        assetBadge: file.type.startsWith("video/") ? "Reel" : "Image",
-        assetMeta: "",
-        linkedPostId: "",
-        campaign: ""
-      });
+        await refreshMediaFromRemote();
+        showToast("Uploaded", "Media uploaded to Drive.", "ph-check", "text-[#00ffaa]");
+      } catch (err) {
+        console.error(err);
+        showToast("Upload failed", err.message || "Could not upload media.", "ph-warning", "text-yellow-400");
+      } finally {
+        mediaUploadInput.value = "";
+      }
+    });
+    mediaUploadInput.dataset.bound = "true";
+  }
 
-      await refreshMediaFromRemote();
-      showToast("Uploaded", "Media uploaded to Drive.", "ph-check", "text-[#00ffaa]");
-    } catch (err) {
-      console.error(err);
-      showToast("Upload failed", err.message || "Could not upload media.", "ph-warning", "text-yellow-400");
-    } finally {
-      mediaUploadInput.value = "";
-    }
-  });
+  if (mediaLinkBtn && !mediaLinkBtn.dataset.bound) {
+    mediaLinkBtn.addEventListener("click", async () => {
+      await promptSaveMediaLink();
+    });
+    mediaLinkBtn.dataset.bound = "true";
+  }
+}
+
+async function promptSaveMediaLink() {
+  const sourceInput = window.prompt("Paste a Google Drive link, Drive file ID, LinkedIn URL, or direct asset URL");
+  if (sourceInput === null) return;
+
+  const sourceValue = String(sourceInput || "").trim();
+  if (!sourceValue) {
+    showToast("Missing link", "Enter a Drive link, Drive file ID, or URL.", "ph-warning", "text-yellow-400");
+    return;
+  }
+
+  const nameInput = window.prompt("Asset name (optional)", "");
+  if (nameInput === null) return;
+
+  const typeInput = window.prompt("Asset type: image, video, carousel, article", "image");
+  if (typeInput === null) return;
+
+  const badgeInput = window.prompt("Badge label (optional)", "");
+  if (badgeInput === null) return;
+
+  const metaInput = window.prompt("Meta / notes for this asset (optional)", "");
+  if (metaInput === null) return;
+
+  try {
+    showToast("Saving link", "Saving linked media asset...", "ph-link-simple", "text-[#c77dff]");
+
+    await apiSaveMediaLink({
+      sourceUrl: sourceValue,
+      assetName: String(nameInput || "").trim(),
+      assetType: String(typeInput || "image").trim().toLowerCase(),
+      assetBadge: String(badgeInput || "").trim(),
+      assetMeta: String(metaInput || "").trim(),
+      notes: String(metaInput || "").trim(),
+      campaign: ""
+    });
+
+    await refreshMediaFromRemote();
+    showToast("Saved", "Linked media asset added to the vault.", "ph-check", "text-[#00ffaa]");
+  } catch (err) {
+    console.error(err);
+    showToast("Link save failed", err.message || "Could not save linked media.", "ph-warning", "text-yellow-400");
+  }
 }
 
 async function editCampaignById(campaignId) {
@@ -3252,8 +3318,18 @@ function renderMedia() {
       : item.campaign
       ? formatCampaignDisplayName(item.campaign)
       : "";
-    const metaLine = [item.meta || "", campaignLabel].filter(Boolean).join(" • ");
+    const sourceLabel =
+      item.sourceType === "drive"
+        ? "Drive Link"
+        : item.sourceType === "linkedin"
+        ? "LinkedIn URL"
+        : item.sourceType === "external"
+        ? "External URL"
+        : "";
+    const metaLine = [item.meta || "", campaignLabel, sourceLabel].filter(Boolean).join(" • ");
     const displayTitle = getDisplayTitle(item.title || "Untitled asset");
+    const assetUrl = item.fileUrl || item.sourceUrl || "";
+    const overlayLabel = item.fileUrl ? "Open Asset" : item.sourceUrl ? "Open Link" : "View";
 
     return `
       <div class="glass-card overflow-hidden group">
@@ -3261,7 +3337,7 @@ function renderMedia() {
           <i class="ph-fill ${icon} text-gray-600 text-5xl"></i>
           <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300">${escapeHtml(badge)}</span>
           <div class="absolute inset-0 bg-[#2d1b4e]/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-            <button type="button" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" onclick="openMediaAsset('${escapeHtml(item.id)}')">
+            <button type="button" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" onclick="openMediaAsset('${escapeHtml(item.id)}')" title="${escapeHtml(overlayLabel)}">
               <i class="ph-bold ph-arrows-out-simple text-xl"></i>
             </button>
           </div>
@@ -3269,6 +3345,7 @@ function renderMedia() {
         <div class="p-4">
           <p class="text-white text-sm font-semibold wrap-safe mb-1" title="${escapeHtml(item.title || "Untitled asset")}">${escapeHtml(displayTitle)}</p>
           <p class="text-gray-500 text-[10px] font-medium wrap-safe">${escapeHtml(metaLine)}</p>
+          ${assetUrl ? `<p class="text-gray-600 text-[10px] font-medium wrap-safe mt-1">${escapeHtml(getDisplayExcerpt(assetUrl, assetUrl))}</p>` : ""}
         </div>
       </div>
     `;
@@ -3279,8 +3356,9 @@ function openMediaAsset(assetId) {
   const item = (appState.media || []).find(asset => asset.id === assetId);
   if (!item) return;
 
-  if (item.fileUrl) {
-    window.open(item.fileUrl, "_blank", "noopener,noreferrer");
+  const targetUrl = item.fileUrl || item.sourceUrl || "";
+  if (targetUrl) {
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
     return;
   }
 
@@ -3300,7 +3378,10 @@ async function refreshMediaFromRemote() {
     status: asset.assetStatus || "",
     placeholderIcon: asset.placeholderIcon || "",
     fileUrl: asset.fileUrl || "",
-    campaign: asset.campaign || ""
+    campaign: asset.campaign || "",
+    driveFileId: asset.driveFileId || "",
+    sourceUrl: asset.sourceUrl || "",
+    sourceType: asset.sourceType || ""
   }));
 
   appState.posts = (appState.posts || []).map((post) => {
@@ -4099,7 +4180,10 @@ async function syncRemoteIfConfigured() {
         status: asset.assetStatus || "",
         placeholderIcon: asset.placeholderIcon || "",
         fileUrl: asset.fileUrl || "",
-        campaign: asset.campaign || ""
+        campaign: asset.campaign || "",
+        driveFileId: asset.driveFileId || "",
+        sourceUrl: asset.sourceUrl || "",
+        sourceType: asset.sourceType || ""
       }));
     }
 
@@ -4213,6 +4297,10 @@ async function apiGetInspo() {
 async function apiGetCampaigns() {
   const result = await apiGet("getCampaigns");
   return result.items || [];
+}
+
+async function apiSaveMediaLink(payload) {
+  return apiPost("saveMediaLink", payload);
 }
 
 async function apiSaveCampaign(campaign) {
