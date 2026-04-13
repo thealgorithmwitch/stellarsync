@@ -199,6 +199,17 @@
         
         .nav-btn.active { background-color: #2d1b4e !important; color: white !important; border-color: transparent !important; }
         .nav-btn:hover:not(.active) { background-color: #1a1128 !important; color: white !important; }
+        .mini-card { background:#181125; border:1px solid rgba(255,255,255,0.05); border-radius:0.9rem; }
+        .mini-kpi { background:#181125; border:1px solid rgba(255,255,255,0.05); border-radius:0.9rem; padding:1rem; }
+        .chart-bars { display:flex; align-items:flex-end; gap:0.45rem; height:180px; }
+        .chart-bar { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:0.45rem; }
+        .chart-bar-fill { width:100%; border-radius:0.65rem 0.65rem 0.25rem 0.25rem; min-height:6px; }
+        .chart-bar-label { font-size:9px; color:#6b7280; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; }
+        .comparison-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:0.75rem; align-items:center; }
+        .comparison-track { width:100%; height:10px; border-radius:999px; background:rgba(255,255,255,0.05); overflow:hidden; }
+        .comparison-fill { height:100%; border-radius:999px; }
+        .audit-list li { position:relative; padding-left:1rem; }
+        .audit-list li::before { content:""; position:absolute; left:0; top:0.5rem; width:6px; height:6px; border-radius:999px; background:currentColor; opacity:0.8; }
     </style>
 </head>
 <body class="flex flex-col relative p-4 gap-4" vid="11">
@@ -249,6 +260,14 @@
             <button id="nav-media" onclick="switchView('media')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="40">
                 <i class="ph-fill ph-images text-2xl" vid="41"></i>
                 <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl" vid="42">Media</span>
+            </button>
+            <button id="nav-performance" onclick="switchView('performance')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors">
+                <i class="ph-fill ph-chart-line-up text-2xl"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl">Performance</span>
+            </button>
+            <button id="nav-audit" onclick="switchView('audit')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors">
+                <i class="ph-fill ph-shield-check text-2xl"></i>
+                <span class="absolute left-16 bg-[#181125] border border-white/5 text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl">Audit</span>
             </button>
             <div class="w-8 h-[1px] bg-white/5 my-2" vid="43"></div>
             <button id="nav-inspo" onclick="switchView('inspo')" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1128] flex items-center justify-center relative group nav-btn transition-colors" vid="44">
@@ -599,6 +618,110 @@
 
   <div id="media-grid" class="grid grid-cols-3 gap-4 overflow-y-auto custom-scrollbar flex-1 content-start"></div>
 </section>
+
+<section id="view-performance" class="view-section hidden w-full h-full p-8 flex-col overflow-y-auto custom-scrollbar bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <h2 class="text-4xl font-bold text-white tracking-tight">Performance</h2>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Compact Scheduler Signals</p>
+    </div>
+    <div class="flex gap-2">
+      <select id="performance-range-filter" class="form-input text-xs font-medium w-[140px]">
+        <option value="30">Last 30 Days</option>
+        <option value="60">Last 60 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="all">All Time</option>
+      </select>
+      <select id="performance-platform-filter" class="form-input text-xs font-medium w-[140px]">
+        <option value="all">All Platforms</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="instagram">Instagram</option>
+        <option value="both">Both Platforms</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="performance-kpis" class="grid grid-cols-4 gap-4 mb-6"></div>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div class="mini-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-white">Performance Over Time</h3>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Scheduled cadence</p>
+        </div>
+        <span id="performance-trend-summary" class="text-[10px] text-gray-500"></span>
+      </div>
+      <div id="performance-time-chart" class="chart-bars"></div>
+    </div>
+
+    <div class="mini-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-white">Top Posts</h3>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Best available scheduler signals</p>
+        </div>
+      </div>
+      <div id="performance-top-posts" class="space-y-3"></div>
+    </div>
+
+    <div class="mini-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-white">Campaign Comparison</h3>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Post volume by campaign</p>
+        </div>
+      </div>
+      <div id="performance-campaign-comparison" class="space-y-3"></div>
+    </div>
+
+    <div class="mini-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-white">Pillar + Platform</h3>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Current content mix</p>
+        </div>
+      </div>
+      <div id="performance-pillar-comparison" class="space-y-3 mb-5"></div>
+      <div id="performance-platform-comparison" class="space-y-3"></div>
+    </div>
+  </div>
+</section>
+
+<section id="view-audit" class="view-section hidden w-full h-full p-8 flex-col overflow-y-auto custom-scrollbar bg-[#120c1d] border border-white/5 rounded-2xl">
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <h2 class="text-4xl font-bold text-white tracking-tight">Audit</h2>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mt-2">Content System Health</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-6 mb-6">
+    <div class="mini-card p-5">
+      <h3 class="text-sm font-bold text-white mb-4">What’s Working</h3>
+      <ul id="audit-working-list" class="audit-list space-y-3 text-sm text-emerald-300"></ul>
+    </div>
+    <div class="mini-card p-5">
+      <h3 class="text-sm font-bold text-white mb-4">Needs Attention</h3>
+      <ul id="audit-attention-list" class="audit-list space-y-3 text-sm text-yellow-300"></ul>
+    </div>
+    <div class="mini-card p-5">
+      <h3 class="text-sm font-bold text-white mb-4">Next Action</h3>
+      <p id="audit-next-action" class="text-sm text-gray-300 leading-relaxed wrap-safe"></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div class="mini-card p-5">
+      <h3 class="text-sm font-bold text-white mb-4">Mapping Gaps</h3>
+      <div id="audit-gap-cards" class="space-y-3"></div>
+    </div>
+    <div class="mini-card p-5">
+      <h3 class="text-sm font-bold text-white mb-4">Data Health Snapshot</h3>
+      <div id="audit-data-health" class="space-y-3"></div>
+    </div>
+  </div>
+</section>
         </main>
         
         
@@ -607,13 +730,56 @@
                 <h3 class="text-sm font-bold text-white tracking-widest uppercase" vid="472">Signals Overview</h3>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1" vid="473">
-                
-                <div class="mb-8" vid="474">
+                <div class="mini-card p-4 mb-5">
+                  <div class="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Top Post</h4>
+                      <p class="text-[10px] text-gray-600 mt-1">Based on current scheduler fields</p>
+                    </div>
+                    <span id="overview-top-post-rank" class="text-[9px] font-bold text-[#c77dff] border border-[#c77dff]/20 bg-[#c77dff]/5 px-2 py-1 rounded">Live</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <select id="overview-platform-filter" class="form-input text-[11px] font-medium">
+                      <option value="all">All Platforms</option>
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="both">Both</option>
+                    </select>
+                    <select id="overview-range-filter" class="form-input text-[11px] font-medium">
+                      <option value="30">Last 30 Days</option>
+                      <option value="60">Last 60 Days</option>
+                      <option value="90">Last 90 Days</option>
+                      <option value="all">All Time</option>
+                    </select>
+                  </div>
+                  <div id="overview-top-post-card"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                  <div class="mini-kpi">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Snapshot</div>
+                    <div id="overview-performance-snapshot" class="space-y-2"></div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Campaigns</div>
+                    <div id="overview-campaign-snapshot" class="space-y-2"></div>
+                  </div>
+                </div>
+
+                <div class="mb-5" vid="474">
                     <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase mb-4" vid="475">Content Pillars</h4>
                     <div id="signal-pillar-grid" class="grid grid-cols-2 gap-3" vid="476"></div>
                 </div>
 
-                <div>
+                <div class="mini-card p-4 mb-5">
+                  <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Recommendations</h4>
+                    <span class="text-[9px] text-gray-500">Live</span>
+                  </div>
+                  <div id="overview-recommendation-cards" class="space-y-3"></div>
+                </div>
+
+                <div class="mini-card p-4">
                   <div class="flex justify-between items-center mb-4">
                     <h4 class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Next In Queue</h4>
                     <span
@@ -623,9 +789,9 @@
                       0 Scheduled
                     </span>
                   </div>
-                
+
                   <div id="queue-list" class="space-y-3"></div>
-                
+
                   <button
                     class="w-full mt-6 py-3 border border-white/5 bg-[#181125] hover:bg-[#1a122a] transition-colors rounded-xl text-xs font-bold text-gray-300 tracking-widest uppercase"
                     onclick="switchView('ledger')"
@@ -942,6 +1108,16 @@ let mediaFilters = {
   campaign: "all"
 };
 
+let overviewFilters = {
+  platform: "all",
+  range: "30"
+};
+
+let performanceFilters = {
+  platform: "all",
+  range: "30"
+};
+
 const modal = document.getElementById("scheduling-modal");
 const titleInput = document.getElementById("modal-title");
 const campaignSelect = document.getElementById("modal-campaign");
@@ -1147,6 +1323,298 @@ function renderSignalsOverview() {
   }).join("");
 }
 
+function renderOverviewPanel() {
+  renderSignalsOverview();
+
+  const topPostCard = document.getElementById("overview-top-post-card");
+  const topPostRank = document.getElementById("overview-top-post-rank");
+  const perfSnapshot = document.getElementById("overview-performance-snapshot");
+  const campaignSnapshot = document.getElementById("overview-campaign-snapshot");
+  const recommendationCards = document.getElementById("overview-recommendation-cards");
+
+  const filteredPosts = getFilteredPosts(overviewFilters);
+  const topPost = getTopRankedPosts(overviewFilters, 1)[0] || null;
+  const publishedCount = filteredPosts.filter(post => post.status === "published").length;
+  const scheduledCount = filteredPosts.filter(post => post.status === "scheduled").length;
+  const topCampaign = countPostsBy(filteredPosts, post => post.campaignName || "").slice(0, 1)[0];
+  const topPillar = countPostsBy(filteredPosts, post => getPostContentPillar(post)).slice(0, 1)[0];
+  const audit = buildAuditSummary();
+
+  if (topPostCard) {
+    if (!topPost) {
+      topPostCard.innerHTML = `<div class="pillar-empty-state">No post matches the current overview filters.</div>`;
+      if (topPostRank) topPostRank.textContent = "No match";
+    } else {
+      const linkedAsset = findLinkedAssetForPost(topPost);
+      const score = getPostOperationalScore(topPost).toFixed(1);
+      topPostCard.innerHTML = `
+        <button type="button" class="w-full text-left" onclick="openModalById('${escapeHtml(topPost.id)}')">
+          <div class="p-4 rounded-xl bg-[#181125] border border-white/5 hover:border-white/10 transition-colors">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <span class="text-[9px] font-bold uppercase tracking-widest text-[#c77dff]">${escapeHtml(formatStatusLabel(topPost.status))}</span>
+              <span class="text-[9px] text-gray-500">${escapeHtml(formatLedgerDate(topPost.date))}</span>
+            </div>
+            <h4 class="text-sm font-bold text-white wrap-safe mb-2" title="${escapeHtml(topPost.title || "")}">${escapeHtml(getDisplayTitle(topPost.title))}</h4>
+            <p class="text-[11px] text-gray-400 wrap-safe mb-3" title="${escapeHtml(topPost.description || "")}">${escapeHtml(getDisplayExcerpt(topPost.description, topPost.ledgerExcerpt || ""))}</p>
+            <div class="grid grid-cols-2 gap-2 text-[10px]">
+              <div class="px-2 py-2 rounded-lg bg-[#120c1d] border border-white/5">
+                <div class="text-gray-500 uppercase tracking-widest mb-1">Campaign</div>
+                <div class="text-gray-200 wrap-safe">${escapeHtml(formatCampaignDisplayName(topPost.campaignName || "Unassigned"))}</div>
+              </div>
+              <div class="px-2 py-2 rounded-lg bg-[#120c1d] border border-white/5">
+                <div class="text-gray-500 uppercase tracking-widest mb-1">Pillar</div>
+                <div class="text-gray-200 wrap-safe">${escapeHtml(formatContentPillarLabel(getPostContentPillar(topPost) || "Missing"))}</div>
+              </div>
+              <div class="px-2 py-2 rounded-lg bg-[#120c1d] border border-white/5">
+                <div class="text-gray-500 uppercase tracking-widest mb-1">Platform</div>
+                <div class="text-gray-200">${escapeHtml(toTitleCase(topPost.platform || ""))}</div>
+              </div>
+              <div class="px-2 py-2 rounded-lg bg-[#120c1d] border border-white/5">
+                <div class="text-gray-500 uppercase tracking-widest mb-1">Media</div>
+                <div class="text-gray-200">${linkedAsset ? "Linked" : "Not linked"}</div>
+              </div>
+            </div>
+            <div class="mt-3 text-[10px] text-gray-500">Scheduler score ${escapeHtml(score)} • ${escapeHtml(getRangeLabel(overviewFilters.range))}</div>
+          </div>
+        </button>
+      `;
+      if (topPostRank) topPostRank.textContent = `Score ${score}`;
+    }
+  }
+
+  if (perfSnapshot) {
+    perfSnapshot.innerHTML = `
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Posts in range</span><span class="text-sm font-bold text-white">${filteredPosts.length}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Published</span><span class="text-sm font-bold text-[#00ffaa]">${publishedCount}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Scheduled</span><span class="text-sm font-bold text-[#ffd700]">${scheduledCount}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Platform</span><span class="text-sm font-bold text-white">${escapeHtml(overviewFilters.platform === "all" ? "All" : toTitleCase(overviewFilters.platform))}</span></div>
+    `;
+  }
+
+  if (campaignSnapshot) {
+    campaignSnapshot.innerHTML = `
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Active campaigns</span><span class="text-sm font-bold text-white">${countPostsBy(filteredPosts, post => post.campaignName || "").length}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Top campaign</span><span class="text-sm font-bold text-white wrap-safe text-right">${escapeHtml(topCampaign ? formatCampaignDisplayName(topCampaign[0]) : "None")}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Top pillar</span><span class="text-sm font-bold text-white wrap-safe text-right">${escapeHtml(topPillar ? formatContentPillarLabel(topPillar[0]) : "None")}</span></div>
+      <div class="flex items-center justify-between gap-3"><span class="text-[11px] text-gray-500">Pillar values</span><span class="text-sm font-bold text-white">${countPostsBy(filteredPosts, post => getPostContentPillar(post)).length}</span></div>
+    `;
+  }
+
+  if (recommendationCards) {
+    const cards = [
+      audit.attention[0] ? { title: "Needs Attention", detail: audit.attention[0], color: "#ffd700", icon: "ph-warning-circle" } : null,
+      topCampaign ? { title: "Keep Leaning In", detail: `${formatCampaignDisplayName(topCampaign[0])} leads the current range with ${topCampaign[1]} posts.`, color: "#00f0ff", icon: "ph-chart-bar" } : null
+    ].filter(Boolean);
+
+    recommendationCards.innerHTML = cards.length
+      ? cards.map(card => `
+        <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:${card.color}14;color:${card.color};">
+              <i class="ph-bold ${card.icon}"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white mb-1">${escapeHtml(card.title)}</div>
+              <div class="text-[11px] text-gray-400 wrap-safe">${escapeHtml(card.detail)}</div>
+            </div>
+          </div>
+        </div>
+      `).join("")
+      : `<div class="pillar-empty-state">No recommendation cards yet.</div>`;
+  }
+}
+
+function renderPerformanceView() {
+  const filteredPosts = getFilteredPosts(performanceFilters);
+  const kpis = document.getElementById("performance-kpis");
+  const trendSummary = document.getElementById("performance-trend-summary");
+  const timeChart = document.getElementById("performance-time-chart");
+
+  const buckets = buildTimeBuckets(filteredPosts, performanceFilters.range);
+  const previousRangePosts = getFilteredPosts({
+    platform: performanceFilters.platform,
+    range: performanceFilters.range === "all" ? "all" : String(Number(performanceFilters.range) * 2)
+  });
+  const published = filteredPosts.filter(post => post.status === "published").length;
+  const scheduled = filteredPosts.filter(post => post.status === "scheduled").length;
+  const withCampaign = filteredPosts.filter(post => post.campaignId).length;
+  const withPillar = filteredPosts.filter(post => getPostContentPillar(post)).length;
+
+  if (kpis) {
+    const cards = [
+      { label: "Posts", value: filteredPosts.length, accent: "#c77dff" },
+      { label: "Published", value: published, accent: "#00ffaa" },
+      { label: "Scheduled", value: scheduled, accent: "#ffd700" },
+      { label: "Mapped", value: `${withCampaign}/${withPillar}`, accent: "#00f0ff" }
+    ];
+    kpis.innerHTML = cards.map(card => `
+      <div class="mini-kpi">
+        <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">${escapeHtml(card.label)}</div>
+        <div class="text-2xl font-bold text-white">${escapeHtml(String(card.value))}</div>
+        <div class="text-[11px] mt-2" style="color:${card.accent};">${escapeHtml(getRangeLabel(performanceFilters.range))}</div>
+      </div>
+    `).join("");
+  }
+
+  if (trendSummary) {
+    trendSummary.textContent = `${filteredPosts.length} posts • ${performanceFilters.platform === "all" ? "All platforms" : toTitleCase(performanceFilters.platform)}`;
+  }
+
+  if (timeChart) {
+    const max = Math.max(...buckets.map(bucket => bucket.total), 1);
+    timeChart.innerHTML = buckets.map(bucket => `
+      <div class="chart-bar" title="${escapeHtml(`${bucket.label}: ${bucket.total} posts, ${bucket.published} published`)}">
+        <div class="chart-bar-fill" style="height:${Math.max(6, (bucket.total / max) * 140)}px;background:linear-gradient(180deg,#c77dff 0%, #2d1b4e 100%)"></div>
+        <div class="chart-bar-label">${escapeHtml(bucket.shortLabel)}</div>
+      </div>
+    `).join("");
+  }
+
+  renderComparisonRows(
+    "performance-campaign-comparison",
+    countPostsBy(filteredPosts, post => post.campaignName || "")
+      .slice(0, 5)
+      .map(([key, value]) => ({ key, value, label: formatCampaignDisplayName(key) })),
+    value => `${value} posts`,
+    key => getPillarTheme(key)
+  );
+
+  renderComparisonRows(
+    "performance-pillar-comparison",
+    countPostsBy(filteredPosts, post => getPostContentPillar(post))
+      .slice(0, 5)
+      .map(([key, value]) => ({ key, value, label: formatContentPillarLabel(key) })),
+    value => `${value}`,
+    key => getPillarTheme(key)
+  );
+
+  renderComparisonRows(
+    "performance-platform-comparison",
+    countPostsBy(filteredPosts, post => post.platform || "")
+      .slice(0, 5)
+      .map(([key, value]) => ({ key, value, label: toTitleCase(key) })),
+    value => `${value}`,
+    key => key === "instagram" ? "#b25fff" : key === "both" ? "#ffd700" : "#00f0ff"
+  );
+
+  const topPostsTarget = document.getElementById("performance-top-posts");
+  if (topPostsTarget) {
+    const topPosts = getTopRankedPosts(performanceFilters, 4);
+    topPostsTarget.innerHTML = topPosts.length
+      ? topPosts.map((post, index) => `
+        <button type="button" onclick="openModalById('${escapeHtml(post.id)}')" class="w-full text-left p-3 rounded-xl bg-[#181125] border border-white/5 hover:border-white/10 transition-colors">
+          <div class="flex items-center justify-between gap-3 mb-2">
+            <span class="text-[10px] font-bold text-[#c77dff]">#${index + 1}</span>
+            <span class="text-[10px] text-gray-500">${escapeHtml(formatStatusLabel(post.status))}</span>
+          </div>
+          <div class="text-sm font-bold text-white wrap-safe mb-1" title="${escapeHtml(post.title || "")}">${escapeHtml(getDisplayTitle(post.title))}</div>
+          <div class="text-[11px] text-gray-400 wrap-safe">${escapeHtml(getDisplayExcerpt(post.description, post.ledgerExcerpt || ""))}</div>
+          <div class="mt-2 text-[10px] text-gray-500">${escapeHtml(formatCampaignDisplayName(post.campaignName || "Unassigned"))} • ${escapeHtml(formatContentPillarLabel(getPostContentPillar(post) || "Missing"))}</div>
+        </button>
+      `).join("")
+      : `<p class="text-sm text-gray-500">No posts available for the current performance filters.</p>`;
+  }
+}
+
+function renderAuditView() {
+  const summary = buildAuditSummary();
+  const workingList = document.getElementById("audit-working-list");
+  const attentionList = document.getElementById("audit-attention-list");
+  const nextAction = document.getElementById("audit-next-action");
+  const gapCards = document.getElementById("audit-gap-cards");
+  const health = document.getElementById("audit-data-health");
+
+  if (workingList) {
+    workingList.innerHTML = (summary.working.length ? summary.working : ["No strong signals yet. Publish and map a few more posts."])
+      .map(item => `<li class="wrap-safe">${escapeHtml(item)}</li>`)
+      .join("");
+  }
+
+  if (attentionList) {
+    attentionList.innerHTML = (summary.attention.length ? summary.attention : ["No critical attention items detected from current scheduler data."])
+      .map(item => `<li class="wrap-safe">${escapeHtml(item)}</li>`)
+      .join("");
+  }
+
+  if (nextAction) {
+    nextAction.textContent = summary.nextAction;
+  }
+
+  if (gapCards) {
+    const items = [
+      { label: "Missing Campaign", value: summary.gaps.missingCampaign, color: "#ffd700" },
+      { label: "Missing Pillar", value: summary.gaps.missingPillar, color: "#fb7185" },
+      { label: "Missing Media", value: summary.gaps.missingMedia, color: "#c77dff" },
+      { label: "Unresolved Asset Link", value: summary.gaps.unresolvedAssets, color: "#00f0ff" },
+      { label: "Campaign/Pillar Mismatch", value: summary.gaps.campaignMismatch, color: "#f97316" }
+    ];
+    gapCards.innerHTML = items.map(item => `
+      <div class="p-3 rounded-xl bg-[#181125] border border-white/5 flex items-center justify-between gap-3">
+        <span class="text-sm text-gray-300 wrap-safe">${escapeHtml(item.label)}</span>
+        <span class="text-sm font-bold shrink-0" style="color:${item.color};">${item.value}</span>
+      </div>
+    `).join("");
+  }
+
+  if (health) {
+    const posts = appState.posts || [];
+    const mediaItems = appState.media || [];
+    const campaigns = appState.campaigns || [];
+    const rows = [
+      { label: "Posts loaded", value: posts.length },
+      { label: "Campaigns loaded", value: campaigns.length },
+      { label: "Media assets loaded", value: mediaItems.length },
+      { label: "Published posts", value: posts.filter(post => post.status === "published").length },
+      { label: "Dated posts", value: posts.filter(post => parsePostDate(post.date)).length }
+    ];
+
+    health.innerHTML = rows.map(row => `
+      <div class="p-3 rounded-xl bg-[#181125] border border-white/5 flex items-center justify-between gap-3">
+        <span class="text-sm text-gray-400">${escapeHtml(row.label)}</span>
+        <span class="text-sm font-bold text-white">${escapeHtml(String(row.value))}</span>
+      </div>
+    `).join("");
+  }
+}
+
+function setupOverviewControls() {
+  const platform = document.getElementById("overview-platform-filter");
+  const range = document.getElementById("overview-range-filter");
+  if (platform) {
+    platform.value = overviewFilters.platform;
+    platform.addEventListener("change", () => {
+      overviewFilters.platform = platform.value || "all";
+      renderOverviewPanel();
+    });
+  }
+  if (range) {
+    range.value = overviewFilters.range;
+    range.addEventListener("change", () => {
+      overviewFilters.range = range.value || "30";
+      renderOverviewPanel();
+    });
+  }
+}
+
+function setupPerformanceControls() {
+  const platform = document.getElementById("performance-platform-filter");
+  const range = document.getElementById("performance-range-filter");
+  if (platform) {
+    platform.value = performanceFilters.platform;
+    platform.addEventListener("change", () => {
+      performanceFilters.platform = platform.value || "all";
+      renderPerformanceView();
+    });
+  }
+  if (range) {
+    range.value = performanceFilters.range;
+    range.addEventListener("change", () => {
+      performanceFilters.range = range.value || "30";
+      renderPerformanceView();
+    });
+  }
+}
+
 function renderModalPillarButtons(activePillar = "") {
   const container = document.getElementById("modal-pillar-buttons");
   if (!container) return;
@@ -1176,6 +1644,191 @@ function renderModalPillarButtons(activePillar = "") {
   setPillar(nextActive);
 }
 
+function parsePostDate(value) {
+  const date = value ? new Date(value) : null;
+  return date && !isNaN(date) ? date : null;
+}
+
+function getRangeStart(range) {
+  const now = new Date();
+  const days = Number(range);
+  if (!days || range === "all") return null;
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - days + 1);
+  return start;
+}
+
+function postMatchesFilters(post, filters = {}) {
+  const platform = filters.platform || "all";
+  const status = filters.status || "all";
+  const range = filters.range || "all";
+
+  if (platform !== "all" && String(post.platform || "") !== platform) return false;
+  if (status !== "all" && String(post.status || "") !== status) return false;
+
+  const start = getRangeStart(range);
+  if (start) {
+    const postDate = parsePostDate(post.date);
+    if (!postDate || postDate < start) return false;
+  }
+
+  return true;
+}
+
+function getFilteredPosts(filters = {}) {
+  return (appState.posts || []).filter(post => postMatchesFilters(post, filters));
+}
+
+function countPostsBy(items, getter) {
+  const counts = new Map();
+  items.forEach((item) => {
+    const raw = getter(item);
+    const value = String(raw || "").trim();
+    if (!value) return;
+    counts.set(value, (counts.get(value) || 0) + 1);
+  });
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+}
+
+function getPostOperationalScore(post) {
+  const statusWeight = post.status === "published" ? 5 : post.status === "scheduled" ? 3 : 1;
+  const hasMedia = findLinkedAssetForPost(post) ? 1 : 0;
+  const hasCampaign = post.campaignId ? 1 : 0;
+  const hasPillar = getPostContentPillar(post) ? 1 : 0;
+  const postDate = parsePostDate(post.date);
+  const recencyDays = postDate ? Math.max(0, 30 - Math.floor((Date.now() - postDate.getTime()) / 86400000)) : 0;
+  return statusWeight + hasMedia + hasCampaign + hasPillar + (recencyDays / 30);
+}
+
+function getTopRankedPosts(filters = {}, limit = 5) {
+  return getFilteredPosts(filters)
+    .slice()
+    .sort((a, b) => {
+      const scoreDiff = getPostOperationalScore(b) - getPostOperationalScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+      return (parsePostDate(b.date)?.getTime() || 0) - (parsePostDate(a.date)?.getTime() || 0);
+    })
+    .slice(0, limit);
+}
+
+function getRangeLabel(range) {
+  return range === "all" ? "All time" : `Last ${range} days`;
+}
+
+function formatStatusLabel(status) {
+  return toTitleCase(status || "draft");
+}
+
+function buildTimeBuckets(posts, range = "30") {
+  const bucketCount = range === "all" ? 8 : 6;
+  const daySpan = range === "all" ? 30 : Math.max(5, Math.round(Number(range || 30) / bucketCount));
+  const now = new Date();
+  const buckets = Array.from({ length: bucketCount }, (_, index) => {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - ((bucketCount - index) * daySpan) + 1);
+    const end = new Date(start);
+    end.setDate(end.getDate() + daySpan - 1);
+    end.setHours(23, 59, 59, 999);
+    return {
+      label: start.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      shortLabel: start.toLocaleDateString("en-US", { month: "short" }),
+      start,
+      end,
+      total: 0,
+      published: 0
+    };
+  });
+
+  posts.forEach((post) => {
+    const date = parsePostDate(post.date);
+    if (!date) return;
+    const bucket = buckets.find(item => date >= item.start && date <= item.end);
+    if (!bucket) return;
+    bucket.total += 1;
+    if (post.status === "published") bucket.published += 1;
+  });
+
+  return buckets;
+}
+
+function renderComparisonRows(targetId, rows, formatter = (value) => String(value), colorResolver = () => "#c77dff") {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+
+  if (!rows.length) {
+    target.innerHTML = `<p class="text-sm text-gray-500">No matching data.</p>`;
+    return;
+  }
+
+  const max = Math.max(...rows.map(item => item.value), 1);
+  target.innerHTML = rows.map((item) => {
+    const color = colorResolver(item.key);
+    const width = Math.max(8, (item.value / max) * 100);
+    return `
+      <div class="comparison-row">
+        <div class="min-w-0">
+          <div class="flex justify-between gap-3 mb-1">
+            <span class="text-sm text-gray-200 font-medium wrap-safe">${escapeHtml(item.label)}</span>
+            <span class="text-xs text-gray-500 shrink-0">${escapeHtml(formatter(item.value))}</span>
+          </div>
+          <div class="comparison-track">
+            <div class="comparison-fill" style="width:${width}%;background:${escapeHtml(color)}"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function buildAuditSummary() {
+  const posts = appState.posts || [];
+  const campaigns = appState.campaigns || [];
+  const datedPosts = posts.filter(post => parsePostDate(post.date));
+  const publishedPosts = posts.filter(post => post.status === "published");
+  const missingCampaign = posts.filter(post => !post.campaignId);
+  const missingPillar = posts.filter(post => !getPostContentPillar(post));
+  const missingMedia = posts.filter(post => post.postType !== "text" && !findLinkedAssetForPost(post));
+  const unresolvedAssets = posts.filter(post => post.assetId && !findLinkedAssetForPost(post));
+  const campaignMismatch = posts.filter((post) => {
+    if (!post.campaignId) return false;
+    const campaign = campaigns.find(item => String(item.campaignId || "") === String(post.campaignId || ""));
+    return !!campaign && normalizeLookupValue(getPostContentPillar(post)) !== normalizeLookupValue(campaign.campaignName);
+  });
+
+  const working = [];
+  if (publishedPosts.length) working.push(`${publishedPosts.length} posts are marked published.`);
+  if (campaigns.length && campaigns.every(item => item.campaignName)) working.push(`${campaigns.length} campaigns are available for planning.`);
+  if (posts.length && missingPillar.length === 0) working.push("Content pillar mapping is complete on current rows.");
+  if (posts.length && missingCampaign.length < Math.max(2, Math.ceil(posts.length * 0.2))) working.push("Most posts are attached to campaigns.");
+
+  const attention = [];
+  if (missingCampaign.length) attention.push(`${missingCampaign.length} posts are missing campaign mapping.`);
+  if (missingPillar.length) attention.push(`${missingPillar.length} posts are missing content pillar values.`);
+  if (campaignMismatch.length) attention.push(`${campaignMismatch.length} posts disagree with their campaign pillar value.`);
+  if (missingMedia.length) attention.push(`${missingMedia.length} non-text posts do not currently resolve a linked image/video asset.`);
+  if (unresolvedAssets.length) attention.push(`${unresolvedAssets.length} posts store an asset reference that does not hydrate back cleanly.`);
+  if (!datedPosts.length) attention.push("No dated posts are available for trend analysis.");
+
+  const nextAction =
+    attention[0] ||
+    (publishedPosts.length ? "Keep publishing cadence steady and review the top campaign mix in Performance." : "Publish a small batch of posts so scheduler trends and top-post snapshots have enough signal.");
+
+  return {
+    working,
+    attention,
+    nextAction,
+    gaps: {
+      missingCampaign: missingCampaign.length,
+      missingPillar: missingPillar.length,
+      missingMedia: missingMedia.length,
+      unresolvedAssets: unresolvedAssets.length,
+      campaignMismatch: campaignMismatch.length
+    }
+  };
+}
+
 function initApp() {
   seedStars();
   cleanInvalidImportantToken();
@@ -1188,6 +1841,8 @@ function initApp() {
   setupMediaFilters();
   setupMediaUpload();
   setupModalMediaUpload();
+  setupOverviewControls();
+  setupPerformanceControls();
 
   setupInspoModal();
   setupCampaignControls();
@@ -1202,7 +1857,7 @@ function initApp() {
     
 function rerenderAll() {
   populateCampaignDropdown();
-  renderSignalsOverview();
+  renderOverviewPanel();
   renderModalPillarButtons();
   renderCalendar();
   renderLedger();
@@ -1210,6 +1865,8 @@ function rerenderAll() {
   renderMedia();
   renderInspo();
   renderConstellation();
+  renderPerformanceView();
+  renderAuditView();
 }
 
 function inspoTypeLabel(type) {
