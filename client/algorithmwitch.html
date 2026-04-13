@@ -654,6 +654,14 @@
       >
         <i class="ph-bold ph-upload-simple text-sm"></i> Upload
       </button>
+      <button
+        id="media-link-btn"
+        type="button"
+        class="px-4 py-2 bg-[#1a1128] hover:bg-[#231738] text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all flex items-center gap-2 border border-white/10"
+      >
+        <i class="ph-bold ph-link-simple"></i>
+        Add Link
+      </button>
       <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
     </div>
   </div>
@@ -1092,6 +1100,75 @@
   </div>
 </div>
 
+<div id="media-link-modal" class="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+  <div class="w-full h-full flex items-center justify-center p-6">
+    <div id="media-link-modal-card" class="w-full max-w-xl bg-[#120c1d] border border-white/10 rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-white/5">
+        <div>
+          <h3 class="text-white font-bold text-lg">Add Linked Asset</h3>
+          <p class="text-xs text-gray-500 mt-1">Save a Drive link, LinkedIn post URL, or direct image/video link to the Media Vault.</p>
+        </div>
+        <button id="close-media-link-modal-btn" type="button" class="w-10 h-10 rounded-xl bg-[#1a1128] hover:bg-[#231738] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <input id="media-link-source" class="form-input" placeholder="Paste Drive link, file ID, LinkedIn URL, or direct asset URL">
+        <input id="media-link-name" class="form-input" placeholder="Asset name">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input id="media-link-type" class="form-input" placeholder="image, video, carousel, article" value="image">
+          <input id="media-link-badge" class="form-input" placeholder="Badge label">
+        </div>
+        <textarea id="media-link-meta" class="form-input min-h-[120px]" placeholder="Notes or asset meta"></textarea>
+      </div>
+
+      <div class="px-6 py-5 border-t border-white/5 flex justify-end gap-3">
+        <button id="cancel-media-link-btn" type="button" class="px-4 py-2 bg-[#1a1128] hover:bg-[#231738] text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all border border-white/10">
+          Cancel
+        </button>
+        <button id="save-media-link-btn" type="button" class="px-4 py-2 bg-gradient-to-r from-[#9d4edd] to-[#c77dff] hover:opacity-90 text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all border border-white/10">
+          Save Link
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="media-asset-modal" class="fixed inset-0 z-[121] bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+  <div class="w-full h-full flex items-center justify-center p-6">
+    <div id="media-asset-modal-card" class="w-full max-w-4xl bg-[#120c1d] border border-white/10 rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-white/5">
+        <div>
+          <h3 id="media-asset-modal-title" class="text-white font-bold text-lg">Media Asset</h3>
+          <p id="media-asset-modal-subtitle" class="text-xs text-gray-500 mt-1">Vault details</p>
+        </div>
+        <button id="close-media-asset-modal-btn" type="button" class="w-10 h-10 rounded-xl bg-[#1a1128] hover:bg-[#231738] text-gray-400 hover:text-white border border-white/5 transition-colors flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-0">
+        <div id="media-asset-modal-preview" class="min-h-[320px] bg-[#0f0a18] border-r border-white/5 flex items-center justify-center p-6"></div>
+        <div class="p-6 space-y-5">
+          <div id="media-asset-modal-meta" class="space-y-3"></div>
+          <div>
+            <h4 class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Linked Performance</h4>
+            <div id="media-asset-modal-performance" class="grid grid-cols-2 gap-3"></div>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-5 border-t border-white/5 flex justify-end gap-3">
+        <button id="media-asset-modal-close-btn" type="button" class="px-4 py-2 bg-[#1a1128] hover:bg-[#231738] text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all border border-white/10">
+          Close
+        </button>
+        <a id="media-asset-modal-open-link" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-gradient-to-r from-[#9d4edd] to-[#c77dff] hover:opacity-90 text-white text-xs uppercase tracking-wider font-bold rounded-xl transition-all border border-white/10">
+          Open Asset
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="ai-toast" class="fixed bottom-8 right-8 z-[110] opacity-0 pointer-events-none transition-opacity duration-300">
   <div class="bg-[#181125] px-5 py-4 rounded-xl border border-white/5 shadow-2xl flex items-center gap-4">
     <div class="w-10 h-10 rounded-full bg-[#2d1b4e] flex items-center justify-center text-[#c77dff]">
@@ -1203,10 +1280,33 @@ const saveButton = document.getElementById("save-post-btn");
 
 const mediaUploadBtn = document.getElementById("media-upload-btn");
 const mediaUploadInput = document.getElementById("media-upload-input");
+const mediaLinkBtn = document.getElementById("media-link-btn");
 
 const modalMediaUploadTrigger = document.getElementById("modal-media-upload-trigger");
 const modalMediaUploadInput = document.getElementById("modal-media-upload-input");
 const modalMediaStatus = document.getElementById("modal-media-status");
+
+const mediaLinkModal = document.getElementById("media-link-modal");
+const mediaLinkModalCard = document.getElementById("media-link-modal-card");
+const closeMediaLinkModalBtn = document.getElementById("close-media-link-modal-btn");
+const cancelMediaLinkBtn = document.getElementById("cancel-media-link-btn");
+const saveMediaLinkBtn = document.getElementById("save-media-link-btn");
+const mediaLinkSourceInput = document.getElementById("media-link-source");
+const mediaLinkNameInput = document.getElementById("media-link-name");
+const mediaLinkTypeInput = document.getElementById("media-link-type");
+const mediaLinkBadgeInput = document.getElementById("media-link-badge");
+const mediaLinkMetaInput = document.getElementById("media-link-meta");
+
+const mediaAssetModal = document.getElementById("media-asset-modal");
+const mediaAssetModalCard = document.getElementById("media-asset-modal-card");
+const closeMediaAssetModalBtn = document.getElementById("close-media-asset-modal-btn");
+const mediaAssetModalCloseBtn = document.getElementById("media-asset-modal-close-btn");
+const mediaAssetModalTitle = document.getElementById("media-asset-modal-title");
+const mediaAssetModalSubtitle = document.getElementById("media-asset-modal-subtitle");
+const mediaAssetModalPreview = document.getElementById("media-asset-modal-preview");
+const mediaAssetModalMeta = document.getElementById("media-asset-modal-meta");
+const mediaAssetModalPerformance = document.getElementById("media-asset-modal-performance");
+const mediaAssetModalOpenLink = document.getElementById("media-asset-modal-open-link");
 
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
@@ -1272,6 +1372,14 @@ function getCanonicalPillarValue(value) {
   return CANONICAL_PILLAR_MAP[normalized] || cleaned;
 }
 
+function normalizePillarToken(value) {
+  return normalizeLookupValue(getCanonicalPillarValue(value));
+}
+
+function normalizePillarLabel(value) {
+  return normalizeDisplayText(getCanonicalPillarValue(value));
+}
+
 function toTitleCase(value) {
   const smallWords = new Set(["a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to", "vs", "via"]);
   return normalizeDisplayText(value)
@@ -1295,7 +1403,7 @@ function formatCampaignDisplayName(value) {
 }
 
 function formatContentPillarLabel(value) {
-  return toTitleCase(getCanonicalPillarValue(value));
+  return toTitleCase(normalizePillarLabel(value));
 }
 
 function getDisplayPostContentPillar(post) {
@@ -1333,7 +1441,7 @@ function getDisplayExcerpt(value, fallback = "") {
 }
 
 function getPostContentPillar(post) {
-  return String(post?.hubPillarLabel || "").trim();
+  return String(post?.hubPillarLabel || post?.pillar || "").trim();
 }
 
 function getCampaignContentPillar(campaign) {
@@ -1349,7 +1457,7 @@ function getAvailableContentPillars() {
     .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
     .forEach((campaign) => {
       const pillar = getDisplayCampaignContentPillar(campaign);
-      const key = normalizeLookupValue(pillar);
+      const key = normalizePillarToken(pillar);
       if (key && !seen.has(key)) {
         seen.add(key);
         ordered.push(pillar);
@@ -1358,7 +1466,7 @@ function getAvailableContentPillars() {
 
   (appState.posts || []).forEach((post) => {
     const pillar = getDisplayPostContentPillar(post);
-    const key = normalizeLookupValue(pillar);
+    const key = normalizePillarToken(pillar);
     if (key && !seen.has(key)) {
       seen.add(key);
       ordered.push(pillar);
@@ -1369,23 +1477,23 @@ function getAvailableContentPillars() {
 }
 
 function getPillarTheme(pillarValue) {
-  const normalized = normalizeLookupValue(getCanonicalPillarValue(pillarValue));
+  const normalized = normalizePillarToken(pillarValue);
   const matchedCampaign = (appState.campaigns || []).find(campaign => {
-    return normalizeLookupValue(getDisplayCampaignContentPillar(campaign)) === normalized;
+    return normalizePillarToken(getDisplayCampaignContentPillar(campaign)) === normalized;
   });
 
   if (matchedCampaign?.color) return matchedCampaign.color;
   if (!normalized) return "#6b7280";
 
   const pillars = getAvailableContentPillars();
-  const index = Math.max(0, pillars.findIndex(item => normalizeLookupValue(item) === normalized));
+  const index = Math.max(0, pillars.findIndex(item => normalizePillarToken(item) === normalized));
   return PILLAR_FALLBACK_COLORS[index % PILLAR_FALLBACK_COLORS.length];
 }
 
 function legacyPillarForDisplayValue(value) {
-  const normalized = normalizeLookupValue(getCanonicalPillarValue(value));
+  const normalized = normalizePillarToken(value);
   const matchedCampaign = (appState.campaigns || []).find(campaign => {
-    return normalizeLookupValue(getDisplayCampaignContentPillar(campaign)) === normalized;
+    return normalizePillarToken(getDisplayCampaignContentPillar(campaign)) === normalized;
   });
   return matchedCampaign?.pillar || normalizePillar(value);
 }
@@ -1598,7 +1706,7 @@ function renderOverviewPanel() {
 
 function renderPerformanceView() {
   syncPerformanceControls();
-  const filteredPosts = getFilteredPosts(performanceFilters);
+  const filteredPosts = getFilteredPerformancePosts();
   const kpis = document.getElementById("performance-kpis");
   const trendSummary = document.getElementById("performance-trend-summary");
   const timeChart = document.getElementById("performance-time-chart");
@@ -1641,7 +1749,9 @@ function renderPerformanceView() {
   }
 
   if (trendSummary) {
-    trendSummary.textContent = primaryInsightMetric
+    trendSummary.textContent = !filteredPosts.length
+      ? `No posts match ${getRangeLabel(performanceFilters.range)}`
+      : primaryInsightMetric
       ? `${primaryInsightMetric.label} over time • ${performanceFilters.platform === "all" ? "All platforms" : toTitleCase(performanceFilters.platform)}`
       : `${filteredPosts.length} posts • ${performanceFilters.platform === "all" ? "All platforms" : toTitleCase(performanceFilters.platform)}`;
   }
@@ -1712,7 +1822,14 @@ function renderPerformanceView() {
 
   const topPostsTarget = document.getElementById("performance-top-posts");
   if (topPostsTarget) {
-    const topPosts = getTopRankedPosts(performanceFilters, 4);
+    const topPosts = filteredPosts
+      .slice()
+      .sort((a, b) => {
+        const scoreDiff = getPostRankingMeta(b, filteredPosts).score - getPostRankingMeta(a, filteredPosts).score;
+        if (scoreDiff !== 0) return scoreDiff;
+        return (parsePostDate(b.date)?.getTime() || 0) - (parsePostDate(a.date)?.getTime() || 0);
+      })
+      .slice(0, 4);
     topPostsTarget.innerHTML = topPosts.length
       ? topPosts.map((post, index) => `
         <button type="button" onclick="openModalById('${escapeHtml(post.id)}')" class="w-full text-left p-3 rounded-xl bg-[#181125] border border-white/5 hover:border-white/10 transition-colors">
@@ -1726,7 +1843,7 @@ function renderPerformanceView() {
           <div class="mt-1 text-[10px] text-gray-500">${escapeHtml(getInsightSummaryLine(post, filteredPosts))}</div>
         </button>
       `).join("")
-      : `<p class="text-sm text-gray-500">No posts available for the current performance filters.</p>`;
+      : `<div class="pillar-empty-state">No posts available for ${escapeHtml(getRangeLabel(performanceFilters.range))} on ${escapeHtml(performanceFilters.platform === "all" ? "all platforms" : toTitleCase(performanceFilters.platform))}.</div>`;
   }
 }
 
@@ -1912,6 +2029,31 @@ function getFilteredPosts(filters = {}) {
   return (appState.posts || []).filter(post => postMatchesFilters(post, filters));
 }
 
+function getFilteredPerformancePosts() {
+  return (appState.posts || []).filter((post) => {
+    const platformOk =
+      performanceFilters.platform === "all" ||
+      String(post.platform || "").toLowerCase() === String(performanceFilters.platform || "").toLowerCase();
+
+    if (!platformOk) return false;
+
+    const dateValue = parsePostDate(post.scheduledAt || post.date);
+    if (!dateValue) return false;
+
+    if (performanceFilters.range === "all") return true;
+
+    const rangeDays = Number(performanceFilters.range || 30);
+    if (!Number.isFinite(rangeDays) || rangeDays <= 0) return true;
+
+    const now = new Date();
+    const cutoff = new Date(now);
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(now.getDate() - rangeDays + 1);
+
+    return dateValue >= cutoff && dateValue <= now;
+  });
+}
+
 function countPostsBy(items, getter) {
   const counts = new Map();
   items.forEach((item) => {
@@ -2093,7 +2235,7 @@ function buildAuditSummary() {
   const campaignMismatch = posts.filter((post) => {
     if (!post.campaignId) return false;
     const campaign = campaigns.find(item => String(item.campaignId || "") === String(post.campaignId || ""));
-    return !!campaign && normalizeLookupValue(getDisplayPostContentPillar(post)) !== normalizeLookupValue(getDisplayCampaignContentPillar(campaign));
+    return !!campaign && normalizePillarToken(getDisplayPostContentPillar(post)) !== normalizePillarToken(getDisplayCampaignContentPillar(campaign));
   });
 
   const working = [];
@@ -2139,6 +2281,7 @@ function initApp() {
   setupCalendarControls();
   setupMediaFilters();
   setupMediaUpload();
+  setupMediaLinkModal();
   setupModalMediaUpload();
   setupOverviewControls();
   setupPerformanceControls();
@@ -2151,8 +2294,26 @@ function initApp() {
   setupMediaAdvancedFilters();
 
   switchView("calendar");
-  rerenderAll();
-  syncRemoteIfConfigured();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      renderCalendar();
+      renderOverviewPanel();
+      rerenderAll();
+    });
+  });
+
+  syncRemoteIfConfigured().then(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentView === "calendar") {
+          renderCalendar();
+          renderOverviewPanel();
+        }
+      });
+    });
+  }).catch((err) => {
+    console.error("Remote sync failed during init:", err);
+  });
 }
     
 function rerenderAll() {
@@ -2160,6 +2321,8 @@ function rerenderAll() {
   renderOverviewPanel();
   renderModalPillarButtons();
   renderCalendar();
+  renderLedgerFilterMenus();
+  updateLedgerFilterLabels();
   renderLedger();
   renderQueue(getScheduledQueue());
   renderMedia();
@@ -2639,7 +2802,7 @@ function renderLedger() {
   let posts = [...(appState.posts || [])];
 
   if (ledgerFilters.pillar !== "all") {
-    posts = posts.filter(post => normalizeLookupValue(getDisplayPostContentPillar(post)) === normalizeLookupValue(ledgerFilters.pillar));
+    posts = posts.filter(post => normalizePillarToken(getDisplayPostContentPillar(post)) === normalizePillarToken(ledgerFilters.pillar));
   }
 
   if (ledgerFilters.campaign !== "all") {
@@ -3067,14 +3230,28 @@ function setupConstellationInteractions() {
     updateTransform();
   });
 
-  viewport.addEventListener("pointerup", () => {
+  function stopConstellationDrag(pointerId) {
     isDragging = false;
     viewport.style.cursor = "grab";
+
+    if (viewport?.releasePointerCapture && pointerId != null) {
+      try {
+        viewport.releasePointerCapture(pointerId);
+      } catch (_) {}
+    }
+  }
+
+  viewport.addEventListener("pointerup", (e) => {
+    stopConstellationDrag(e.pointerId);
   });
 
-  viewport.addEventListener("pointercancel", () => {
-    isDragging = false;
-    viewport.style.cursor = "grab";
+  viewport.addEventListener("pointercancel", (e) => {
+    stopConstellationDrag(e.pointerId);
+  });
+
+  viewport.addEventListener("pointerleave", (e) => {
+    if (!isDragging) return;
+    stopConstellationDrag(e.pointerId);
   });
 
   viewport.addEventListener("wheel", (e) => {
@@ -3100,8 +3277,15 @@ function setupConstellationInteractions() {
   document.getElementById("zoom-out")?.addEventListener("click", () => zoomConstellation(0.87));
   document.getElementById("zoom-reset")?.addEventListener("click", () => fitConstellation());
 
+  let constellationResizeFrame = null;
+
   window.addEventListener("resize", () => {
-    if (currentView === "constellation") fitConstellation();
+    if (currentView !== "constellation") return;
+
+    if (constellationResizeFrame) cancelAnimationFrame(constellationResizeFrame);
+    constellationResizeFrame = requestAnimationFrame(() => {
+      fitConstellation({ preserveUserView: true });
+    });
   });
 
   setTimeout(() => {
@@ -3125,16 +3309,25 @@ function zoomConstellation(multiplier) {
   updateTransform();
 }
 
-function fitConstellation() {
+function fitConstellation({ preserveUserView = false } = {}) {
   if (!viewport || !canvas) return;
 
-  const rect = viewport.getBoundingClientRect();
-  const worldWidth = 2400;
-  const worldHeight = 1600;
+  if (preserveUserView && Number.isFinite(scale) && scale > 0) {
+    updateTransform();
+    return;
+  }
 
-  scale = clamp(Math.min(rect.width / worldWidth, rect.height / worldHeight, 0.72), 0.35, 2.2);
-  panX = (rect.width - worldWidth * scale) / 2;
-  panY = (rect.height - worldHeight * scale) / 2;
+  const rect = viewport.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  const worldWidth = 2400;
+  const worldHeight = 2200;
+
+  const fitScale = Math.min(rect.width / worldWidth, rect.height / worldHeight);
+  scale = clamp(fitScale * 0.94, 0.32, 2.2);
+
+  panX = Math.round((rect.width - worldWidth * scale) / 2);
+  panY = Math.round((rect.height - worldHeight * scale) / 2);
 
   updateTransform();
 }
@@ -3200,56 +3393,75 @@ function setupMediaUpload() {
     });
     mediaUploadInput.dataset.bound = "true";
   }
-
-  if (mediaLinkBtn && !mediaLinkBtn.dataset.bound) {
-    mediaLinkBtn.addEventListener("click", async () => {
-      await promptSaveMediaLink();
-    });
-    mediaLinkBtn.dataset.bound = "true";
-  }
 }
 
-async function promptSaveMediaLink() {
-  const sourceInput = window.prompt("Paste a Google Drive link, Drive file ID, LinkedIn URL, or direct asset URL");
-  if (sourceInput === null) return;
+function openMediaLinkModal() {
+  if (!mediaLinkModal || !mediaLinkModalCard) return;
+  mediaLinkModal.classList.remove("opacity-0", "pointer-events-none");
+  mediaLinkModalCard.classList.remove("scale-95");
+  mediaLinkModalCard.classList.add("scale-100");
+}
 
-  const sourceValue = String(sourceInput || "").trim();
-  if (!sourceValue) {
-    showToast("Missing link", "Enter a Drive link, Drive file ID, or URL.", "ph-warning", "text-yellow-400");
+function closeMediaLinkModal() {
+  if (!mediaLinkModal || !mediaLinkModalCard) return;
+  mediaLinkModal.classList.add("opacity-0", "pointer-events-none");
+  mediaLinkModalCard.classList.remove("scale-100");
+  mediaLinkModalCard.classList.add("scale-95");
+
+  setTimeout(() => {
+    if (mediaLinkSourceInput) mediaLinkSourceInput.value = "";
+    if (mediaLinkNameInput) mediaLinkNameInput.value = "";
+    if (mediaLinkTypeInput) mediaLinkTypeInput.value = "image";
+    if (mediaLinkBadgeInput) mediaLinkBadgeInput.value = "";
+    if (mediaLinkMetaInput) mediaLinkMetaInput.value = "";
+  }, 180);
+}
+
+async function saveMediaLinkFromModal() {
+  const sourceUrl = String(mediaLinkSourceInput?.value || "").trim();
+  if (!sourceUrl) {
+    showToast("Missing link", "Enter a Drive link, file ID, LinkedIn URL, or direct asset URL.", "ph-warning", "text-yellow-400");
     return;
   }
-
-  const nameInput = window.prompt("Asset name (optional)", "");
-  if (nameInput === null) return;
-
-  const typeInput = window.prompt("Asset type: image, video, carousel, article", "image");
-  if (typeInput === null) return;
-
-  const badgeInput = window.prompt("Badge label (optional)", "");
-  if (badgeInput === null) return;
-
-  const metaInput = window.prompt("Meta / notes for this asset (optional)", "");
-  if (metaInput === null) return;
 
   try {
     showToast("Saving link", "Saving linked media asset...", "ph-link-simple", "text-[#c77dff]");
 
-    await apiSaveMediaLink({
-      sourceUrl: sourceValue,
-      assetName: String(nameInput || "").trim(),
-      assetType: String(typeInput || "image").trim().toLowerCase(),
-      assetBadge: String(badgeInput || "").trim(),
-      assetMeta: String(metaInput || "").trim(),
-      notes: String(metaInput || "").trim(),
+    await apiPost("saveMediaLink", {
+      sourceUrl,
+      assetName: String(mediaLinkNameInput?.value || "").trim(),
+      assetType: String(mediaLinkTypeInput?.value || "image").trim().toLowerCase(),
+      assetBadge: String(mediaLinkBadgeInput?.value || "").trim(),
+      assetMeta: String(mediaLinkMetaInput?.value || "").trim(),
+      notes: String(mediaLinkMetaInput?.value || "").trim(),
       campaign: ""
     });
 
     await refreshMediaFromRemote();
+    closeMediaLinkModal();
+    renderMedia();
     showToast("Saved", "Linked media asset added to the vault.", "ph-check", "text-[#00ffaa]");
   } catch (err) {
     console.error(err);
     showToast("Link save failed", err.message || "Could not save linked media.", "ph-warning", "text-yellow-400");
   }
+}
+
+function setupMediaLinkModal() {
+  mediaLinkBtn?.addEventListener("click", openMediaLinkModal);
+  closeMediaLinkModalBtn?.addEventListener("click", closeMediaLinkModal);
+  cancelMediaLinkBtn?.addEventListener("click", closeMediaLinkModal);
+  saveMediaLinkBtn?.addEventListener("click", saveMediaLinkFromModal);
+
+  mediaLinkModal?.addEventListener("click", (e) => {
+    if (e.target === mediaLinkModal) closeMediaLinkModal();
+  });
+
+  closeMediaAssetModalBtn?.addEventListener("click", closeMediaAssetModal);
+  mediaAssetModalCloseBtn?.addEventListener("click", closeMediaAssetModal);
+  mediaAssetModal?.addEventListener("click", (e) => {
+    if (e.target === mediaAssetModal) closeMediaAssetModal();
+  });
 }
 
 async function editCampaignById(campaignId) {
@@ -3449,14 +3661,14 @@ function renderMedia() {
       : `<div class="w-full h-full flex items-center justify-center"><i class="ph-fill ${icon} text-gray-600 text-5xl"></i></div>`;
 
     return `
-      <div class="glass-card overflow-hidden group">
+      <button type="button" class="glass-card overflow-hidden group text-left w-full" onclick="openMediaAsset('${escapeHtml(item.id)}')">
         <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4">
           ${previewBlock}
           <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300">${escapeHtml(badge)}</span>
           <div class="absolute inset-0 bg-[#2d1b4e]/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-            <button type="button" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" onclick="openMediaAsset('${escapeHtml(item.id)}')" title="${escapeHtml(overlayLabel)}">
+            <span class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white" title="${escapeHtml(overlayLabel)}">
               <i class="ph-bold ph-arrows-out-simple text-xl"></i>
-            </button>
+            </span>
           </div>
         </div>
         <div class="p-4">
@@ -3464,22 +3676,109 @@ function renderMedia() {
           <p class="text-gray-500 text-[10px] font-medium wrap-safe">${escapeHtml(metaLine)}</p>
           ${assetUrl ? `<p class="text-gray-600 text-[10px] font-medium wrap-safe mt-1">${escapeHtml(getDisplayExcerpt(assetUrl, assetUrl))}</p>` : ""}
         </div>
-      </div>
+      </button>
     `;
   }).join("");
+}
+
+function getMediaAssetDetailRows(item, linkedPost) {
+  return [
+    { label: "Type", value: toTitleCase(item.type || item.assetType || "asset") },
+    { label: "Campaign", value: linkedPost?.campaignName ? formatCampaignDisplayName(linkedPost.campaignName) : item.campaign ? formatCampaignDisplayName(item.campaign) : "Unassigned" },
+    { label: "Linked Post", value: linkedPost?.title ? getDisplayTitle(linkedPost.title, linkedPost.title) : "Not linked" },
+    { label: "Source", value: item.sourceType ? toTitleCase(item.sourceType) : item.fileUrl ? "Drive Upload" : item.sourceUrl ? "Linked URL" : "Unknown" },
+    { label: "Badge", value: item.assetBadge || "None" },
+    { label: "Notes", value: item.meta || "No notes saved" }
+  ];
+}
+
+function getMediaAssetPerformanceRows(linkedPost) {
+  if (!linkedPost) return [];
+
+  return [
+    { label: "Impressions", value: normalizeMetricNumber(linkedPost.impressions).toLocaleString() },
+    { label: "Reach", value: normalizeMetricNumber(linkedPost.reach).toLocaleString() },
+    { label: "Likes", value: normalizeMetricNumber(linkedPost.likes).toLocaleString() },
+    { label: "Comments", value: normalizeMetricNumber(linkedPost.comments).toLocaleString() },
+    { label: "Shares", value: normalizeMetricNumber(linkedPost.shares).toLocaleString() },
+    { label: "Clicks", value: normalizeMetricNumber(linkedPost.clicks).toLocaleString() }
+  ];
+}
+
+function openMediaAssetModal(item) {
+  if (!item || !mediaAssetModal || !mediaAssetModalCard) return;
+
+  const linkedPost = (appState.posts || []).find(post => String(post.id || "") === String(item.postId || item.linkedPostId || ""));
+  const type = String(item.type || item.assetType || "").toLowerCase();
+  const previewUrl = item.fileUrl || item.sourceUrl || "";
+
+  if (mediaAssetModalTitle) {
+    mediaAssetModalTitle.textContent = item.title || item.assetName || "Media Asset";
+  }
+
+  if (mediaAssetModalSubtitle) {
+    mediaAssetModalSubtitle.textContent = linkedPost?.campaignName
+      ? formatCampaignDisplayName(linkedPost.campaignName)
+      : item.campaign
+      ? formatCampaignDisplayName(item.campaign)
+      : "Vault details";
+  }
+
+  if (mediaAssetModalPreview) {
+    if (previewUrl && type === "image") {
+      mediaAssetModalPreview.innerHTML = `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(item.title || "Media asset")}" class="max-w-full max-h-[420px] object-contain rounded-xl" loading="lazy">`;
+    } else if (previewUrl && type === "video") {
+      mediaAssetModalPreview.innerHTML = `<video src="${escapeHtml(previewUrl)}" class="max-w-full max-h-[420px] rounded-xl" controls playsinline preload="metadata"></video>`;
+    } else {
+      const icon = type === "carousel" ? "ph-images" : type === "article" ? "ph-article" : "ph-image";
+      mediaAssetModalPreview.innerHTML = `<div class="w-full h-full flex items-center justify-center"><i class="ph-fill ${icon} text-gray-600 text-7xl"></i></div>`;
+    }
+  }
+
+  if (mediaAssetModalMeta) {
+    mediaAssetModalMeta.innerHTML = getMediaAssetDetailRows(item, linkedPost).map((row) => `
+      <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
+        <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">${escapeHtml(row.label)}</div>
+        <div class="text-sm text-white wrap-safe">${escapeHtml(row.value)}</div>
+      </div>
+    `).join("");
+  }
+
+  if (mediaAssetModalPerformance) {
+    const rows = getMediaAssetPerformanceRows(linkedPost);
+    mediaAssetModalPerformance.innerHTML = rows.length
+      ? rows.map((row) => `
+        <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">${escapeHtml(row.label)}</div>
+          <div class="text-sm text-white">${escapeHtml(row.value)}</div>
+        </div>
+      `).join("")
+      : `<div class="col-span-2 pillar-empty-state">No linked post performance is available for this asset.</div>`;
+  }
+
+  if (mediaAssetModalOpenLink) {
+    const targetUrl = item.fileUrl || item.sourceUrl || "";
+    mediaAssetModalOpenLink.href = targetUrl || "#";
+    mediaAssetModalOpenLink.classList.toggle("pointer-events-none", !targetUrl);
+    mediaAssetModalOpenLink.classList.toggle("opacity-40", !targetUrl);
+  }
+
+  mediaAssetModal.classList.remove("opacity-0", "pointer-events-none");
+  mediaAssetModalCard.classList.remove("scale-95");
+  mediaAssetModalCard.classList.add("scale-100");
+}
+
+function closeMediaAssetModal() {
+  if (!mediaAssetModal || !mediaAssetModalCard) return;
+  mediaAssetModal.classList.add("opacity-0", "pointer-events-none");
+  mediaAssetModalCard.classList.remove("scale-100");
+  mediaAssetModalCard.classList.add("scale-95");
 }
 
 function openMediaAsset(assetId) {
   const item = (appState.media || []).find(asset => asset.id === assetId);
   if (!item) return;
-
-  const targetUrl = item.fileUrl || item.sourceUrl || "";
-  if (targetUrl) {
-    window.open(targetUrl, "_blank", "noopener,noreferrer");
-    return;
-  }
-
-  showToast("Media", item.title || "Asset selected", "ph-image", "text-[#00ffaa]");
+  openMediaAssetModal(item);
 }
 
 async function refreshMediaFromRemote() {
@@ -3516,6 +3815,147 @@ async function refreshMediaFromRemote() {
 
   persistLocalState();
   rerenderAll();
+}
+
+function getUniqueLedgerCampaignOptions() {
+  const seen = new Set();
+  return (appState.campaigns || [])
+    .filter(c => !c.isArchived)
+    .map(c => ({
+      value: String(c.campaignId || "").trim(),
+      label: String(c.campaignName || "").trim()
+    }))
+    .filter(item => {
+      if (!item.value || !item.label) return false;
+      if (seen.has(item.value)) return false;
+      seen.add(item.value);
+      return true;
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function getUniqueLedgerPillarOptions() {
+  const seen = new Set();
+  const sourceValues = [
+    ...(appState.posts || []).map(post => post.pillar || post.hubPillarLabel),
+    ...(appState.campaigns || []).map(campaign => campaign.pillar)
+  ];
+
+  return sourceValues
+    .map(value => normalizePillarLabel(value))
+    .filter(Boolean)
+    .filter(label => {
+      const token = normalizePillarToken(label);
+      if (!token || seen.has(token)) return false;
+      seen.add(token);
+      return true;
+    })
+    .map(label => ({
+      value: normalizePillarToken(label),
+      label
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function renderLedgerFilterMenus() {
+  const pillarMenu = document.getElementById("ledger-pillar-submenu");
+  const campaignMenu = document.getElementById("ledger-campaign-submenu");
+
+  if (pillarMenu) {
+    const pillarInner = pillarMenu.querySelector(".p-2") || pillarMenu;
+    const pillarOptions = getUniqueLedgerPillarOptions();
+
+    pillarInner.innerHTML = `
+      <button
+        type="button"
+        data-filter-key="pillar"
+        data-filter-value="all"
+        class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+      >
+        <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+        All Pillars
+      </button>
+      ${pillarOptions.map(option => `
+        <button
+          type="button"
+          data-filter-key="pillar"
+          data-filter-value="${escapeHtml(option.value)}"
+          class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+        >
+          <div class="w-2 h-2 rounded-full bg-[#c77dff]"></div>
+          ${escapeHtml(option.label)}
+        </button>
+      `).join("")}
+    `;
+  }
+
+  if (campaignMenu) {
+    const campaignInner = campaignMenu.querySelector(".p-2") || campaignMenu;
+    const campaignOptions = getUniqueLedgerCampaignOptions();
+
+    campaignInner.innerHTML = `
+      <button
+        type="button"
+        data-filter-key="campaign"
+        data-filter-value="all"
+        class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+      >
+        <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+        All Campaigns
+      </button>
+      ${campaignOptions.map(option => `
+        <button
+          type="button"
+          data-filter-key="campaign"
+          data-filter-value="${escapeHtml(option.value)}"
+          class="ledger-filter-option w-full px-3 py-2 rounded-lg hover:bg-[#2d1b4e] text-left text-xs text-gray-300 hover:text-white transition-all flex items-center gap-2"
+        >
+          <div class="w-2 h-2 rounded-full bg-[#c77dff]"></div>
+          ${escapeHtml(option.label)}
+        </button>
+      `).join("")}
+    `;
+  }
+}
+
+function updateLedgerFilterLabels() {
+  const pillarLabel = document.getElementById("ledger-filter-pillarlbl");
+  const campaignLabel = document.getElementById("ledger-filter-campaignlbl");
+  const typeLabel = document.getElementById("ledger-filter-typelbl");
+  const statusLabel = document.getElementById("ledger-filter-statuslbl");
+
+  if (pillarLabel) {
+    pillarLabel.textContent = ledgerFilters.pillar === "all" ? "All" : formatContentPillarLabel(normalizePillarLabel(ledgerFilters.pillar));
+  }
+
+  if (campaignLabel) {
+    campaignLabel.textContent = ledgerFilters.campaign === "all"
+      ? "All"
+      : formatCampaignDisplayName((appState.campaigns || []).find(c => String(c.campaignId || "") === String(ledgerFilters.campaign || ""))?.campaignName || "All");
+  }
+
+  if (typeLabel) {
+    const labelMaps = {
+      all: "All",
+      image: "Image",
+      carousel: "Carousel",
+      video: "Video",
+      article: "Article",
+      text: "Text",
+      poll: "Poll"
+    };
+    typeLabel.textContent = labelMaps[ledgerFilters.type] || "All";
+  }
+
+  if (statusLabel) {
+    const labelMaps = {
+      all: "All",
+      draft: "Draft",
+      scheduled: "Scheduled",
+      published: "Published"
+    };
+    statusLabel.textContent = labelMaps[ledgerFilters.status] || "All";
+  }
 }
 
 function setupPillarButtons() {
@@ -3574,35 +4014,12 @@ function setupLedgerControls() {
   const sortToggle = document.getElementById("ledger-sort-toggle");
   const sortDropdown = document.getElementById("ledger-sort-dropdown");
   const resetBtn = document.getElementById("ledger-filter-reset");
-
-  const pillarLabel = document.getElementById("ledger-filter-pillarlbl");
-  const campaignLabel = document.getElementById("ledger-filter-campaignlbl");
-  const typeLabel = document.getElementById("ledger-filter-typelbl");
-  const statusLabel = document.getElementById("ledger-filter-statuslbl");
-
-  const labelMaps = {
-    type: {
-      all: "All",
-      image: "Image",
-      carousel: "Carousel",
-      video: "Video",
-      article: "Article",
-      text: "Text",
-      poll: "Poll"
-    },
-    status: {
-      all: "All",
-      draft: "Draft",
-      scheduled: "Scheduled",
-      published: "Published"
-    }
-  };
+  renderLedgerFilterMenus();
+  updateLedgerFilterLabels();
 
   filterToggle?.addEventListener("click", (e) => {
     e.stopPropagation();
     sortDropdown?.classList.add("hidden");
-    populateLedgerPillarMenu();
-    populateLedgerCampaignMenu();
     filterDropdown?.classList.toggle("hidden");
   });
 
@@ -3615,35 +4032,6 @@ function setupLedgerControls() {
   filterDropdown?.addEventListener("click", (e) => {
     const btn = e.target.closest(".ledger-filter-option");
     if (!btn) return;
-
-    const key = btn.dataset.filterKey;
-    const value = btn.dataset.filterValue || "all";
-    if (!key) return;
-
-    ledgerFilters[key] = value;
-
-    if (key === "pillar" && pillarLabel) {
-      pillarLabel.textContent = value === "all" ? "All" : formatContentPillarLabel(value);
-    }
-
-    if (key === "campaign" && campaignLabel) {
-      campaignLabel.textContent =
-        value === "all"
-          ? "All"
-          : formatCampaignDisplayName((appState.campaigns || []).find(c => String(c.campaignId || "") === String(value || ""))?.campaignName || "All");
-    }
-
-    if (key === "type" && typeLabel) {
-      typeLabel.textContent = labelMaps.type[value] || "All";
-    }
-
-    if (key === "status" && statusLabel) {
-      statusLabel.textContent = labelMaps.status[value] || "All";
-    }
-
-    renderLedger();
-    filterDropdown.classList.add("hidden");
-    showToast("Filter applied", "Ledger filters updated.", "ph-check", "text-[#00ffaa]");
   });
 
   resetBtn?.addEventListener("click", () => {
@@ -3653,27 +4041,36 @@ function setupLedgerControls() {
       type: "all",
       status: "all"
     };
-
-    if (pillarLabel) pillarLabel.textContent = "All";
-    if (campaignLabel) campaignLabel.textContent = "All";
-    if (typeLabel) typeLabel.textContent = "All";
-    if (statusLabel) statusLabel.textContent = "All";
-
+    updateLedgerFilterLabels();
     renderLedger();
     filterDropdown?.classList.add("hidden");
     showToast("Filters cleared", "Ledger filters reset.", "ph-eraser", "text-gray-400");
   });
 
-  document.querySelectorAll(".ledger-sort-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      ledgerSortMode = btn.dataset.ledgerSort || "newest";
+  document.addEventListener("click", (e) => {
+    const filterOption = e.target.closest(".ledger-filter-option");
+    if (filterOption) {
+      const key = filterOption.dataset.filterKey;
+      const value = filterOption.dataset.filterValue;
+
+      if (key) {
+        ledgerFilters[key] = value || "all";
+        updateLedgerFilterLabels();
+        renderLedger();
+      }
+
+      filterDropdown?.classList.add("hidden");
+      return;
+    }
+
+    const sortBtn = e.target.closest(".ledger-sort-btn");
+    if (sortBtn) {
+      ledgerSortMode = sortBtn.dataset.ledgerSort || "newest";
       renderLedger();
       sortDropdown?.classList.add("hidden");
-      showToast("Sorted", "Ledger order updated.", "ph-sort-ascending", "text-[#00f0ff]");
-    });
-  });
+      return;
+    }
 
-  document.addEventListener("click", (e) => {
     if (!e.target.closest("#ledger-filter-dropdown") && !e.target.closest("#ledger-filter-toggle")) {
       filterDropdown?.classList.add("hidden");
     }
@@ -4013,6 +4410,7 @@ async function duplicatePostById(postId) {
 function switchView(viewName) {
   currentView = viewName;
   const backgroundOverlay = document.getElementById("app-background-overlay");
+  const mainShell = document.getElementById("main-shell-panel");
 
   document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.classList.remove("bg-[#2d1b4e]", "text-white", "active");
@@ -4036,43 +4434,55 @@ function switchView(viewName) {
     targetView.classList.add("flex");
   }
 
+  if (mainShell) {
+    mainShell.scrollTop = 0;
+  }
+
   if (backgroundOverlay) {
-    backgroundOverlay.style.display = "";
+    backgroundOverlay.style.display = viewName === "constellation" ? "none" : "";
   }
 
-  if (viewName === "constellation") {
-    renderConstellation();
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+      if (viewName === "calendar") {
+        renderCalendar();
+        renderOverviewPanel();
+        return;
+      }
+
+      if (viewName === "ledger") {
+        renderLedgerFilterMenus();
+        updateLedgerFilterLabels();
+        renderLedger();
+        return;
+      }
+
+      if (viewName === "media") {
+        renderMedia();
+        return;
+      }
+
+      if (viewName === "inspo") {
+        renderInspo();
+        return;
+      }
+
+      if (viewName === "performance") {
+        renderPerformanceView();
+        return;
+      }
+
+      if (viewName === "audit") {
+        renderAuditView();
+        return;
+      }
+
+      if (viewName === "constellation") {
+        renderConstellation();
         fitConstellation();
-      });
+      }
     });
-  }
-
-  if (viewName === "calendar") {
-    renderCalendar();
-    renderOverviewPanel();
-  }
-
-  if (viewName === "ledger") {
-    renderLedger();
-  }
-
-  if (viewName === "inspo") {
-    renderInspo();
-  }
-
-  if (viewName === "performance") {
-    renderPerformanceView();
-  }
-
-  if (viewName === "audit") {
-    renderAuditView();
-  }
-
-  if (viewName === "media") {
-    renderMedia();
-  }
+  });
 }
 
 function aiGenerate(type) {
