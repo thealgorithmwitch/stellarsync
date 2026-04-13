@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en" vid="0"><head vid="1">
     <meta charset="UTF-8" vid="2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
@@ -711,6 +710,16 @@
         <span id="performance-trend-summary" class="text-[10px] text-gray-500"></span>
       </div>
       <div id="performance-time-chart" class="chart-bars"></div>
+      <div class="mt-6 pt-5 border-t border-white/5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-white">Impressions Over Time</h3>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Audience reach signal</p>
+          </div>
+          <span id="performance-impressions-summary" class="text-[10px] text-gray-500"></span>
+        </div>
+        <div id="performance-impressions-chart" class="chart-bars"></div>
+      </div>
     </div>
 
     <div class="mini-card p-5">
@@ -1106,7 +1115,7 @@
 </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz66wL9mgY1TOu1-2qZ5q72SMAIyuXe5dTioOxPltExkXvwRiLkx3o4GhAaTF5ja2Eq/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyf5e2y9qMl5Y929mUm0kkwdVP0g2jmSRcdV0BOQGyWpjf4L9BZkmALimIlAq19hShK/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v4",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v1"
@@ -1603,6 +1612,8 @@ function renderPerformanceView() {
   const kpis = document.getElementById("performance-kpis");
   const trendSummary = document.getElementById("performance-trend-summary");
   const timeChart = document.getElementById("performance-time-chart");
+  const impressionsSummary = document.getElementById("performance-impressions-summary");
+  const impressionsChart = document.getElementById("performance-impressions-chart");
   const primaryInsightMetric = getPrimaryInsightMetricConfig(filteredPosts);
 
   const buckets = buildTimeBuckets(filteredPosts, performanceFilters.range);
@@ -1655,13 +1666,31 @@ function renderPerformanceView() {
         })
         .reduce((sum, post) => sum + normalizeMetricNumber(post[primaryInsightMetric.key]), 0);
     });
-    const max = Math.max(...chartValues, 1);
-    timeChart.innerHTML = buckets.map(bucket => `
-      <div class="chart-bar" title="${escapeHtml(primaryInsightMetric ? `${bucket.label}: ${chartValues[buckets.indexOf(bucket)]} ${primaryInsightMetric.label.toLowerCase()}` : `${bucket.label}: ${bucket.total} posts, ${bucket.published} published`)}">
-        <div class="chart-bar-fill" style="height:${Math.max(6, ((primaryInsightMetric ? chartValues[buckets.indexOf(bucket)] : bucket.total) / max) * 140)}px;background:linear-gradient(180deg,#c77dff 0%, #2d1b4e 100%)"></div>
-        <div class="chart-bar-label">${escapeHtml(bucket.shortLabel)}</div>
-      </div>
-    `).join("");
+    renderTimeBarChart(timeChart, buckets, chartValues, {
+      color: "linear-gradient(180deg,#c77dff 0%, #2d1b4e 100%)",
+      emptyMessage: "No performance trend data is available for the current filters.",
+      titleFormatter: (bucket, value) => (
+        primaryInsightMetric
+          ? `${bucket.label}: ${Math.round(value).toLocaleString()} ${primaryInsightMetric.label.toLowerCase()}`
+          : `${bucket.label}: ${bucket.total} posts, ${bucket.published} published`
+      )
+    });
+  }
+
+  if (impressionsSummary) {
+    const totalImpressions = filteredPosts.reduce((sum, post) => sum + normalizeMetricNumber(post?.impressions), 0);
+    impressionsSummary.textContent = totalImpressions > 0
+      ? `${totalImpressions.toLocaleString()} total • ${performanceFilters.platform === "all" ? "All platforms" : toTitleCase(performanceFilters.platform)}`
+      : "Waiting for impressions data";
+  }
+
+  if (impressionsChart) {
+    const impressionValues = getBucketMetricTotals(filteredPosts, buckets, "impressions");
+    renderTimeBarChart(impressionsChart, buckets, impressionValues, {
+      color: "linear-gradient(180deg,#00f0ff 0%, #0f223d 100%)",
+      emptyMessage: "No impressions data is available for the current filters.",
+      titleFormatter: (bucket, value) => `${bucket.label}: ${Math.round(value).toLocaleString()} impressions`
+    });
   }
 
   renderComparisonRows(
@@ -2034,6 +2063,44 @@ function buildTimeBuckets(posts, range = "30") {
   });
 
   return buckets;
+}
+
+function getBucketMetricTotals(posts, buckets, metricKey) {
+  return buckets.map((bucket) => {
+    return posts
+      .filter((post) => {
+        const date = parsePostDate(post.date);
+        return date && date >= bucket.start && date <= bucket.end;
+      })
+      .reduce((sum, post) => sum + normalizeMetricNumber(post?.[metricKey]), 0);
+  });
+}
+
+function renderTimeBarChart(target, buckets, values, options = {}) {
+  if (!target) return;
+
+  const {
+    color = "linear-gradient(180deg,#c77dff 0%, #2d1b4e 100%)",
+    emptyMessage = "No time-series data is available.",
+    titleFormatter = (bucket, value) => `${bucket.label}: ${Math.round(value)}`,
+    minHeight = 6
+  } = options;
+
+  if (!buckets.length || !values.length || values.every((value) => normalizeMetricNumber(value) <= 0)) {
+    target.innerHTML = `<div class="pillar-empty-state w-full">${escapeHtml(emptyMessage)}</div>`;
+    return;
+  }
+
+  const max = Math.max(...values.map(value => normalizeMetricNumber(value)), 1);
+  target.innerHTML = buckets.map((bucket, index) => {
+    const value = normalizeMetricNumber(values[index]);
+    return `
+      <div class="chart-bar" title="${escapeHtml(titleFormatter(bucket, value))}">
+        <div class="chart-bar-fill" style="height:${Math.max(minHeight, (value / max) * 140)}px;background:${color}"></div>
+        <div class="chart-bar-label">${escapeHtml(bucket.shortLabel)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderComparisonRows(targetId, rows, formatter = (value) => String(value), colorResolver = () => "#c77dff") {
@@ -4297,35 +4364,7 @@ async function syncRemoteIfConfigured() {
     }
 
     if (Array.isArray(posts)) {
-      appState.posts = posts.map(post => {
-        const matchedCampaign = (appState.campaigns || []).find(campaign => String(campaign.campaignId || "") === String(post.campaignId || ""));
-        const linkedAsset = (appState.media || []).find(asset => String(asset.postId || "") === String(post.postId || ""));
-        return {
-          id: post.postId,
-          title: post.title,
-          platform: post.platform,
-          pillar: post.pillar || matchedCampaign?.pillar || "edu",
-          date: post.scheduledAt,
-          status: post.status,
-          postType: post.postType,
-          description: post.description || "",
-          assetId: post.assetId || "",
-          hubTitle: post.hubTitle || post.title || "",
-          hubPillarLabel: post.hubPillarLabel || matchedCampaign?.pillar || "",
-          mediaLabel: post.mediaLabel || linkedAsset?.title || "",
-          createdFromInspoId: post.createdFromInspoId || "",
-          campaignId: post.campaignId || "",
-          campaignName: matchedCampaign?.campaignName || "",
-          impressions: normalizeMetricNumber(post.impressions),
-          reach: normalizeMetricNumber(post.reach),
-          likes: normalizeMetricNumber(post.likes),
-          comments: normalizeMetricNumber(post.comments),
-          shares: normalizeMetricNumber(post.shares),
-          saves: normalizeMetricNumber(post.saves),
-          clicks: normalizeMetricNumber(post.clicks),
-          engagementRate: normalizeMetricNumber(post.engagementRate)
-        };
-      });
+      appState.posts = posts.map(post => normalizeRemotePost(post, appState.campaigns || [], appState.media || []));
     }
 
     if (Array.isArray(inspo)) {
@@ -4390,22 +4429,64 @@ async function apiPost(action, payload = {}) {
 
 async function apiGetPosts() {
   const result = await apiGet("getPosts");
-  return result.items || [];
+  return result.items || result.posts || result.data || [];
 }
 
 async function apiGetMedia() {
   const result = await apiGet("getMedia");
-  return result.items || [];
+  return result.items || result.media || result.data || [];
 }
 
 async function apiGetInspo() {
   const result = await apiGet("getInspo");
-  return result.items || [];
+  return result.items || result.inspo || result.data || [];
 }
 
 async function apiGetCampaigns() {
   const result = await apiGet("getCampaigns");
-  return result.items || [];
+  return result.items || result.campaigns || result.data || [];
+}
+
+function pickRemoteValue(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return "";
+}
+
+function normalizeRemotePost(post, campaigns = [], mediaItems = []) {
+  const campaignId = String(pickRemoteValue(post?.campaignId, post?.campaign_id, post?.campaignID, "")).trim();
+  const matchedCampaign = campaigns.find(campaign => String(campaign.campaignId || "") === campaignId);
+  const postId = String(pickRemoteValue(post?.postId, post?.post_id, post?.id, "")).trim();
+  const title = String(pickRemoteValue(post?.title, post?.postTitle, "")).trim();
+  const scheduledAt = String(pickRemoteValue(post?.scheduledAt, post?.scheduled_at, post?.date, "")).trim();
+  const linkedAsset = mediaItems.find(asset => String(asset.postId || asset.linkedPostId || "") === postId);
+
+  return {
+    id: postId || `remote-${normalizeLookupValue(title || "post")}-${scheduledAt || "undated"}`,
+    title,
+    platform: String(pickRemoteValue(post?.platform, "linkedin")).trim() || "linkedin",
+    pillar: String(pickRemoteValue(post?.pillar, matchedCampaign?.pillar, "edu")).trim() || "edu",
+    date: scheduledAt,
+    status: String(pickRemoteValue(post?.status, "draft")).trim() || "draft",
+    postType: String(pickRemoteValue(post?.postType, post?.post_type, "text")).trim() || "text",
+    description: String(pickRemoteValue(post?.description, post?.ledgerExcerpt, post?.ledger_excerpt, "")).trim(),
+    assetId: String(pickRemoteValue(post?.assetId, post?.asset_id, "")).trim(),
+    hubTitle: String(pickRemoteValue(post?.hubTitle, post?.hub_title, title)).trim(),
+    hubPillarLabel: String(pickRemoteValue(post?.hubPillarLabel, post?.hub_pillar_label, matchedCampaign?.pillar, "")).trim(),
+    mediaLabel: String(pickRemoteValue(post?.mediaLabel, post?.media_label, linkedAsset?.title, linkedAsset?.assetName, "")).trim(),
+    createdFromInspoId: String(pickRemoteValue(post?.createdFromInspoId, post?.created_from_inspo_id, "")).trim(),
+    campaignId,
+    campaignName: String(pickRemoteValue(post?.campaignName, post?.campaign_name, matchedCampaign?.campaignName, "")).trim(),
+    impressions: normalizeMetricNumber(pickRemoteValue(post?.impressions, 0)),
+    reach: normalizeMetricNumber(pickRemoteValue(post?.reach, 0)),
+    likes: normalizeMetricNumber(pickRemoteValue(post?.likes, 0)),
+    comments: normalizeMetricNumber(pickRemoteValue(post?.comments, 0)),
+    shares: normalizeMetricNumber(pickRemoteValue(post?.shares, 0)),
+    saves: normalizeMetricNumber(pickRemoteValue(post?.saves, 0)),
+    clicks: normalizeMetricNumber(pickRemoteValue(post?.clicks, 0)),
+    engagementRate: normalizeMetricNumber(pickRemoteValue(post?.engagementRate, post?.engagement_rate, 0))
+  };
 }
 
 async function apiSaveMediaLink(payload) {
