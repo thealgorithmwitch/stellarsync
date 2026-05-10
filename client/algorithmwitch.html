@@ -130,7 +130,7 @@
   .overview-toggle-handle {
     position: absolute;
     top: 50%;
-    left: -18px;
+    left: -10px;
     transform: translateY(-50%);
     width: 30px;
     height: 52px;
@@ -143,7 +143,7 @@
     justify-content: center;
     box-shadow: 0 12px 24px rgba(0,0,0,0.28);
     transition: background 160ms ease, color 160ms ease;
-    z-index: 60;
+    z-index: 82;
     pointer-events: auto;
   }
 
@@ -160,6 +160,7 @@
     display: flex;
     overflow: visible;
     padding-left: 12px;
+    z-index: 50;
   }
 
   #signal-overview-panel {
@@ -2910,7 +2911,7 @@
 </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyCaFhgTy9xksRogR2cNiKWyeJ3-cEjq7cXnbQsm2DOkoIm0CD_c2NY0e7432Q_hAVl/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt-Vkcec2To90CaFPmwQsj514-JUdqztF4odAfzzq97pXYRE84RcTH84GhnMP6QW0C/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v5",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v2"
@@ -4810,6 +4811,9 @@ function parsePostDate(value) {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return new Date(value);
 
+  const serialDate = parseGoogleSheetsSerialDate(value);
+  if (serialDate) return serialDate;
+
   const text = String(value).trim();
   if (!text) return null;
 
@@ -4831,14 +4835,51 @@ function parsePostDate(value) {
     if (planningDate) return planningDate;
   }
 
+  if (/^\d+(?:\.\d+)?$/.test(text)) return null;
+
   const parsed = new Date(text);
   return !Number.isNaN(parsed.getTime()) ? parsed : null;
 }
 
+function parseGoogleSheetsSerialDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return new Date(value);
+  const serial = Number(value);
+  if (!Number.isFinite(serial) || serial < 25000) return null;
+
+  const wholeDays = Math.floor(serial);
+  const fractionalDay = serial - wholeDays;
+  const epoch = new Date(1899, 11, 30);
+  const date = new Date(epoch.getFullYear(), epoch.getMonth(), epoch.getDate() + wholeDays);
+  const totalSeconds = Math.round(fractionalDay * 24 * 60 * 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  date.setHours(hours, minutes, seconds, 0);
+  return date;
+}
+
 function parsePlanningDateLocal(value) {
   if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return new Date(value);
+
+  const serialDate = parseGoogleSheetsSerialDate(value);
+  if (serialDate) return serialDate;
+
   const raw = String(value).trim();
   if (!raw) return null;
+
+  const localDateTimeMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (localDateTimeMatch) {
+    return new Date(
+      Number(localDateTimeMatch[1]),
+      Number(localDateTimeMatch[2]) - 1,
+      Number(localDateTimeMatch[3]),
+      Number(localDateTimeMatch[4] || 0),
+      Number(localDateTimeMatch[5] || 0),
+      Number(localDateTimeMatch[6] || 0),
+      0
+    );
+  }
 
   const datePart = raw.includes("T")
     ? raw.split("T")[0]
