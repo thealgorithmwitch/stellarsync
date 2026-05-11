@@ -351,8 +351,8 @@
   .constellation-label-btn {
     position: absolute;
     transform: translateY(-50%);
-    background: rgba(18,12,29,0.18);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(10,7,16,0.42);
+    border: 1px solid rgba(255,255,255,0.16);
     padding: 6px 10px;
     border-radius: 10px;
     font-size: 10px;
@@ -365,14 +365,109 @@
     word-break: normal;
     hyphens: none;
     cursor: pointer;
-    transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
-    backdrop-filter: none;
+    transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: blur(10px);
   }
 
   .constellation-label-btn:hover {
     border-color: rgba(199,125,255,0.5);
     color: #c77dff;
     transform: translateY(-50%) translateX(2px);
+  }
+
+  .constellation-node {
+    position: absolute;
+    border-radius: 999px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .constellation-node-selected,
+  .constellation-label-btn.constellation-selected {
+    border-color: rgba(255,255,255,0.82) !important;
+    box-shadow: 0 0 0 3px rgba(199,125,255,0.16), 0 0 24px rgba(199,125,255,0.35) !important;
+    color: #ffffff !important;
+  }
+
+  .constellation-node-selected {
+    transform: translate(-50%, -50%) scale(1.24) !important;
+  }
+
+  #constellation-selection-card {
+    backdrop-filter: blur(16px);
+  }
+
+  .calendar-mode-btn {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 0.7rem;
+    color: #9ca3af;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .calendar-mode-btn.active {
+    background: #2d1b4e;
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  }
+
+  .calendar-day-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .calendar-day-post-card {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(24,17,37,0.92);
+  }
+
+  .calendar-mobile-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  .post-pill.compact-month {
+    padding: 0.24rem 0.28rem !important;
+    min-height: 1.55rem;
+    justify-content: center;
+  }
+
+  .post-pill.compact-month .compact-month-icons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.18rem;
+    width: 100%;
+  }
+
+  .post-pill.compact-month .compact-month-text {
+    display: none !important;
+  }
+
+  .calendar-overflow-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.4rem;
+    padding: 0.12rem 0.3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(24,17,37,0.78);
+    color: #cbd5e1;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 
         :root {
@@ -685,10 +780,10 @@
         #view-constellation .hub-node,
         #view-constellation .post-node,
         #view-constellation .constellation-label-btn {
-            background: rgba(18,12,29,0.18) !important;
-            border-color: rgba(255,255,255,0.12) !important;
-            backdrop-filter: none !important;
-            box-shadow: none !important;
+            background: rgba(10,7,16,0.36) !important;
+            border-color: rgba(255,255,255,0.16) !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12) !important;
         }
 
         .mobile-bottom-nav {
@@ -1008,7 +1103,8 @@
             }
 
             #view-inspo #inspo-grid,
-            #view-notes #notes-grid {
+            #view-notes #notes-grid,
+            #view-media #media-grid {
                 overflow: visible !important;
                 flex: 0 0 auto !important;
                 min-height: 0 !important;
@@ -1064,11 +1160,12 @@
             }
 
             #calendar-mode-month,
-            #calendar-mode-week {
+            #calendar-mode-week,
+            #calendar-mode-day {
                 flex: 1 1 0 !important;
                 min-width: 0 !important;
                 padding: 0.55rem 0.7rem !important;
-                font-size: 0.7rem !important;
+                font-size: 0.68rem !important;
             }
 
             #calendar-arrow-controls {
@@ -1083,7 +1180,7 @@
             }
 
             #mobile-day-view {
-                display: none !important;
+                margin-bottom: 0.8rem !important;
             }
 
             #calendar-grid-shell {
@@ -1135,6 +1232,12 @@
                 gap: 0.22rem !important;
             }
 
+            .post-pill.compact-month {
+                padding: 0.16rem 0.18rem !important;
+                border-radius: 0.5rem !important;
+                min-height: 1.28rem !important;
+            }
+
             .post-pill > span:last-child {
                 font-size: clamp(8px, 2.2vw, 10px) !important;
                 line-height: 1.15 !important;
@@ -1154,6 +1257,13 @@
                 gap: 0.9rem !important;
             }
 
+            #view-ledger > .flex-1 {
+                overflow: visible !important;
+                flex: 0 0 auto !important;
+                min-height: 0 !important;
+                padding: 1rem 0 6.75rem !important;
+            }
+
             #view-ledger .ledger-card .ledger-action-bar {
                 gap: 0.55rem !important;
                 margin-top: 0.85rem !important;
@@ -1167,6 +1277,7 @@
                 border: 1px solid rgba(255,255,255,0.08) !important;
                 background: #120c1d !important;
                 font-size: 0.7rem !important;
+                white-space: nowrap !important;
             }
 
             #view-ledger .ledger-card .ledger-delete-btn {
@@ -1198,6 +1309,41 @@
                 max-width: 180px !important;
                 font-size: 10px !important;
                 padding: 0.38rem 0.55rem !important;
+            }
+
+            #constellation-controls {
+                top: 0.8rem !important;
+                left: 0.8rem !important;
+                gap: 0.35rem !important;
+                flex-wrap: wrap !important;
+                max-width: calc(100% - 1.6rem) !important;
+            }
+
+            #constellation-controls > button {
+                width: 2.2rem !important;
+                height: 2.2rem !important;
+                flex: 0 0 2.2rem !important;
+            }
+
+            #constellation-controls > select {
+                min-width: 0 !important;
+                flex: 1 1 9rem !important;
+                padding-inline: 0.65rem !important;
+                font-size: 0.62rem !important;
+            }
+
+            #constellation-badge {
+                top: auto !important;
+                right: 0.8rem !important;
+                bottom: 0.8rem !important;
+                padding: 0.5rem 0.7rem !important;
+            }
+
+            #constellation-selection-card {
+                left: 0.75rem !important;
+                right: 0.75rem !important;
+                bottom: 6rem !important;
+                width: auto !important;
             }
 
             #scheduling-modal .modal-content,
@@ -1232,9 +1378,57 @@
             }
 
             #media-asset-modal-preview {
-                min-height: 220px !important;
+                min-height: 180px !important;
                 border-right: 0 !important;
                 border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            #view-media .media-vault-card .aspect-square {
+                aspect-ratio: 16 / 10 !important;
+            }
+
+            #view-media .media-vault-card .p-4,
+            #view-inspo .inspo-card .p-5,
+            #view-notes .notes-card {
+                padding: 0.9rem !important;
+            }
+
+            #view-inspo .inspo-card-body,
+            #view-notes .notes-card-body,
+            #view-media .media-vault-card {
+                min-height: 0 !important;
+                height: auto !important;
+            }
+
+            #view-inspo .inspo-card-body {
+                flex: 0 0 auto !important;
+                justify-content: flex-start !important;
+                gap: 0.85rem !important;
+            }
+
+            #view-write-idea .write-idea-review-card {
+                padding: 0.85rem !important;
+            }
+
+            #write-idea-prompt {
+                min-height: 104px !important;
+            }
+
+            #inspo-notes,
+            #note-body,
+            #note-bullets,
+            #modal-import-caption-fallback,
+            #modal-ai-prompt,
+            #media-link-meta,
+            #media-link-caption-fallback,
+            #ai-workspace-prompt,
+            #ai-review-notes,
+            #ai-draft-preview,
+            #ai-draft-carousel-outline,
+            [data-write-idea-post-description] {
+                min-height: 84px !important;
+                max-height: 220px !important;
+                overflow: auto !important;
             }
 
             .mobile-bottom-nav {
@@ -1451,8 +1645,9 @@
         
             <div id="calendar-header-controls" class="flex items-center gap-4">
               <div id="calendar-mode-controls" class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1">
-                <button id="calendar-mode-month" class="px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm">Mo</button>
-                <button id="calendar-mode-week" class="px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors">Wk</button>
+                <button id="calendar-mode-month" class="calendar-mode-btn active">Month</button>
+                <button id="calendar-mode-week" class="calendar-mode-btn">Week</button>
+                <button id="calendar-mode-day" class="calendar-mode-btn">Day</button>
               </div>
               <div id="calendar-arrow-controls" class="flex gap-1">
                 <button id="calendar-prev-btn" class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
@@ -1500,7 +1695,7 @@
         </section>
             
 <section id="view-constellation" class="view-section hidden w-full h-full min-h-0 flex-col bg-transparent border border-white/5 rounded-2xl relative overflow-visible">
-  <div class="absolute top-6 left-6 z-30 flex gap-2">
+  <div id="constellation-controls" class="absolute top-6 left-6 z-30 flex gap-2">
     <button id="zoom-in" class="w-10 h-10 bg-[#1a1128] border border-white/5 rounded-xl text-white hover:bg-[#231738] flex items-center justify-center transition-colors" title="Zoom in">
       <i class="ph-bold ph-magnifying-glass-plus text-lg"></i>
     </button>
@@ -1518,7 +1713,7 @@
     </select>
   </div>
 
-  <div class="absolute top-6 right-6 z-30 bg-[#1a1128] border border-white/5 px-4 py-2 rounded-xl">
+  <div id="constellation-badge" class="absolute top-6 right-6 z-30 bg-[#1a1128] border border-white/5 px-4 py-2 rounded-xl">
     <span class="text-xs uppercase font-bold text-[#c77dff] tracking-widest flex items-center gap-2">
       <i class="ph-fill ph-planet"></i> Constellation
     </span>
@@ -1529,6 +1724,23 @@
       <!-- script renders campaign rows, dots, and clickable labels here -->
     </div>
 
+  </div>
+  <div id="constellation-selection-card" class="hidden absolute left-4 bottom-4 z-20 w-[320px] max-w-[calc(100%-2rem)] rounded-2xl border border-white/10 bg-[#120c1d]/80 p-4 shadow-2xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <div id="constellation-selection-kicker" class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold">Selected Post</div>
+        <h3 id="constellation-selection-title" class="text-white text-base font-bold wrap-safe mt-1">Select a node</h3>
+        <p id="constellation-selection-meta" class="text-[11px] text-gray-400 wrap-safe mt-1">Tap a post node to inspect it without losing your place in the map.</p>
+      </div>
+      <button id="constellation-selection-close" type="button" class="w-9 h-9 rounded-xl bg-[#1a1128] border border-white/5 text-gray-300 hover:text-white flex items-center justify-center shrink-0">
+        <i class="ph-bold ph-x"></i>
+      </button>
+    </div>
+    <p id="constellation-selection-excerpt" class="text-sm text-gray-300 wrap-safe mt-3">Campaign, platform, and scheduling details will appear here.</p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button id="constellation-selection-open" type="button" class="px-3 py-2 rounded-xl bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white">Open Post</button>
+      <button id="constellation-selection-day" type="button" class="px-3 py-2 rounded-xl bg-[#181125] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-gray-200">Open Day</button>
+    </div>
   </div>
 </section>
             
@@ -3303,6 +3515,13 @@ let startPanX = 0;
 let startPanY = 0;
 let pointerStartX = 0;
 let pointerStartY = 0;
+let pinchStartDistance = 0;
+let pinchStartScale = 1;
+let pinchStartPanX = 0;
+let pinchStartPanY = 0;
+let pinchWorldCenter = { x: 0, y: 0 };
+let selectedConstellationPostId = "";
+let activeConstellationPointers = new Map();
 let isResizingShell = false;
 let isSignalOverviewCollapsed = safeStorageGet(RIGHT_PANEL_COLLAPSED_KEY) === "true";
 
@@ -3505,6 +3724,13 @@ const writeIdeaDraftList = document.getElementById("write-idea-draft-list");
 
 const viewport = document.getElementById("starmap-viewport");
 const canvas = document.getElementById("starmap-canvas");
+const constellationSelectionCard = document.getElementById("constellation-selection-card");
+const constellationSelectionTitle = document.getElementById("constellation-selection-title");
+const constellationSelectionMeta = document.getElementById("constellation-selection-meta");
+const constellationSelectionExcerpt = document.getElementById("constellation-selection-excerpt");
+const constellationSelectionOpenBtn = document.getElementById("constellation-selection-open");
+const constellationSelectionDayBtn = document.getElementById("constellation-selection-day");
+const constellationSelectionCloseBtn = document.getElementById("constellation-selection-close");
 
 const inspoModal = document.getElementById("inspo-modal");
 const inspoModalCard = document.getElementById("inspo-modal-card");
@@ -6504,6 +6730,8 @@ function setupCalendarControls() {
   document.getElementById("calendar-prev-btn")?.addEventListener("click", () => {
     if (calendarMode === "month") {
       calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+    } else if (calendarMode === "day") {
+      calendarCursor = addDays(calendarCursor, -1);
     } else {
       calendarCursor = addDays(startOfWeek(calendarCursor), -7);
     }
@@ -6514,6 +6742,8 @@ function setupCalendarControls() {
   document.getElementById("calendar-next-btn")?.addEventListener("click", () => {
     if (calendarMode === "month") {
       calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+    } else if (calendarMode === "day") {
+      calendarCursor = addDays(calendarCursor, 1);
     } else {
       calendarCursor = addDays(startOfWeek(calendarCursor), 7);
     }
@@ -6522,15 +6752,15 @@ function setupCalendarControls() {
   });
 
   document.getElementById("calendar-mode-month")?.addEventListener("click", () => {
-    calendarMode = "month";
-    updateCalendarModeButtons();
-    renderCalendar();
+    setCalendarMode("month");
   });
 
   document.getElementById("calendar-mode-week")?.addEventListener("click", () => {
-    calendarMode = "week";
-    updateCalendarModeButtons();
-    renderCalendar();
+    setCalendarMode("week");
+  });
+
+  document.getElementById("calendar-mode-day")?.addEventListener("click", () => {
+    setCalendarMode("day");
   });
 
   document.getElementById("mobile-day-prev-btn")?.addEventListener("click", () => {
@@ -6554,18 +6784,24 @@ function setupCalendarControls() {
   updateCalendarModeButtons();
 }
 
+function setCalendarMode(nextMode) {
+  calendarMode = nextMode;
+  if (calendarMode === "day") {
+    selectedCalendarDateKey = selectedCalendarDateKey || toDateKey(calendarCursor || new Date());
+    calendarCursor = parsePostDate(selectedCalendarDateKey) || calendarCursor || new Date();
+  }
+  updateCalendarModeButtons();
+  renderCalendar();
+}
+
 function updateCalendarModeButtons() {
   const monthBtn = document.getElementById("calendar-mode-month");
   const weekBtn = document.getElementById("calendar-mode-week");
-  if (!monthBtn || !weekBtn) return;
-
-  if (calendarMode === "month") {
-    monthBtn.className = "px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm";
-    weekBtn.className = "px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors";
-  } else {
-    weekBtn.className = "px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm";
-    monthBtn.className = "px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors";
-  }
+  const dayBtn = document.getElementById("calendar-mode-day");
+  [monthBtn, weekBtn, dayBtn].filter(Boolean).forEach((button) => {
+    const active = button.id === `calendar-mode-${calendarMode}`;
+    button.classList.toggle("active", active);
+  });
 }
 
 function renderCalendar() {
@@ -6573,21 +6809,42 @@ function renderCalendar() {
   const yearNameEl = document.getElementById("calendar-year-name");
   const grid = document.getElementById("calendar-grid");
   const weekdayRow = document.getElementById("calendar-weekday-row");
+  const gridShell = document.getElementById("calendar-grid-shell");
+  const dayView = document.getElementById("mobile-day-view");
   if (!grid) return;
 
   selectedCalendarDateKey = selectedCalendarDateKey || toDateKey(calendarCursor || new Date());
   grid.classList.toggle("calendar-mode-month", calendarMode === "month");
   grid.classList.toggle("calendar-mode-week", calendarMode === "week");
+  grid.classList.toggle("calendar-mode-day", calendarMode === "day");
   if (weekdayRow) {
-    const hideWeekdayRow = window.innerWidth <= 768 && calendarMode === "week";
+    const hideWeekdayRow = calendarMode === "day" || (window.innerWidth <= 768 && calendarMode === "week");
     weekdayRow.classList.toggle("hidden", hideWeekdayRow);
+  }
+  if (gridShell) {
+    gridShell.classList.toggle("hidden", calendarMode === "day");
+  }
+  if (dayView) {
+    dayView.classList.toggle("hidden", calendarMode !== "day");
   }
 
   if (calendarMode === "month") {
     renderMonthCalendar(monthNameEl, yearNameEl, grid);
+  } else if (calendarMode === "day") {
+    renderDayCalendar(monthNameEl, yearNameEl, grid);
   } else {
     renderWeekCalendar(monthNameEl, yearNameEl, grid);
   }
+}
+
+function renderDayCalendar(monthNameEl, yearNameEl, grid) {
+  const selectedDate = parsePostDate(selectedCalendarDateKey) || parsePostDate(calendarCursor) || new Date();
+  calendarCursor = selectedDate;
+  selectedCalendarDateKey = toDateKey(selectedDate);
+  if (monthNameEl) monthNameEl.textContent = selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  if (yearNameEl) yearNameEl.textContent = String(selectedDate.getFullYear());
+  grid.innerHTML = "";
+  renderMobileDayCalendar();
 }
 
 function renderMonthCalendar(monthNameEl, yearNameEl, grid) {
@@ -6634,6 +6891,7 @@ function renderCalendarCell(dateObj, inCurrentMonth = true, isWeekMode = false) 
   const key = toDateKey(dateObj);
   const today = new Date();
   const isTodayValue = isSameDay(dateObj, today);
+  const compactMonth = window.innerWidth <= 768 && calendarMode === "month";
 
   const posts = (appState.posts || [])
     .filter(post => normalizePostCalendarDateKey(post) === key)
@@ -6653,11 +6911,14 @@ function renderCalendarCell(dateObj, inCurrentMonth = true, isWeekMode = false) 
     : "text-xs text-gray-300 font-medium";
 
   const dayLabel = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+  const postsToRender = compactMonth ? posts.slice(0, 4) : posts;
+  const overflowCount = compactMonth ? Math.max(0, posts.length - postsToRender.length) : 0;
 
   return `
-    <div class="${cellClasses}">
+    <div class="${cellClasses} ${compactMonth ? "cursor-pointer" : ""}" onclick="openCalendarDate('${escapeHtml(key)}', ${compactMonth ? "true" : "false"})">
       <span class="${dateLabelClass}">${isWeekMode ? `${dayLabel} ${dateObj.getDate()}` : dateObj.getDate()}</span>
-      ${posts.map(post => renderCalendarPill(post, isWeekMode)).join("")}
+      ${postsToRender.map(post => renderCalendarPill(post, isWeekMode)).join("")}
+      ${overflowCount > 0 ? `<span class="calendar-overflow-pill">+${overflowCount}</span>` : ""}
     </div>
   `;
 }
@@ -6673,8 +6934,16 @@ function renderMobileDayCalendar() {
   calendarCursor = selectedDate;
   selectedCalendarDateKey = toDateKey(selectedDate);
 
-  if (monthNameEl) monthNameEl.textContent = selectedDate.toLocaleDateString("en-US", { month: "long" });
-  if (yearNameEl) yearNameEl.textContent = String(selectedDate.getFullYear());
+  if (monthNameEl) {
+    monthNameEl.textContent = calendarMode === "day"
+      ? selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })
+      : selectedDate.toLocaleDateString("en-US", { month: "long" });
+  }
+  if (yearNameEl) {
+    yearNameEl.textContent = calendarMode === "day"
+      ? selectedDate.toLocaleDateString("en-US", { weekday: "short" })
+      : String(selectedDate.getFullYear());
+  }
   label.textContent = selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
   const posts = (appState.posts || [])
@@ -6683,14 +6952,14 @@ function renderMobileDayCalendar() {
     .sort((a, b) => (parsePostDate(normalizePostCalendarDateKey(a) || a.date)?.getTime() || 0) - (parsePostDate(normalizePostCalendarDateKey(b) || b.date)?.getTime() || 0));
 
   if (!posts.length) {
-    list.innerHTML = makeEmptyState("No posts on selected day", `No posts are scheduled for ${label.textContent}.`, "ph-calendar-x");
+    list.innerHTML = `<div class="calendar-day-shell">${makeEmptyState("No posts on selected day", `No posts are scheduled for ${label.textContent}.`, "ph-calendar-x")}</div>`;
     return;
   }
 
-  list.innerHTML = posts.map((post) => {
+  list.innerHTML = `<div class="calendar-day-shell">${posts.map((post) => {
     const badge = getPublishingBadge(post);
     return `
-      <button type="button" class="mobile-day-post w-full text-left p-4 rounded-2xl bg-[#181125] border border-white/5" onclick="openModalById('${escapeHtml(post.id)}')">
+      <button type="button" class="mobile-day-post calendar-day-post-card" onclick="openModalById('${escapeHtml(post.id)}')">
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
             <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(post.queueTimeLabel || "No time")}</div>
@@ -6703,10 +6972,11 @@ function renderMobileDayCalendar() {
         <p class="text-xs text-gray-400 wrap-safe">${escapeHtml(getDisplayExcerpt(post.description, post.description || "No description"))}</p>
       </button>
     `;
-  }).join("");
+  }).join("")}</div>`;
 }
 
 function renderCalendarPill(post, isWeekMode = false) {
+  const compactMonth = window.innerWidth <= 768 && calendarMode === "month" && !isWeekMode;
   const iconBlock =
     post.platform === "both"
       ? `<div class="flex"><i class="ph-fill ph-linkedin-logo text-xs"></i><i class="ph-fill ph-instagram-logo text-xs -ml-1"></i></div>`
@@ -6725,9 +6995,21 @@ function renderCalendarPill(post, isWeekMode = false) {
     : displayTitle;
   const hydrated = hydratePostCampaign(post);
   const campaignColor = getCampaignColor(hydrated, getPostContentPillar(hydrated));
+  if (compactMonth) {
+    return `
+      <button type="button" class="post-pill compact-month mt-1 text-left" onclick="event.stopPropagation();openModalById('${escapeHtml(post.id)}')" title="${escapeHtml(post.title || "")}" style="background:${campaignColor}14;border:1px solid ${campaignColor}30;box-shadow:inset 2px 0 0 ${campaignColor};">
+        <span class="compact-month-icons">
+          <span class="calendar-mobile-dot" style="background:${campaignColor};box-shadow:0 0 10px ${campaignColor}66;"></span>
+          ${iconBlock}
+          <span class="w-1.5 h-1.5 rounded-full ml-auto" style="background:${statusColor}"></span>
+        </span>
+        <span class="compact-month-text">${escapeHtml(displayTitle)}</span>
+      </button>
+    `;
+  }
 
   return `
-    <button type="button" class="post-pill mt-1 text-left" onclick="openModalById('${escapeHtml(post.id)}')" title="${escapeHtml(post.title || "")}" style="background:${campaignColor}14;border:1px solid ${campaignColor}30;box-shadow:inset 3px 0 0 ${campaignColor};">
+    <button type="button" class="post-pill mt-1 text-left" onclick="event.stopPropagation();openModalById('${escapeHtml(post.id)}')" title="${escapeHtml(post.title || "")}" style="background:${campaignColor}14;border:1px solid ${campaignColor}30;box-shadow:inset 3px 0 0 ${campaignColor};">
       <div class="flex items-center gap-1.5 w-full">
         <span class="w-2 h-2 rounded-full shrink-0" style="background:${campaignColor};box-shadow:0 0 10px ${campaignColor}66;"></span>
         ${iconBlock}
@@ -6736,6 +7018,17 @@ function renderCalendarPill(post, isWeekMode = false) {
       <span class="text-[9px] text-gray-300 wrap-safe w-full block mt-0.5">${escapeHtml(pillTitle)}</span>
     </button>
   `;
+}
+
+function openCalendarDate(dateKey, switchToDay = false) {
+  const nextDate = parsePostDate(dateKey) || parsePostDate(selectedCalendarDateKey) || new Date();
+  calendarCursor = nextDate;
+  selectedCalendarDateKey = toDateKey(nextDate);
+  if (switchToDay) {
+    calendarMode = "day";
+    updateCalendarModeButtons();
+  }
+  renderCalendar();
 }
 
 function postMatchesCalendarViewFilters(post) {
@@ -7075,6 +7368,35 @@ function getBridgeDensityConfig(level = semanticBridgeDensity) {
   return { threshold: 0.42, maxPerCampaign: 2, opacity: 0.18 };
 }
 
+function clearConstellationSelection() {
+  selectedConstellationPostId = "";
+  canvas?.querySelectorAll(".constellation-node-selected, .constellation-selected").forEach((node) => {
+    node.classList.remove("constellation-node-selected", "constellation-selected");
+  });
+  constellationSelectionCard?.classList.add("hidden");
+}
+
+function selectConstellationPost(post, color, campaignName = "") {
+  if (!post || !canvas) return;
+  selectedConstellationPostId = String(post.id || "");
+  canvas.querySelectorAll(".constellation-node-selected, .constellation-selected").forEach((node) => {
+    node.classList.remove("constellation-node-selected", "constellation-selected");
+  });
+  canvas.querySelectorAll(`[data-constellation-post-id="${escapeSelectorValue(selectedConstellationPostId)}"]`).forEach((node) => {
+    if (node.classList.contains("constellation-label-btn")) node.classList.add("constellation-selected");
+    else node.classList.add("constellation-node-selected");
+  });
+  if (!constellationSelectionCard) return;
+  const badge = getPublishingBadge(post);
+  constellationSelectionTitle.textContent = post.title || "Untitled post";
+  constellationSelectionMeta.textContent = `${formatCampaignDisplayName(campaignName || post.campaignName || "Unassigned")} • ${toTitleCase(post.platform || "linkedin")} • ${badge.label}`;
+  constellationSelectionMeta.style.color = color || "#c77dff";
+  constellationSelectionExcerpt.textContent = getDisplayExcerpt(post.description, post.description || "No description yet.");
+  constellationSelectionCard.classList.remove("hidden");
+  constellationSelectionOpenBtn.onclick = () => openModalById(post.id);
+  constellationSelectionDayBtn.onclick = () => openCalendarDate(normalizePostCalendarDateKey(post) || toDateKey(new Date()), true);
+}
+
 function renderConstellation() {
   if (!canvas) return;
 
@@ -7095,6 +7417,8 @@ function renderConstellation() {
   canvas.dataset.worldWidth = String(worldWidth);
   canvas.dataset.worldHeight = String(minCanvasHeight);
   canvas.innerHTML = "";
+  if (constellationSelectionCard) constellationSelectionCard.classList.add("hidden");
+  selectedConstellationPostId = "";
 
   const anchorByCampaign = new Map();
   rows.forEach((campaign, index) => {
@@ -7224,7 +7548,8 @@ function renderConstellation() {
       const dotY = points[postIndex]?.y || anchor.y;
       const dot = document.createElement("button");
       dot.type = "button";
-      dot.className = "absolute rounded-full transition-all";
+      dot.className = "constellation-node absolute transition-all";
+      dot.dataset.constellationPostId = String(post.id || "");
       dot.style.cssText = `
         left:${dotX}px;
         top:${dotY}px;
@@ -7252,15 +7577,18 @@ function renderConstellation() {
         hoverCard.style.top = `${Math.max(dotY - 18, 32)}px`;
       });
       dot.addEventListener("mouseleave", () => {
-        dot.style.transform = "translate(-50%,-50%) scale(1)";
+        if (!dot.classList.contains("constellation-node-selected")) {
+          dot.style.transform = "translate(-50%,-50%) scale(1)";
+        }
         path.setAttribute("opacity", "0.45");
         hoverCard.style.display = "none";
       });
-      dot.addEventListener("click", () => openModalById(post.id));
+      dot.addEventListener("click", () => selectConstellationPost(post, color, campaign.campaignName));
 
       const dotLabel = document.createElement("button");
       dotLabel.type = "button";
       dotLabel.className = "constellation-label-btn";
+      dotLabel.dataset.constellationPostId = String(post.id || "");
       dotLabel.style.left = `${Math.min(dotX + (22 * layout.labelOffset), worldWidth - (layout.tier === "huge" ? 340 : 260))}px`;
       dotLabel.style.top = `${dotY}px`;
       dotLabel.style.borderColor = `${color}40`;
@@ -7270,7 +7598,7 @@ function renderConstellation() {
       dotLabel.style.alignItems = "center";
       dotLabel.style.gap = "8px";
       dotLabel.title = post.title || "Open post";
-      dotLabel.addEventListener("click", () => openModalById(post.id));
+      dotLabel.addEventListener("click", () => selectConstellationPost(post, color, campaign.campaignName));
 
       rowGroup.appendChild(dot);
       rowGroup.appendChild(dotLabel);
@@ -7395,9 +7723,30 @@ function setupConstellationInteractions() {
   if (!viewport || !canvas) return;
 
   viewport.style.cursor = "grab";
+  constellationSelectionCloseBtn?.addEventListener("click", clearConstellationSelection);
 
   viewport.addEventListener("pointerdown", (e) => {
     if (e.target.closest("button")) return;
+
+    activeConstellationPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activeConstellationPointers.size === 2) {
+      const [first, second] = Array.from(activeConstellationPointers.values());
+      pinchStartDistance = Math.hypot(second.x - first.x, second.y - first.y) || 1;
+      pinchStartScale = scale;
+      pinchStartPanX = panX;
+      pinchStartPanY = panY;
+      const rect = viewport.getBoundingClientRect();
+      const centerX = ((first.x + second.x) / 2) - rect.left;
+      const centerY = ((first.y + second.y) / 2) - rect.top;
+      pinchWorldCenter = {
+        x: (centerX - panX) / scale,
+        y: (centerY - panY) / scale
+      };
+      isDragging = false;
+    } else if (activeConstellationPointers.size > 1) {
+      return;
+    }
 
     isDragging = true;
     pointerStartX = e.clientX;
@@ -7414,6 +7763,23 @@ function setupConstellationInteractions() {
   });
 
   viewport.addEventListener("pointermove", (e) => {
+    if (activeConstellationPointers.has(e.pointerId)) {
+      activeConstellationPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    if (activeConstellationPointers.size === 2) {
+      const [first, second] = Array.from(activeConstellationPointers.values());
+      const rect = viewport.getBoundingClientRect();
+      const centerX = ((first.x + second.x) / 2) - rect.left;
+      const centerY = ((first.y + second.y) / 2) - rect.top;
+      const distance = Math.hypot(second.x - first.x, second.y - first.y) || pinchStartDistance || 1;
+      scale = clamp(pinchStartScale * (distance / Math.max(pinchStartDistance, 1)), 0.18, 5.5);
+      panX = centerX - pinchWorldCenter.x * scale;
+      panY = centerY - pinchWorldCenter.y * scale;
+      updateTransform();
+      return;
+    }
+
     if (!isDragging) return;
 
     const dx = e.clientX - pointerStartX;
@@ -7425,8 +7791,17 @@ function setupConstellationInteractions() {
   });
 
   function stopConstellationDrag(pointerId) {
+    activeConstellationPointers.delete(pointerId);
     isDragging = false;
     viewport.style.cursor = "grab";
+
+    if (activeConstellationPointers.size === 1) {
+      const remaining = Array.from(activeConstellationPointers.values())[0];
+      pointerStartX = remaining.x;
+      pointerStartY = remaining.y;
+      startPanX = panX;
+      startPanY = panY;
+    }
 
     if (viewport?.releasePointerCapture && pointerId != null) {
       try {
@@ -7527,7 +7902,8 @@ function fitConstellation({ preserveUserView = false } = {}) {
   const worldWidth = Math.max(1, worldMaxX - worldMinX);
   const worldHeight = Math.max(1, worldMaxY - worldMinY);
   const fitScale = Math.min(rect.width / worldWidth, rect.height / worldHeight);
-  scale = clamp(fitScale * 1.02, 0.18, 5.5);
+  const fitMultiplier = window.innerWidth <= 768 ? 0.92 : 1.02;
+  scale = clamp(fitScale * fitMultiplier, 0.18, 5.5);
 
   panX = Math.round((rect.width - worldWidth * scale) / 2) - Math.round(worldMinX * scale);
   panY = Math.round((rect.height - worldHeight * scale) / 2) - Math.round(worldMinY * scale);
@@ -9384,7 +9760,7 @@ function renderMedia() {
       : `<div class="w-full h-full flex items-center justify-center"><i class="ph-fill ${icon} text-gray-600 text-5xl"></i></div>`;
 
     return `
-      <button type="button" class="glass-card overflow-hidden group text-left w-full" onclick="openMediaAsset('${escapeHtml(item.id)}')">
+      <button type="button" class="glass-card media-vault-card overflow-hidden group text-left w-full" onclick="openMediaAsset('${escapeHtml(item.id)}')">
         <div class="aspect-square bg-[#120c1d] border-b border-white/5 flex items-center justify-center relative p-4">
           ${previewBlock}
           <span class="absolute top-3 right-3 px-2 py-1 bg-[#181125] border border-white/5 rounded text-[8px] uppercase font-bold text-gray-300">${escapeHtml(badge)}</span>
@@ -10549,7 +10925,7 @@ function setupPWAInstall() {
       mobileInstallAppBtn.classList.toggle("inline-flex", showMobile);
     }
     document.querySelectorAll('[data-workspace-action="install"]').forEach((button) => {
-      button.classList.toggle("hidden", installContext.isStandalone);
+      button.classList.toggle("hidden", installContext.isStandalone || (mobileOnly && visible));
     });
   };
 
@@ -10801,7 +11177,7 @@ function renderInspo() {
         : `<span class="text-[10px] text-gray-500 font-medium wrap-safe max-w-[140px]">${escapeHtml(url || "Saved reference")}</span>`;
 
     return `
-      <div class="glass-card flex flex-col">
+      <div class="glass-card inspo-card flex flex-col">
         <div class="p-5 border-b border-white/5">
           <div class="flex justify-between items-start mb-3">
             <span class="px-2.5 py-1 bg-[#120c1d] border border-white/5 rounded text-[10px] text-gray-300 font-semibold uppercase tracking-wider">
@@ -10831,7 +11207,7 @@ function renderInspo() {
           </div>
         </div>
 
-        <div class="p-5 flex-1 flex flex-col justify-between">
+        <div class="p-5 flex-1 flex flex-col justify-between inspo-card-body">
           ${previewBlock}
 
           <div class="flex items-center justify-between mt-auto gap-3">
@@ -10876,7 +11252,7 @@ function renderNotes() {
     const pillPillar = formatContentPillarLabel(item.suggestedPillar || "authority");
     const statusLine = item.convertedPostId ? `Created post ${item.convertedPostId}` : "Not converted yet";
     return `
-      <div class="glass-card flex flex-col p-5">
+      <div class="glass-card notes-card flex flex-col p-5">
         <div class="flex items-start justify-between gap-3 mb-4">
           <div class="min-w-0">
             <h3 class="text-white text-base font-bold wrap-safe mb-2">${escapeHtml(getDisplayTitle(item.title || "Untitled note", "Untitled note", 8))}</h3>
@@ -10889,6 +11265,7 @@ function renderNotes() {
             <i class="ph-bold ph-paper-plane-tilt text-lg"></i>
           </button>
         </div>
+        <div class="notes-card-body">
         <p class="text-gray-300 text-sm leading-relaxed wrap-safe mb-4">${escapeHtml(item.body || "No note body yet.")}</p>
         ${bullets.length ? `<ul class="note-bullet-list text-sm mb-4">${bullets.map(bullet => `<li class="wrap-safe">${escapeHtml(bullet)}</li>`).join("")}</ul>` : ""}
         <div class="write-idea-artifact-actions">
@@ -10896,6 +11273,7 @@ function renderNotes() {
           <button type="button" class="write-idea-card-action" onclick="openArtifactInWriteIdea('note','${escapeHtml(item.noteId || item.id)}','continue','expand')">Continue in Write an Idea</button>
           <button type="button" class="write-idea-card-action" onclick="openArtifactInWriteIdea('note','${escapeHtml(item.noteId || item.id)}','analyze','extract_hooks')">Analyze in Write an Idea</button>
           <button type="button" class="write-idea-card-action" onclick="openArtifactInWriteIdea('note','${escapeHtml(item.noteId || item.id)}','transform','turn_into_caption')">Transform in Write an Idea</button>
+        </div>
         </div>
         <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between gap-3">
           <span class="text-[10px] text-gray-500 font-medium wrap-safe">${escapeHtml(statusLine)}</span>
@@ -12770,6 +13148,13 @@ function escapeHtml(str) {
     .replaceAll("'", "&#39;");
 }
 
+function escapeSelectorValue(value) {
+  const text = String(value || "");
+  return window.CSS && typeof window.CSS.escape === "function"
+    ? window.CSS.escape(text)
+    : text.replace(/["\\#.:,[\]()]/g, "\\$&");
+}
+
 window.openModalById = openModalById;
 window.openMediaAsset = openMediaAsset;
 window.closeModal = closeModal;
@@ -12789,6 +13174,7 @@ window.connectSocialAccount = connectSocialAccount;
 window.reconnectSocialAccount = reconnectSocialAccount;
 window.disconnectConnectedAccount = disconnectConnectedAccount;
 window.importConnectedSocialPost = importConnectedSocialPost;
+window.openCalendarDate = openCalendarDate;
 
 window.openModal = function(
   title = "",
