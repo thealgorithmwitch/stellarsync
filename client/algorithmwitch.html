@@ -7330,18 +7330,22 @@ function getIconPathPoints(shape, count, anchorX, anchorY, layout = {}, seed = "
   const verticalStretch = Number(layout.verticalStretch || pathStretch);
   const rowLength = Number(layout.rowLength || 720);
   const rowHeight = Number(layout.rowHeight || 320);
-  const phaseA = seededUnit(`${seed}:phase-a`) * Math.PI * 2;
-  const phaseB = seededUnit(`${seed}:phase-b`) * Math.PI * 2;
-  const ampA = (rowHeight * (layout.priorityCampaign ? 0.34 : 0.28)) * verticalStretch;
-  const ampB = (rowHeight * 0.12) * verticalStretch;
-  const drift = seededSymmetric(`${seed}:drift`) * rowHeight * 0.1;
+  const laneCurve = clamp(Number(layout.internalSpacing || 1), 1, 1.5);
+  const primaryCycles = layout.priorityCampaign ? 2.28 : 2.12;
+  const secondaryCycles = primaryCycles * 2;
+  const ampA = (rowHeight * (layout.priorityCampaign ? 0.3 : 0.24)) * verticalStretch * (0.94 + ((laneCurve - 1) * 0.28));
+  const ampB = (rowHeight * 0.075) * verticalStretch * (0.9 + ((laneCurve - 1) * 0.18));
+  const editorialLift = rowHeight * (layout.priorityCampaign ? 0.065 : 0.045) * Math.min(verticalStretch, 1.35);
   for (let index = 0; index < safeCount; index += 1) {
     const t = safeCount === 1 ? 0.5 : index / Math.max(safeCount - 1, 1);
     const x = anchorX + (t - 0.5) * rowLength * pathStretch;
+    const baseWave = Math.sin((t * Math.PI * primaryCycles) - (Math.PI / 2));
+    const detailWave = Math.sin((t * Math.PI * secondaryCycles) - (Math.PI / 2));
+    const laneLift = Math.sin(t * Math.PI) * editorialLift;
     const y = anchorY
-      + Math.sin((t * Math.PI * 2.15) + phaseA) * ampA
-      + Math.cos((t * Math.PI * 4.1) + phaseB) * ampB
-      + drift * Math.sin((t * Math.PI) + phaseB);
+      + (baseWave * ampA)
+      + (detailWave * ampB)
+      - laneLift;
     points.push({
       x: clamp(x, 220, 5600),
       y: clamp(y, 160, 5600)
