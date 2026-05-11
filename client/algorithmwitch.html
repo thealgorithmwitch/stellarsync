@@ -449,12 +449,12 @@
         .calendar-today-cell { border-color: rgba(199,125,255,0.45) !important; box-shadow: inset 0 0 0 1px rgba(199,125,255,0.25); background: rgba(45, 27, 78, 0.45) !important; }
         .calendar-today-label { color: #ffffff !important; font-weight: 700 !important; }
         
-        .post-pill { padding: 0.35rem 0.5rem !important; border-radius: 0.5rem !important; border-left: none !important; font-size: 10px; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; background: #221835 !important; }
+        .post-pill { padding: 0.4rem 0.55rem !important; border-radius: 0.6rem !important; border-left: none !important; font-size: 10px; font-weight: 500; display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; background: #221835 !important; min-width: 0; max-width: 100%; overflow: hidden; }
         .post-pill.edu { background: rgba(0, 240, 255, 0.08) !important; border: 1px solid rgba(0, 240, 255, 0.15) !important; }
         .post-pill.promo { background: rgba(178, 95, 255, 0.08) !important; border: 1px solid rgba(178, 95, 255, 0.15) !important; }
         .post-pill.engage { background: rgba(255, 215, 0, 0.08) !important; border: 1px solid rgba(255, 215, 0, 0.15) !important; }
         .post-pill.aware { background: rgba(0, 255, 170, 0.08) !important; border: 1px solid rgba(0, 255, 170, 0.15) !important; }
-        .wrap-safe { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+        .wrap-safe { white-space: normal; overflow-wrap: break-word; word-break: normal; hyphens: none; }
         .note-bullet-list { padding-left: 1rem; list-style: disc; color: #94a3b8; }
         .note-bullet-list li + li { margin-top: 0.3rem; }
         .stacked-preview { position: relative; width: 56px; height: 44px; }
@@ -481,6 +481,80 @@
         }
         .mobile-day-post + .mobile-day-post {
             margin-top: 0.75rem;
+        }
+        .constellation-label-btn {
+            position: absolute;
+            transform: translateY(-50%);
+            padding: 0.45rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(18,12,29,0.3);
+            color: #e5e7eb;
+            font-size: clamp(10px, 0.72vw, 12px);
+            line-height: 1.2;
+            max-width: 260px;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            word-break: normal;
+            z-index: 11;
+        }
+        .constellation-campaign-label {
+            min-width: 0;
+        }
+        .constellation-campaign-label h3,
+        .constellation-campaign-label p {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: normal;
+        }
+        .ledger-action-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+        .ledger-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-width: 0;
+            white-space: nowrap;
+        }
+        .mobile-more-item {
+            min-width: 0;
+        }
+        .mobile-more-label {
+            display: block;
+            min-width: 0;
+            white-space: nowrap;
+            word-break: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: clamp(12px, 3.2vw, 14px);
+            line-height: 1.15;
+        }
+        #calendar-header,
+        #calendar-header-copy,
+        #calendar-header-controls,
+        #calendar-mode-controls,
+        #calendar-arrow-controls,
+        #calendar-grid-shell,
+        #calendar-weekday-row,
+        #calendar-grid {
+            min-width: 0;
+        }
+        #calendar-weekday-row {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+        #calendar-grid.calendar-mode-week {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
         }
         .status-banner {
             display: inline-flex;
@@ -762,7 +836,7 @@
                 height: auto !important;
                 min-height: 52px !important;
                 padding: max(0.55rem, env(safe-area-inset-top)) 0.75rem 0.55rem !important;
-                gap: 0.5rem !important;
+                gap: 0.45rem !important;
                 align-items: center !important;
                 overflow: hidden !important;
             }
@@ -821,49 +895,34 @@
             }
 
             header > div:last-child {
-                gap: 0.35rem !important;
+                gap: 0.25rem !important;
                 flex-shrink: 0 !important;
                 flex-wrap: nowrap !important;
                 min-width: 0 !important;
+                max-width: calc(100vw - 11.5rem) !important;
+                overflow: hidden !important;
             }
 
             #install-app-btn {
-                width: 2.25rem !important;
-                height: 2.25rem !important;
-                padding: 0 !important;
-                justify-content: center !important;
-                border-radius: 0.75rem !important;
-                gap: 0 !important;
-                flex-shrink: 0 !important;
-            }
-
-            #install-app-btn span,
-            #install-app-btn .install-label,
-            #install-app-btn .label-text {
                 display: none !important;
-            }
-
-            #install-app-btn i {
-                margin: 0 !important;
-                font-size: 1rem !important;
             }
 
             #mobile-filter-trigger,
             #profile-menu-trigger,
             #mobile-install-app-btn {
-                width: 2.25rem !important;
-                height: 2.25rem !important;
-                border-radius: 0.75rem !important;
+                width: 2.1rem !important;
+                height: 2.1rem !important;
+                border-radius: 0.72rem !important;
                 flex-shrink: 0 !important;
             }
 
             #mobile-filter-trigger i,
             #mobile-install-app-btn i {
-                font-size: 1rem !important;
+                font-size: 0.92rem !important;
             }
 
             #profile-menu-trigger {
-                font-size: 0.65rem !important;
+                font-size: 0.6rem !important;
             }
 
             #desktop-sidebar-nav,
@@ -941,6 +1000,204 @@
             #view-calendar {
                 overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch;
+            }
+
+            #view-inspo,
+            #view-notes {
+                overflow-x: hidden !important;
+            }
+
+            #view-inspo #inspo-grid,
+            #view-notes #notes-grid {
+                overflow: visible !important;
+                flex: 0 0 auto !important;
+                min-height: 0 !important;
+                align-content: start !important;
+                padding-bottom: 7rem !important;
+            }
+
+            #calendar-header {
+                margin-bottom: 1rem !important;
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) !important;
+                gap: 0.8rem !important;
+            }
+
+            #calendar-header-copy h2 {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: baseline !important;
+                gap: 0.25rem 0.55rem !important;
+                min-width: 0 !important;
+            }
+
+            #calendar-month-name {
+                font-size: clamp(1.45rem, 6vw, 1.9rem) !important;
+                line-height: 1.02 !important;
+                min-width: 0 !important;
+            }
+
+            #calendar-year-name {
+                font-size: clamp(1rem, 3.8vw, 1.2rem) !important;
+                line-height: 1.1 !important;
+            }
+
+            #calendar-header-controls {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 0.55rem !important;
+                align-items: stretch !important;
+                width: 100% !important;
+            }
+
+            #calendar-mode-controls,
+            #calendar-arrow-controls {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.4rem !important;
+                min-width: 0 !important;
+            }
+
+            #calendar-mode-controls {
+                flex: 1 1 100% !important;
+                padding: 0.3rem !important;
+            }
+
+            #calendar-mode-month,
+            #calendar-mode-week {
+                flex: 1 1 0 !important;
+                min-width: 0 !important;
+                padding: 0.55rem 0.7rem !important;
+                font-size: 0.7rem !important;
+            }
+
+            #calendar-arrow-controls {
+                flex: 0 0 auto !important;
+            }
+
+            #calendar-prev-btn,
+            #calendar-next-btn {
+                width: 2.25rem !important;
+                height: 2.25rem !important;
+                flex: 0 0 2.25rem !important;
+            }
+
+            #mobile-day-view {
+                display: none !important;
+            }
+
+            #calendar-grid-shell {
+                display: block !important;
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+
+            #calendar-weekday-row {
+                gap: 0.25rem !important;
+                margin-bottom: 0.6rem !important;
+            }
+
+            #calendar-weekday-row span {
+                min-width: 0 !important;
+                font-size: 0.55rem !important;
+                letter-spacing: 0.08em !important;
+            }
+
+            .cal-grid {
+                gap: 0.3rem !important;
+            }
+
+            .cal-cell {
+                min-height: 70px !important;
+                padding: 0.35rem !important;
+                gap: 0.25rem !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            #calendar-grid.calendar-mode-month .cal-cell {
+                min-height: 82px !important;
+            }
+
+            #calendar-grid.calendar-mode-week {
+                grid-template-columns: 1fr !important;
+                gap: 0.55rem !important;
+            }
+
+            #calendar-grid.calendar-mode-week .cal-cell {
+                min-height: 120px !important;
+                padding: 0.65rem !important;
+            }
+
+            .post-pill {
+                padding: 0.28rem 0.38rem !important;
+                gap: 0.22rem !important;
+            }
+
+            .post-pill > span:last-child {
+                font-size: clamp(8px, 2.2vw, 10px) !important;
+                line-height: 1.15 !important;
+                white-space: normal !important;
+                word-break: normal !important;
+                overflow-wrap: break-word !important;
+                min-width: 0 !important;
+            }
+
+            #view-ledger .ledger-card > div,
+            #view-ledger .ledger-card .flex-1 {
+                min-width: 0 !important;
+            }
+
+            #view-ledger .ledger-card > div {
+                flex-direction: column !important;
+                gap: 0.9rem !important;
+            }
+
+            #view-ledger .ledger-card .ledger-action-bar {
+                gap: 0.55rem !important;
+                margin-top: 0.85rem !important;
+                justify-content: flex-start !important;
+            }
+
+            #view-ledger .ledger-card .ledger-action-btn {
+                flex: 0 1 auto !important;
+                padding: 0.45rem 0.65rem !important;
+                border-radius: 999px !important;
+                border: 1px solid rgba(255,255,255,0.08) !important;
+                background: #120c1d !important;
+                font-size: 0.7rem !important;
+            }
+
+            #view-ledger .ledger-card .ledger-delete-btn {
+                color: #fda4af !important;
+                margin-left: 0 !important;
+            }
+
+            #mobile-more-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.65rem !important;
+            }
+
+            #mobile-more-list .platform-card {
+                min-width: 0 !important;
+                padding: 0.85rem !important;
+            }
+
+            #mobile-more-list .flex.items-center.gap-3 {
+                min-width: 0 !important;
+            }
+
+            #mobile-more-list .w-10.h-10 {
+                width: 2.25rem !important;
+                height: 2.25rem !important;
+                flex: 0 0 2.25rem !important;
+            }
+
+            #view-constellation .constellation-label-btn {
+                max-width: 180px !important;
+                font-size: 10px !important;
+                padding: 0.38rem 0.55rem !important;
             }
 
             #scheduling-modal .modal-content,
@@ -1181,8 +1438,8 @@
             
             
 <section id="view-calendar" class="view-section w-full h-full p-8 flex flex-col min-h-0 overflow-hidden bg-[#120c1d] border border-white/5 rounded-2xl">
-          <div class="mb-8 flex justify-between items-start">
-            <div>
+          <div id="calendar-header" class="mb-8 flex justify-between items-start">
+            <div id="calendar-header-copy">
               <h2 class="text-4xl font-bold text-white tracking-tight flex items-baseline gap-3">
                 <span id="calendar-month-name">Month</span>
                 <span id="calendar-year-name" class="text-2xl font-medium text-gray-500 tracking-normal">2024</span>
@@ -1192,12 +1449,12 @@
               </p>
             </div>
         
-            <div class="flex items-center gap-4">
-              <div class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1">
+            <div id="calendar-header-controls" class="flex items-center gap-4">
+              <div id="calendar-mode-controls" class="flex bg-[#1a1128] rounded-xl border border-white/5 p-1.5 gap-1">
                 <button id="calendar-mode-month" class="px-5 py-2 text-xs bg-[#2d1b4e] text-white rounded-lg font-semibold shadow-sm">Mo</button>
                 <button id="calendar-mode-week" class="px-5 py-2 text-xs text-gray-400 hover:text-white rounded-lg font-medium transition-colors">Wk</button>
               </div>
-              <div class="flex gap-1">
+              <div id="calendar-arrow-controls" class="flex gap-1">
                 <button id="calendar-prev-btn" class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
                   <i class="ph-bold ph-caret-left"></i>
                 </button>
@@ -1208,7 +1465,7 @@
             </div>
           </div>
         
-          <div id="mobile-day-view" class="md:hidden mb-5 mobile-day-card">
+          <div id="mobile-day-view" class="hidden mb-5 mobile-day-card">
             <div class="flex items-center justify-between gap-3 mb-4">
               <button id="mobile-day-prev-btn" type="button" class="w-10 h-10 rounded-xl bg-[#1a1128] border border-white/5 text-gray-300 hover:text-white flex items-center justify-center transition-colors">
                 <i class="ph-bold ph-caret-left"></i>
@@ -1227,8 +1484,8 @@
             <div id="mobile-day-list"></div>
           </div>
 
-          <div class="hidden md:block flex-1 overflow-y-auto custom-scrollbar">
-            <div class="grid grid-cols-7 mb-4 text-center">
+          <div id="calendar-grid-shell" class="flex-1 overflow-y-auto custom-scrollbar">
+            <div id="calendar-weekday-row" class="grid grid-cols-7 mb-4 text-center">
               <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Sun</span>
               <span class="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Mon</span>
               <span class="text-[10px] font-bold text-[#c77dff] tracking-wider uppercase">Tue</span>
@@ -6315,12 +6572,15 @@ function renderCalendar() {
   const monthNameEl = document.getElementById("calendar-month-name");
   const yearNameEl = document.getElementById("calendar-year-name");
   const grid = document.getElementById("calendar-grid");
+  const weekdayRow = document.getElementById("calendar-weekday-row");
   if (!grid) return;
 
   selectedCalendarDateKey = selectedCalendarDateKey || toDateKey(calendarCursor || new Date());
-  if (window.innerWidth <= 768) {
-    renderMobileDayCalendar();
-    return;
+  grid.classList.toggle("calendar-mode-month", calendarMode === "month");
+  grid.classList.toggle("calendar-mode-week", calendarMode === "week");
+  if (weekdayRow) {
+    const hideWeekdayRow = window.innerWidth <= 768 && calendarMode === "week";
+    weekdayRow.classList.toggle("hidden", hideWeekdayRow);
   }
 
   if (calendarMode === "month") {
@@ -6392,9 +6652,11 @@ function renderCalendarCell(dateObj, inCurrentMonth = true, isWeekMode = false) 
     ? "text-xs font-bold calendar-today-label"
     : "text-xs text-gray-300 font-medium";
 
+  const dayLabel = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+
   return `
     <div class="${cellClasses}">
-      <span class="${dateLabelClass}">${dateObj.getDate()}</span>
+      <span class="${dateLabelClass}">${isWeekMode ? `${dayLabel} ${dateObj.getDate()}` : dateObj.getDate()}</span>
       ${posts.map(post => renderCalendarPill(post, isWeekMode)).join("")}
     </div>
   `;
@@ -6463,12 +6725,11 @@ function renderCalendarPill(post, isWeekMode = false) {
     : displayTitle;
   const hydrated = hydratePostCampaign(post);
   const campaignColor = getCampaignColor(hydrated, getPostContentPillar(hydrated));
-  const pillarColor = getPillarTheme(getPostContentPillar(hydrated));
 
   return `
     <button type="button" class="post-pill mt-1 text-left" onclick="openModalById('${escapeHtml(post.id)}')" title="${escapeHtml(post.title || "")}" style="background:${campaignColor}14;border:1px solid ${campaignColor}30;box-shadow:inset 3px 0 0 ${campaignColor};">
       <div class="flex items-center gap-1.5 w-full">
-        ${renderPillarShape(getPostContentPillar(hydrated), "", pillarColor)}
+        <span class="w-2 h-2 rounded-full shrink-0" style="background:${campaignColor};box-shadow:0 0 10px ${campaignColor}66;"></span>
         ${iconBlock}
         <div class="w-1.5 h-1.5 rounded-full ml-auto" style="background:${statusColor}"></div>
       </div>
@@ -6600,14 +6861,17 @@ function renderLedger() {
             </div>
             <h3 class="text-white font-bold text-base mb-2 wrap-safe" title="${escapeHtml(post.title || "")}">${escapeHtml(displayTitle)}</h3>
             <p class="text-gray-400 text-sm leading-relaxed wrap-safe" title="${escapeHtml(post.description || "")}">${escapeHtml(displayDescription)}</p>
-            <div class="mt-4 flex items-center gap-5">
-              <button type="button" class="ledger-ai-btn text-[#c77dff] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors">
+            <div class="mt-4 ledger-action-bar">
+              <button type="button" class="ledger-open-btn ledger-action-btn text-gray-300 hover:text-white text-xs font-medium transition-colors">
+                <i class="ph-bold ph-pencil-simple"></i> Open
+              </button>
+              <button type="button" class="ledger-ai-btn ledger-action-btn text-[#c77dff] hover:text-white text-xs font-semibold transition-colors">
                 <i class="ph-bold ph-sparkle"></i> AI Enhance
               </button>
-              <button type="button" class="ledger-duplicate-btn text-gray-500 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+              <button type="button" class="ledger-duplicate-btn ledger-action-btn text-gray-500 hover:text-white text-xs font-medium transition-colors">
                 <i class="ph-bold ph-copy"></i> Duplicate
               </button>
-              <button type="button" class="ledger-delete-btn text-gray-500 hover:text-red-400 text-xs font-medium flex items-center gap-1.5 transition-colors ml-auto">
+              <button type="button" class="ledger-delete-btn ledger-action-btn text-gray-500 hover:text-red-400 text-xs font-medium transition-colors ml-auto">
                 <i class="ph-bold ph-trash"></i> Delete
               </button>
             </div>
@@ -6626,6 +6890,11 @@ function wireLedgerActions() {
     if (!postId) return;
 
     card.addEventListener("click", () => openModalById(postId));
+
+    card.querySelector(".ledger-open-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openModalById(postId);
+    });
 
     card.querySelector(".ledger-ai-btn")?.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -6682,16 +6951,17 @@ function buildConstellationRows() {
     const layout = getConstellationLayoutConfig(campaign, index);
     const rowWidth = layout.labelWidth + layout.rowLength + 520;
     const rowHeight = layout.rowHeight + layout.labelHeight + 280;
-    if (cursorX + rowWidth > maxRowWidth - 360) {
-      cursorX = 720 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:row`) * 260);
-      cursorY += currentRowHeight + 360 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:row-gap`) * 180);
+    const forceOwnRow = isConstellationPriorityCampaign(campaign) || layout.tier === "huge";
+    if ((forceOwnRow && cursorX > 760) || cursorX + rowWidth > maxRowWidth - 360) {
+      cursorX = 720 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:row`) * 340);
+      cursorY += currentRowHeight + 400 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:row-gap`) * 240);
       currentRowHeight = 0;
     }
     const anchor = {
-      x: cursorX + layout.labelWidth + 180 + Math.round(seededSymmetric(`${campaign.campaignId || campaign.campaignName || index}:anchor-x`) * 90),
-      y: cursorY + Math.round(rowHeight * 0.46) + Math.round(seededSymmetric(`${campaign.campaignId || campaign.campaignName || index}:anchor-y`) * 80)
+      x: cursorX + layout.labelWidth + 180 + Math.round(seededSymmetric(`${campaign.campaignId || campaign.campaignName || index}:anchor-x`) * 120),
+      y: cursorY + Math.round(rowHeight * 0.46) + Math.round(seededSymmetric(`${campaign.campaignId || campaign.campaignName || index}:anchor-y`) * 110)
     };
-    cursorX += rowWidth + 180 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:next-gap`) * 180);
+    cursorX += rowWidth + 220 + Math.round(seededUnit(`${campaign.campaignId || campaign.campaignName || index}:next-gap`) * 220);
     currentRowHeight = Math.max(currentRowHeight, rowHeight);
     return {
       ...campaign,
@@ -6700,6 +6970,10 @@ function buildConstellationRows() {
       _constellationFootprint: { width: rowWidth, height: rowHeight }
     };
   });
+}
+
+function isConstellationPriorityCampaign(campaign = {}) {
+  return /algorithm best practices/i.test(String(campaign.campaignName || ""));
 }
 
 function getConstellationAnchor(campaign, index) {
@@ -6721,29 +6995,27 @@ function getConstellationTier(postCount) {
 function getConstellationLayoutConfig(campaign, index = 0) {
   if (campaign?._constellationLayout) return campaign._constellationLayout;
   const postCount = Math.max((campaign.posts || []).length, 1);
-  const tier = getConstellationTier(postCount);
-  const shape = String(campaign.iconShape || "").trim().toLowerCase();
-  const stretchAxis = shape === "leaf" || shape === "moon" || shape === "spiral" ? "vertical" : "horizontal";
+  const priorityCampaign = isConstellationPriorityCampaign(campaign);
+  const tier = priorityCampaign ? "huge" : getConstellationTier(postCount);
   const labelWidth = clamp(170 + String(campaign.campaignName || "").length * 7, 190, 420);
   const labelHeight = 72;
-  const dotGap = tier === "huge" ? 118 : tier === "large" ? 108 : tier === "medium" ? 98 : 90;
-  const rowLength = clamp(460 + postCount * dotGap, 700, 2600);
-  const rowHeight = clamp(260 + (shape === "spiral" ? 190 : 0) + (stretchAxis === "vertical" ? 120 : 0) + Math.max(postCount - 4, 0) * 18, 280, tier === "huge" ? 760 : 620);
+  const dotGap = tier === "huge" ? 126 : tier === "large" ? 112 : tier === "medium" ? 100 : 92;
+  const rowLength = clamp((priorityCampaign ? 840 : 520) + postCount * dotGap, priorityCampaign ? 1700 : 760, priorityCampaign ? 3400 : 2700);
+  const rowHeight = clamp((priorityCampaign ? 360 : 260) + Math.max(postCount - 4, 0) * 16, priorityCampaign ? 380 : 280, priorityCampaign ? 840 : 620);
   const tierConfig = {
     small: { pathLength: 1, spacing: 1, radius: 1, hoverPadding: 1, labelOffset: 1, columnGap: 1520, rowGap: 1020 },
-    medium: { pathLength: 1.18, spacing: 1.15, radius: 1.12, hoverPadding: 1.15, labelOffset: 1.14, columnGap: 1660, rowGap: 1120 },
-    large: { pathLength: 1.34, spacing: 1.32, radius: 1.28, hoverPadding: 1.28, labelOffset: 1.25, columnGap: 1880, rowGap: 1280 },
-    huge: { pathLength: 1.7, spacing: 1.55, radius: 1.52, hoverPadding: 1.48, labelOffset: 1.42, columnGap: stretchAxis === "horizontal" ? 2480 : 1820, rowGap: stretchAxis === "vertical" ? 1680 : 1380 }
+    medium: { pathLength: 1.14, spacing: 1.12, radius: 1.1, hoverPadding: 1.14, labelOffset: 1.12, columnGap: 1660, rowGap: 1120 },
+    large: { pathLength: 1.28, spacing: 1.25, radius: 1.24, hoverPadding: 1.24, labelOffset: 1.22, columnGap: 1940, rowGap: 1300 },
+    huge: { pathLength: 1.62, spacing: 1.42, radius: 1.42, hoverPadding: 1.4, labelOffset: 1.36, columnGap: 2560, rowGap: 1560 }
   }[tier];
   return {
     tier,
-    pathStretch: tierConfig.pathLength * (tier === "huge" && stretchAxis === "horizontal" ? 1.18 : 1),
-    verticalStretch: tierConfig.pathLength * (tier === "huge" && stretchAxis === "vertical" ? 1.18 : 1),
+    pathStretch: tierConfig.pathLength * (priorityCampaign ? 1.16 : 1),
+    verticalStretch: tierConfig.pathLength * (priorityCampaign ? 1.08 : 1),
     internalSpacing: tierConfig.spacing,
     campaignRadius: tierConfig.radius,
     hoverPadding: tierConfig.hoverPadding,
     labelOffset: tierConfig.labelOffset,
-    stretchAxis,
     anchorX: 820,
     anchorY: 580,
     rowLength,
@@ -6753,51 +7025,30 @@ function getConstellationLayoutConfig(campaign, index = 0) {
     dotGap,
     crowded: postCount >= 10,
     overlapRisk: postCount >= 14,
-    labelCollisionRisk: postCount >= 9
+    labelCollisionRisk: postCount >= 9,
+    priorityCampaign
   };
 }
 
-function getIconPathPoints(shape, count, anchorX, anchorY, layout = {}) {
+function getIconPathPoints(shape, count, anchorX, anchorY, layout = {}, seed = "") {
   const safeCount = Math.max(count, 1);
   const points = [];
   const pathStretch = Number(layout.pathStretch || 1);
   const verticalStretch = Number(layout.verticalStretch || pathStretch);
   const rowLength = Number(layout.rowLength || 720);
   const rowHeight = Number(layout.rowHeight || 320);
+  const phaseA = seededUnit(`${seed}:phase-a`) * Math.PI * 2;
+  const phaseB = seededUnit(`${seed}:phase-b`) * Math.PI * 2;
+  const ampA = (rowHeight * (layout.priorityCampaign ? 0.34 : 0.28)) * verticalStretch;
+  const ampB = (rowHeight * 0.12) * verticalStretch;
+  const drift = seededSymmetric(`${seed}:drift`) * rowHeight * 0.1;
   for (let index = 0; index < safeCount; index += 1) {
     const t = safeCount === 1 ? 0.5 : index / Math.max(safeCount - 1, 1);
-    let x = anchorX;
-    let y = anchorY;
-    if (shape === "leaf") {
-      x += Math.sin(t * Math.PI) * (rowLength * 0.42) * pathStretch;
-      y += (Math.cos(t * Math.PI * 2) * (rowHeight * 0.34) - rowHeight * 0.14) * verticalStretch;
-    } else if (shape === "spark" || shape === "star") {
-      x += (t - 0.5) * rowLength * pathStretch;
-      y += Math.sin(t * Math.PI * 4) * (rowHeight * 0.36) * verticalStretch;
-    } else if (shape === "sun") {
-      x += Math.cos(t * Math.PI * 2) * Math.min(rowLength * 0.36, 420) * pathStretch;
-      y += Math.sin(t * Math.PI * 2) * Math.min(rowHeight * 0.46, 420) * verticalStretch;
-    } else if (shape === "moon") {
-      x += Math.cos((0.2 + t * 0.8) * Math.PI) * Math.min(rowLength * 0.38, 430) * pathStretch;
-      y += Math.sin((0.2 + t * 0.8) * Math.PI) * Math.min(rowHeight * 0.42, 360) * verticalStretch;
-    } else if (shape === "bolt") {
-      x += (t < 0.5 ? (-rowLength * 0.32) + t * rowLength * 0.62 : (-rowLength * 0.06) + (t - 0.5) * rowLength * 0.72) * pathStretch;
-      y += (t < 0.5 ? (-rowHeight * 0.52) + t * rowHeight * 0.84 : (-rowHeight * 0.14) + (t - 0.5) * rowHeight * 0.9) * verticalStretch;
-    } else if (shape === "map") {
-      x += (t - 0.5) * rowLength * pathStretch;
-      y += (Math.sin(t * Math.PI * 3) * (rowHeight * 0.28) + Math.cos(t * Math.PI) * (rowHeight * 0.18)) * verticalStretch;
-    } else if (shape === "book") {
-      x += (t - 0.5) * (rowLength * 0.9) * pathStretch;
-      y += Math.sin((t - 0.5) * Math.PI) * (rowHeight * 0.34) * verticalStretch;
-    } else if (shape === "spiral") {
-      const angle = t * Math.PI * 3.6;
-      const radius = (78 + t * Math.min(rowLength * 0.46, 480)) * pathStretch;
-      x += Math.cos(angle) * radius;
-      y += Math.sin(angle) * radius * (verticalStretch / Math.max(pathStretch, 0.001));
-    } else {
-      x += (t - 0.5) * rowLength * pathStretch;
-      y += Math.sin(t * Math.PI * 2) * (rowHeight * 0.22) * verticalStretch;
-    }
+    const x = anchorX + (t - 0.5) * rowLength * pathStretch;
+    const y = anchorY
+      + Math.sin((t * Math.PI * 2.15) + phaseA) * ampA
+      + Math.cos((t * Math.PI * 4.1) + phaseB) * ampB
+      + drift * Math.sin((t * Math.PI) + phaseB);
     points.push({
       x: clamp(x, 220, 5600),
       y: clamp(y, 160, 5600)
@@ -6835,8 +7086,8 @@ function renderConstellation() {
   const largestCount = rows.reduce((max, campaign) => Math.max(max, Math.max((campaign.posts || []).length, 1)), 1);
   const largestTier = getConstellationTier(largestCount);
   const columns = rows.some((campaign) => getConstellationTier((campaign.posts || []).length) === "huge") ? 1 : 2;
-  const worldWidth = Math.max(5200, columns === 1 ? 6200 : 5600, largestTier === "huge" ? 6600 : 0, totalFootprintWidth + 900);
-  const minCanvasHeight = Math.max(4200, (Math.ceil(rows.length / Math.max(columns, 1)) + 1) * (largestTier === "huge" ? 1700 : 1340), totalFootprintHeight + 820);
+  const worldWidth = Math.max(5600, columns === 1 ? 7000 : 6100, largestTier === "huge" ? 7200 : 0, totalFootprintWidth + 1100);
+  const minCanvasHeight = Math.max(4400, (Math.ceil(rows.length / Math.max(columns, 1)) + 1) * (largestTier === "huge" ? 1820 : 1420), totalFootprintHeight + 980);
   const worldBounds = { minX: 999999, minY: 999999, maxX: 0, maxY: 0 };
 
   canvas.style.height = `${minCanvasHeight}px`;
@@ -6897,7 +7148,7 @@ function renderConstellation() {
     rowGroup.style.width = `${worldWidth}px`;
     rowGroup.style.height = `${minCanvasHeight}px`;
 
-    const points = getIconPathPoints(String(campaign.iconShape || "").trim().toLowerCase(), Math.max((campaign.posts || []).length, 1), anchor.x, anchor.y, layout);
+    const points = getIconPathPoints(String(campaign.iconShape || "").trim().toLowerCase(), Math.max((campaign.posts || []).length, 1), anchor.x, anchor.y, layout, String(campaign.campaignId || campaign.campaignName || index));
     const pathData = points.map((point, pointIndex) => `${pointIndex === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
     points.forEach((point) => {
       worldBounds.minX = Math.min(worldBounds.minX, point.x - 360 * layout.hoverPadding);
@@ -6907,6 +7158,7 @@ function renderConstellation() {
     });
 
     const label = document.createElement("div");
+    label.className = "constellation-campaign-label";
     label.style.cssText = `
       position:absolute;
       left:${Math.max(48, anchor.x - layout.labelWidth - 170)}px;
@@ -6920,7 +7172,7 @@ function renderConstellation() {
       box-shadow:none;
       z-index:6;
       min-width:${layout.labelWidth}px;
-      max-width:${layout.tier === "huge" ? 420 : 320}px;
+      max-width:${layout.tier === "huge" ? 480 : 340}px;
       pointer-events:none;
     `;
     label.innerHTML = `
@@ -6970,8 +7222,6 @@ function renderConstellation() {
     rowPosts.forEach((post, postIndex) => {
       const dotX = points[postIndex]?.x || anchor.x;
       const dotY = points[postIndex]?.y || anchor.y;
-      const postPillar = getPostContentPillar(post);
-      const pillarShape = renderPillarShape(postPillar, "", getPillarTheme(postPillar));
       const dot = document.createElement("button");
       dot.type = "button";
       dot.className = "absolute rounded-full transition-all";
@@ -6986,7 +7236,13 @@ function renderConstellation() {
         box-shadow:0 0 18px ${color}55;
         z-index:10;
         cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
       `;
+      if (String(post.status || "").toLowerCase() === "published") {
+        dot.innerHTML = `<i class="ph-fill ph-star text-[8px]" style="color:#ffffff"></i>`;
+      }
       dot.title = post.title || "Open post";
       dot.addEventListener("mouseenter", () => {
         dot.style.transform = "translate(-50%,-50%) scale(1.22)";
@@ -7009,7 +7265,7 @@ function renderConstellation() {
       dotLabel.style.top = `${dotY}px`;
       dotLabel.style.borderColor = `${color}40`;
       if (layout.tier === "huge") dotLabel.style.maxWidth = "320px";
-      dotLabel.innerHTML = `${pillarShape}<span>${escapeHtml(getConstellationLabel(post.title))}</span>`;
+      dotLabel.innerHTML = `<span>${escapeHtml(getConstellationLabel(post.title))}</span>`;
       dotLabel.style.display = "inline-flex";
       dotLabel.style.alignItems = "center";
       dotLabel.style.gap = "8px";
@@ -7246,7 +7502,7 @@ function zoomConstellation(multiplier) {
   const worldX = (centerX - panX) / scale;
   const worldY = (centerY - panY) / scale;
 
-  scale = clamp(scale * multiplier, 0.18, 4);
+  scale = clamp(scale * multiplier, 0.18, 5.5);
   panX = centerX - worldX * scale;
   panY = centerY - worldY * scale;
 
@@ -7271,7 +7527,7 @@ function fitConstellation({ preserveUserView = false } = {}) {
   const worldWidth = Math.max(1, worldMaxX - worldMinX);
   const worldHeight = Math.max(1, worldMaxY - worldMinY);
   const fitScale = Math.min(rect.width / worldWidth, rect.height / worldHeight);
-  scale = clamp(fitScale * 1.08, 0.18, 4);
+  scale = clamp(fitScale * 1.02, 0.18, 5.5);
 
   panX = Math.round((rect.width - worldWidth * scale) / 2) - Math.round(worldMinX * scale);
   panY = Math.round((rect.height - worldHeight * scale) / 2) - Math.round(worldMinY * scale);
@@ -7820,23 +8076,24 @@ function openMobileMoreSheet() {
 
 function renderMobileMoreSheet() {
   if (!mobileMoreList) return;
+  const isMobile = window.innerWidth <= 768;
   const items = [
-    { label: "Write an Idea", icon: "ph-sparkle", action: "view", value: "write-idea" },
-    { label: "Constellation", icon: "ph-planet", action: "view", value: "constellation" },
-    { label: "Performance", icon: "ph-chart-line-up", action: "view", value: "performance" },
+    { label: isMobile ? "Idea" : "Write an Idea", icon: "ph-sparkle", action: "view", value: "write-idea" },
+    { label: isMobile ? "Stars" : "Constellation", icon: "ph-planet", action: "view", value: "constellation" },
+    { label: isMobile ? "Stats" : "Performance", icon: "ph-chart-line-up", action: "view", value: "performance" },
     { label: "Audit", icon: "ph-shield-check", action: "view", value: "audit" },
     { label: "Brand OS", icon: "ph-book-open-text", action: "brand" },
     { label: "Settings", icon: "ph-sliders", action: "settings" },
-    { label: "Connected Accounts", icon: "ph-plugs-connected", action: "accounts" },
+    { label: isMobile ? "Accounts" : "Connected Accounts", icon: "ph-plugs-connected", action: "accounts" },
     { label: "Diagnostics", icon: "ph-bug-beetle", action: "diagnostics" },
     { label: "Panels", icon: "ph-sidebar", action: "utility" }
   ];
   mobileMoreList.innerHTML = items.map((item) => `
-    <button type="button" class="platform-card text-left" data-mobile-more-action="${escapeHtml(item.action)}" data-mobile-more-value="${escapeHtml(item.value || "")}">
+    <button type="button" class="platform-card text-left mobile-more-item" data-mobile-more-action="${escapeHtml(item.action)}" data-mobile-more-value="${escapeHtml(item.value || "")}">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-[#231738] border border-white/5 flex items-center justify-center text-[#c77dff]"><i class="ph-bold ${escapeHtml(item.icon)}"></i></div>
         <div class="min-w-0">
-          <div class="text-sm font-bold text-white wrap-safe">${escapeHtml(item.label)}</div>
+          <div class="text-sm font-bold text-white mobile-more-label">${escapeHtml(item.label)}</div>
         </div>
       </div>
     </button>
@@ -10276,36 +10533,40 @@ async function importPostSourceIntoModal() {
 function setupPWAInstall() {
   installContext.isStandalone = detectStandaloneMode();
   installContext.isIos = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+  const isMobileViewport = () => window.innerWidth <= 768;
 
-  const revealInstallButton = () => {
-    if (installContext.isStandalone) return;
-    [installAppBtn, mobileInstallAppBtn].filter(Boolean).forEach((button) => {
-      button.classList.remove("hidden");
-      button.classList.add("inline-flex");
-    });
-  };
+  const setInstallButtonVisibility = (visible) => {
+    const mobileOnly = isMobileViewport();
+    const showDesktop = visible && !installContext.isStandalone && !mobileOnly;
+    const showMobile = visible && !installContext.isStandalone && mobileOnly;
 
-  const hideInstallButton = () => {
-    [installAppBtn, mobileInstallAppBtn].filter(Boolean).forEach((button) => {
-      button.classList.add("hidden");
-      button.classList.remove("inline-flex");
+    if (installAppBtn) {
+      installAppBtn.classList.toggle("hidden", !showDesktop);
+      installAppBtn.classList.toggle("inline-flex", showDesktop);
+    }
+    if (mobileInstallAppBtn) {
+      mobileInstallAppBtn.classList.toggle("hidden", !showMobile);
+      mobileInstallAppBtn.classList.toggle("inline-flex", showMobile);
+    }
+    document.querySelectorAll('[data-workspace-action="install"]').forEach((button) => {
+      button.classList.toggle("hidden", installContext.isStandalone);
     });
   };
 
   if (installContext.isIos && !installContext.isStandalone) {
-    revealInstallButton();
+    setInstallButtonVisibility(true);
   }
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    revealInstallButton();
+    setInstallButtonVisibility(true);
   });
 
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
     installContext.isStandalone = true;
-    hideInstallButton();
+    setInstallButtonVisibility(false);
     closeInstallHelperModal();
     rerenderAll();
   });
@@ -10326,7 +10587,7 @@ function setupPWAInstall() {
       return true;
     } finally {
       deferredInstallPrompt = null;
-      hideInstallButton();
+      setInstallButtonVisibility(false);
     }
   };
 
@@ -10352,11 +10613,15 @@ function setupPWAInstall() {
   installHelperModal?.addEventListener("click", (event) => {
     if (event.target === installHelperModal) closeInstallHelperModal();
   });
+  window.addEventListener("resize", () => {
+    setInstallButtonVisibility(Boolean(deferredInstallPrompt) || (installContext.isIos && !installContext.isStandalone));
+  });
 
   if (appUpdateBtn) {
     appUpdateBtn.addEventListener("click", applyServiceWorkerUpdate);
   }
 
+  setInstallButtonVisibility(Boolean(deferredInstallPrompt) || (installContext.isIos && !installContext.isStandalone));
   updateAppStatusBanner();
 }
 
