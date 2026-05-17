@@ -3447,7 +3447,7 @@
 </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxbPRjAOeKxQPP1B-2fHdqYElDgWoSCzWh2q6KsaHvCCsOQf_xu_PDeP_V2yBrHQVve/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbylQiW5TR402YfFYqtawQ6B_qJ_jUH3b8W3HYEgXtoZo_fV5w5phS93Fb5Nbl4cAD1n/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v5",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v2"
@@ -6002,6 +6002,7 @@ function initApp() {
 
   syncRemoteIfConfigured().then(() => {
     refreshBackendDiagnostics({ silent: true }).catch(() => undefined);
+    refreshSocialImportContext().catch(() => undefined);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (currentView === "calendar") {
@@ -6012,6 +6013,7 @@ function initApp() {
     });
   }).catch((err) => {
     console.error("Remote sync failed during init:", err);
+    refreshSocialImportContext().catch(() => undefined);
     refreshBackendDiagnostics({ silent: true }).catch(() => undefined);
   });
 }
@@ -8389,6 +8391,7 @@ async function testLinkedInHistoricalAccessAction() {
     connectedAccountsHistoricalAccess.linkedin = {
       checkedAt: new Date().toISOString(),
       apiVersion: String(result?.apiVersion || "").trim(),
+      attemptedApiVersions: Array.isArray(result?.attemptedApiVersions) ? result.attemptedApiVersions : [],
       classification,
       message,
       attempted: Array.isArray(result?.attempted) ? result.attempted : [],
@@ -8425,6 +8428,7 @@ async function testLinkedInHistoricalAccessAction() {
     connectedAccountsHistoricalAccess.linkedin = {
       checkedAt: new Date().toISOString(),
       apiVersion: "",
+      attemptedApiVersions: [],
       classification: "backend_error",
       message: err?.message || "Could not test LinkedIn historical-post access.",
       attempted: [],
@@ -8526,6 +8530,9 @@ function openWorkspaceHub(tab = "settings") {
   workspaceHubModalCard?.classList.add("scale-100");
   toggleProfileMenu(false);
   renderWorkspaceHub();
+  refreshSocialImportContext().catch((err) => {
+    console.error(err);
+  });
 }
 
 function closeWorkspaceHub() {
@@ -8641,6 +8648,7 @@ function getConnectedAccountsMarkup(options = {}) {
             <div class="text-xs text-white wrap-safe"><span class="text-gray-500">Status:</span> ${escapeHtml(historicalAccess?.classification || "not_checked")}</div>
             <div class="text-xs text-white wrap-safe"><span class="text-gray-500">Checked at:</span> ${escapeHtml(historicalAccess?.checkedAt || "Never")}</div>
             <div class="text-xs text-white wrap-safe"><span class="text-gray-500">API version used:</span> ${escapeHtml(historicalAccess?.apiVersion || "Unknown")}</div>
+            <div class="text-xs text-white wrap-safe"><span class="text-gray-500">Attempted versions:</span> ${escapeHtml(Array.isArray(historicalAccess?.attemptedApiVersions) && historicalAccess.attemptedApiVersions.length ? historicalAccess.attemptedApiVersions.join(", ") : (historicalAccess?.apiVersion || "Unknown"))}</div>
             <div class="text-xs text-white wrap-safe"><span class="text-gray-500">What it means:</span> ${escapeHtml(getHistoricalAccessMeaning(historicalAccess?.classification || ""))}</div>
             ${historicalAccess?.classification === "linkedin_api_version_required" ? `<div class="text-xs text-yellow-300 wrap-safe">LinkedIn rejected the REST API version/header setup. Check LINKEDIN_API_VERSION and redeploy.</div>` : ""}
             <div class="text-xs text-white wrap-safe"><span class="text-gray-500">Message:</span> ${escapeHtml(historicalAccess?.message || "Run Test Historical Access to check authored-post history.")}</div>
