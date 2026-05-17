@@ -2013,7 +2013,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
               <input id="write-idea-target-date" type="date" class="form-input text-sm" />
-              <input id="write-idea-target-range" type="text" class="form-input text-sm" placeholder="Date range (M/D/YYYY|M/D/YYYY|...)" />
+              <input id="write-idea-target-range" type="text" class="form-input text-sm" placeholder="Optional date range filter (M/D/YYYY|M/D/YYYY|...)" />
             </div>
           </div>
 
@@ -2798,7 +2798,7 @@
                   <div class="flex items-center justify-between gap-3 flex-wrap">
                     <div>
                       <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Publishing</p>
-                      <p class="text-xs text-gray-400 mt-1">API posting is scaffolded only. Credentials and OAuth are not connected yet.</p>
+                      <p class="text-xs text-gray-400 mt-1">Live posting requires a connected account with publish scope. Unconnected platforms stay in StellarSync-only draft mode.</p>
                     </div>
                     <span class="publishing-chip text-gray-300">
                       <i class="ph-bold ph-plugs-connected"></i> Disabled
@@ -8480,6 +8480,7 @@ function getConnectedAccountsMarkup(options = {}) {
       connectionStatusLabel: "Not connected",
       importSupported: false,
       publishSupported: false,
+      publishSupportLabel: "Requires connection",
       requiredScopes: [],
       setupChecklist: [],
       missingSetupKeys: []
@@ -8518,7 +8519,7 @@ function getConnectedAccountsMarkup(options = {}) {
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Account</div><div class="text-sm text-white wrap-safe">${escapeHtml(accountLabel)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Permissions / Scopes</div><div class="text-sm text-white wrap-safe">${escapeHtml(permissions)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Token Status</div><div class="text-sm text-white wrap-safe">${escapeHtml(tokenStatus)}</div></div>
-          <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Publish Support</div><div class="text-sm text-white wrap-safe">${escapeHtml(account.publishSupported ? "Live" : "Not live yet")}</div></div>
+          <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Publish Support</div><div class="text-sm text-white wrap-safe">${escapeHtml(account.publishSupportLabel || (account.publishSupported ? "Live" : "Requires connection"))}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Token Expires / Last Sync</div><div class="text-sm text-white wrap-safe">${escapeHtml(lastSync)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Last Error</div><div class="text-sm text-white wrap-safe">${escapeHtml(lastError)}</div></div>
         </div>
@@ -8596,7 +8597,7 @@ function renderWorkspaceDiagnosticsPanel() {
   ];
   const accountDiagnostics = (connectedAccounts || []).map((account) => ({
     label: `${toTitleCase(account.platform)} account`,
-    detail: `${account.connectionStatusLabel || account.accessStatus || "not connected"} • import ${account.importSupported ? "live" : "scaffold"} • publish ${account.publishSupported ? "live" : "scaffold"}`,
+    detail: `${account.connectionStatusLabel || account.accessStatus || "not connected"} • import ${account.importSupported ? "live" : "requires connection"} • publish ${account.publishSupportLabel || (account.publishSupported ? "live" : "requires connection")}`,
     severity: account.accessStatus === "expired" || account.accessStatus === "missing_permissions" ? "warning" : "info"
   }));
   const cards = dateIssues.concat(accountDiagnostics).concat(localDiagnostics);
@@ -10497,10 +10498,11 @@ function openPostModal(
   );
 
   const planning = normalizePostPlanningFields(matched, matched);
+  const initialDateValue = planning.queueDateLabel || matched?.date || date || "";
 
   if (titleInput) titleInput.value = title;
   if (platSelect) platSelect.value = platform || "linkedin";
-  if (dateInput) dateInput.value = formatDateInputValue(planning.queueDateLabel || matched?.date || date || new Date());
+  if (dateInput) dateInput.value = formatDateInputValue(initialDateValue);
   if (timeInput) timeInput.value = planning.hasUserSelectedTime ? formatTimeInputValue(buildScheduledAtFromPlanningFields(planning.queueDateLabel, planning.queueTimeLabel)) : "";
   if (statusSelect) statusSelect.value = status || "draft";
   if (postTypeSelect) postTypeSelect.value = postType || "text";
@@ -10703,14 +10705,19 @@ function setupSaveHandler() {
       queueTimeLabel: timeInput?.value || "",
       scheduledAt: existing?.date || ""
     }, existing || {});
+    const hasValidSchedule = !!planning.queueDateLabel && !!planning.scheduledAt;
+    const selectedStatus = statusSelect?.value || "draft";
+    const resolvedStatus = hasValidSchedule
+      ? selectedStatus
+      : (selectedStatus === "published" || selectedStatus === "needs_review" ? selectedStatus : "draft");
 
     const payload = {
       id: currentEditingPostId || generateId("post"),
       title: titleInput?.value.trim() || "",
       platform: platSelect?.value || "linkedin",
       pillar: selectedContentPillar,
-      date: planning.scheduledAt || "",
-      status: statusSelect?.value || "draft",
+      date: hasValidSchedule ? planning.scheduledAt : "",
+      status: resolvedStatus,
       postType: postTypeSelect?.value || "text",
       description: descInput?.value.trim() || "",
       assetId: currentModalAsset?.id || existing?.assetId || "",
@@ -10719,12 +10726,12 @@ function setupSaveHandler() {
         : Array.isArray(existing?.carouselAssetIds) ? existing.carouselAssetIds : [],
       hubTitle: selectedCampaignName || existing?.hubTitle || titleInput?.value.trim() || "",
       hubPillarLabel: formatContentPillarLabel(selectedContentPillar),
-      queueDateLabel: planning.queueDateLabel,
-      queueTimeLabel: planning.queueTimeLabel,
-      calendarMonth: planning.calendarMonth,
-      calendarYear: planning.calendarYear,
-      calendarDay: planning.calendarDay,
-      hasUserSelectedTime: planning.hasUserSelectedTime,
+      queueDateLabel: hasValidSchedule ? planning.queueDateLabel : "",
+      queueTimeLabel: hasValidSchedule ? planning.queueTimeLabel : "",
+      calendarMonth: hasValidSchedule ? planning.calendarMonth : "",
+      calendarYear: hasValidSchedule ? planning.calendarYear : "",
+      calendarDay: hasValidSchedule ? planning.calendarDay : "",
+      hasUserSelectedTime: hasValidSchedule ? planning.hasUserSelectedTime : false,
       mediaLabel: currentModalAsset?.title || existing?.mediaLabel || "",
       createdFromInspoId: inspoIdToConvert,
       createdFromNoteId: noteIdToConvert,
@@ -11718,7 +11725,7 @@ async function apiGetSettings() {
 }
 
 async function apiGetDiagnostics() {
-  const result = await apiGet("getDiagnostics");
+  const result = await apiPost("getDiagnostics", { activeDeploymentUrlFromFrontend: APP_CONFIG.APP_SCRIPT_URL });
   return result.diagnostics || result.data || result;
 }
 
@@ -11868,9 +11875,12 @@ function getDiagnosticsSummaryText(diagnostics = {}) {
   return [
     `Backend reachable: ${backendReachable ? "Yes" : "No"}`,
     `Backend version: ${getBackendVersion() || "Unavailable"}`,
+    `Code version stamp: ${deploymentDiagnostics.codeVersionStamp || diagnostics.codeVersionStamp || "Unavailable"}`,
     `Frontend version: ${APP_FRONTEND_VERSION}`,
     `Service worker version: ${serviceWorkerStatus.version}`,
     `Deployment base URL: ${deploymentDiagnostics.publicWebappBaseUrl || "Unavailable"}`,
+    `Frontend deployment URL: ${deploymentDiagnostics.activeDeploymentUrlFromFrontend || "Unavailable"}`,
+    `LinkedIn redirect URI: ${deploymentDiagnostics.linkedinDerivedRedirectUri || "Unavailable"}`,
     `Spreadsheet configured: ${deploymentDiagnostics.spreadsheetIdConfigured ? "Yes" : "No"}`,
     `Missing sheets: ${(diagnostics.missingSheets || []).join(", ") || "None"}`,
     `Missing headers: ${diagnostics.missingHeaders ? Object.entries(diagnostics.missingHeaders).filter(([, headers]) => Array.isArray(headers) && headers.length).map(([sheet, headers]) => `${sheet}: ${headers.join(", ")}`).join(" | ") || "None" : "None"}`,
@@ -11884,7 +11894,7 @@ function getDiagnosticsSummaryText(diagnostics = {}) {
     `Instagram oEmbed configured: ${socialDiagnostics.instagramOEmbedConfigured ? "Yes" : "No"}`,
     `Open Graph fetch works: ${socialDiagnostics.openGraphFetchWorks ? "Yes" : "No"}`,
     `Connected platforms: ${(socialDiagnostics.connectedPlatforms || []).join(", ") || "None"}`,
-    `Scheduling note: Scheduling organizes posts in StellarSync only. Live platform posting is not connected yet.`
+    `Scheduling note: Scheduling always works inside StellarSync. Live publish depends on each platform being connected with publish scope.`
   ].join("\n");
 }
 
@@ -11911,6 +11921,7 @@ function renderDiagnosticsPanel() {
   const metrics = [
     { label: "Backend reachable", value: backendReachable ? "Yes" : "No", color: backendReachable ? "#00ffaa" : "#fbbf24" },
     { label: "Backend version", value: getBackendVersion() || "Unavailable", color: "#c77dff" },
+    { label: "Code version stamp", value: deploymentDiagnostics.codeVersionStamp || diagnostics.codeVersionStamp || "Unavailable", color: "#38bdf8" },
     { label: "Frontend version", value: APP_FRONTEND_VERSION, color: "#38bdf8" },
     { label: "Service worker version", value: serviceWorkerStatus.version, color: serviceWorkerStatus.updateAvailable ? "#ffd700" : "#9ca3af" }
   ];
@@ -11929,12 +11940,12 @@ function renderDiagnosticsPanel() {
     { label: "Notes missing required fields", severity: "error", value: (diagnostics.noteFieldIssues || []).length, detail: formatDiagnosticIds(diagnostics.noteFieldIssues, "noteId"), guidance: "Errors need action." },
     { label: "Invalid publishing states", severity: "error", value: (diagnostics.publishingStateIssues || []).length, detail: formatDiagnosticIds(diagnostics.publishingStateIssues, "postId"), guidance: "Errors need action." },
     { label: "Import rows missing source URLs", severity: "error", value: (diagnostics.importIssues || []).length, detail: formatDiagnosticIds(diagnostics.importIssues, "postId"), guidance: "Errors need action." },
-    { label: "AI drafts missing provenance or review", severity: "warning", value: (diagnostics.aiDraftIssues || []).length, detail: formatDiagnosticIds(diagnostics.aiDraftIssues, "aiDraftId"), guidance: "Warnings are okay while AI drafting is scaffolded." },
-    { label: "AI-created posts with missing metadata", severity: "warning", value: (diagnostics.aiPostIssues || []).length, detail: formatDiagnosticIds(diagnostics.aiPostIssues, "postId"), guidance: "Warnings are okay while AI drafting is scaffolded." },
+    { label: "AI drafts missing provenance or review", severity: "warning", value: (diagnostics.aiDraftIssues || []).length, detail: formatDiagnosticIds(diagnostics.aiDraftIssues, "aiDraftId"), guidance: "Warnings are okay temporarily, but provenance and review fields should be completed." },
+    { label: "AI-created posts with missing metadata", severity: "warning", value: (diagnostics.aiPostIssues || []).length, detail: formatDiagnosticIds(diagnostics.aiPostIssues, "postId"), guidance: "Warnings are okay temporarily, but AI-created posts should be normalized before publishing." },
     { label: "Brand OS framework issues", severity: "warning", value: (diagnostics.brandFrameworkIssues || []).length, detail: formatDiagnosticIds(diagnostics.brandFrameworkIssues, "frameworkKey"), guidance: "Warnings are okay until the framework is fully tuned." },
     { label: "Social import failures by platform", severity: "warning", value: Object.values(socialDiagnostics.importFailuresByPlatform || {}).reduce((sum, value) => sum + Number(value || 0), 0), detail: Object.entries(socialDiagnostics.importFailuresByPlatform || {}).map(([platform, count]) => `${platform}: ${count}`).join(" | ") || "None", guidance: "Warnings are okay if the platform requires manual fallback or authenticated access." },
     { label: "Connected account token / permission issues", severity: "warning", value: (socialDiagnostics.expiredTokens || []).length + (socialDiagnostics.missingPermissions || []).length, detail: [`Expired: ${(socialDiagnostics.expiredTokens || []).join(", ") || "none"}`, `Missing permissions: ${(socialDiagnostics.missingPermissions || []).join(", ") || "none"}`].join(" | "), guidance: "Warnings are okay until OAuth, app review, and scopes are finalized." },
-    { label: "OAuth configured platforms", severity: "warning", value: (socialDiagnostics.oauthConfigured || []).length, detail: (socialDiagnostics.oauthConfigured || []).join(", ") || "None", guidance: "OAuth start URLs and callbacks are scaffolded, but production refresh and broader app-review scopes may still need follow-up." },
+    { label: "OAuth configured platforms", severity: "warning", value: (socialDiagnostics.oauthConfigured || []).length, detail: (socialDiagnostics.oauthConfigured || []).join(", ") || "None", guidance: "OAuth start URLs and callbacks are live, but platform review scopes and publish support may still need follow-up." },
     { label: "Bridge density visibility risk", severity: "warning", value: bridgeDensityWarning ? 1 : 0, detail: bridgeDensityWarning ? `${bridgeDensityWarning} semantic bridges may visually crowd the star map at the current density.` : "None", guidance: "Warnings are okay. Lower bridge density if semantic links start obscuring campaign paths." },
     { label: "Overused hooks / structures", severity: "warning", value: (semanticDiagnostics.overusedHookPatterns || []).length, detail: formatDetailedDiagnostics(semanticDiagnostics.overusedHookPatterns, (item) => `${item.pattern}: ${item.count}`), guidance: "Warnings are okay, but vary hook and structure choices before they flatten into repetition." },
     { label: "Campaign overlap / confusion", severity: "warning", value: (semanticDiagnostics.campaignOverlapIssues || []).length, detail: formatDetailedDiagnostics(semanticDiagnostics.campaignOverlapIssues, (item) => `${item.campaigns}: ${Math.round((item.strength || 0) * 100)}% overlap`), guidance: "Warnings are okay until the campaigns become indistinguishable." },
@@ -12049,7 +12060,7 @@ function renderDiagnosticsPanel() {
             </div>
             <div class="text-[11px] text-gray-400 wrap-safe">${escapeHtml(account.accountLabel || "No connected account label stored.")}</div>
             <div class="mt-2 text-[10px] text-gray-500 wrap-safe">
-              ${escapeHtml(`Import: ${account.importSupported ? "live" : "scaffold"} • Publish: ${account.publishSupported ? "live" : "scaffold"} • Token: ${account.tokenStatus || "missing"}`)}
+              ${escapeHtml(`Import: ${account.importSupported ? "Live" : "Requires connection"} • Publish: ${account.publishSupportLabel || (account.publishSupported ? "Live" : "Requires connection")} • Token: ${account.tokenStatus || "missing"}`)}
             </div>
           </div>
         `).join("") || `<div class="text-sm text-gray-400">Connected account diagnostics unavailable.</div>`}
@@ -12069,8 +12080,28 @@ function renderDiagnosticsPanel() {
       <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Deployment Diagnostics</div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Code Version Stamp</div>
+          <div class="text-sm text-white wrap-safe">${escapeHtml(deploymentDiagnostics.codeVersionStamp || "Missing")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Frontend Deployment URL</div>
+          <div class="text-sm text-white wrap-safe">${escapeHtml(deploymentDiagnostics.activeDeploymentUrlFromFrontend || "Missing")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
           <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Public Web App Base URL</div>
           <div class="text-sm text-white wrap-safe">${escapeHtml(deploymentDiagnostics.publicWebappBaseUrl || "Missing")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">LinkedIn Redirect URI</div>
+          <div class="text-sm text-white wrap-safe">${escapeHtml(deploymentDiagnostics.linkedinDerivedRedirectUri || "Missing")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">LinkedIn Encoded Redirect URI</div>
+          <div class="text-sm text-white wrap-safe break-all">${escapeHtml(deploymentDiagnostics.linkedinEncodedRedirectUri || "Missing")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">LinkedIn Auth URL Preview</div>
+          <div class="text-sm text-white wrap-safe break-all">${escapeHtml(deploymentDiagnostics.linkedInAuthUrlPreview || "Missing")}</div>
         </div>
         <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
           <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Write Post Route</div>
@@ -12083,6 +12114,14 @@ function renderDiagnosticsPanel() {
         <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
           <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Posts Sheet Headers</div>
           <div class="text-sm text-white wrap-safe">${escapeHtml(deploymentDiagnostics.writePostRouteStatus?.requiredHeadersPresent ? "Ready" : "Missing required headers")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Legacy Redirect Properties</div>
+          <div class="text-sm text-white wrap-safe">${escapeHtml(Object.entries(deploymentDiagnostics.legacyRedirectPropertiesPresent || {}).map(([key, present]) => `${key}: ${present ? "present" : "absent"}`).join(" • ") || "Unavailable")}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Legacy Runtime References</div>
+          <div class="text-sm text-white wrap-safe">${escapeHtml(Object.entries(deploymentDiagnostics.legacyRedirectPropertiesReferencedByRuntime || {}).map(([key, present]) => `${key}: ${present ? "referenced" : "not referenced"}`).join(" • ") || "Unavailable")}</div>
         </div>
       </div>
     </div>
@@ -12619,34 +12658,61 @@ async function createPostFromCurrentAIDraft() {
     aiReviewNotes: String(aiReviewNotesInput?.value || "").trim(),
     ...buildSemanticAIDraftPayload()
   };
+  let createdPostId = "";
   if (APP_CONFIG.ENABLE_REMOTE_SYNC && isRemoteConfigured()) {
     try {
-      await apiCreatePostFromAIDraft(aiDraftId, postPayload);
+      const result = await apiCreatePostFromAIDraft(aiDraftId, postPayload);
+      createdPostId = String(result?.post?.postId || result?.postId || "").trim();
       await syncRemoteIfConfigured();
     } catch (err) {
       console.error(err);
+      throw err;
     }
   } else {
-    const planning = normalizePostPlanningFields({ scheduledAt: new Date(), queueDateLabel: new Date() });
-    appState.posts.unshift({
+    const localPost = {
       ...postPayload,
       id: generateId("post"),
-      date: planning.scheduledAt,
-      queueDateLabel: planning.queueDateLabel,
+      date: "",
+      queueDateLabel: "",
       queueTimeLabel: "",
-      calendarMonth: planning.calendarMonth,
-      calendarYear: planning.calendarYear,
-      calendarDay: planning.calendarDay,
+      calendarMonth: "",
+      calendarYear: "",
+      calendarDay: "",
       hasUserSelectedTime: false,
       status: "draft",
       pillar: "authority",
       platformTargets: postPayload.platform === "both" ? ["linkedin", "instagram"] : [postPayload.platform]
+    };
+    createdPostId = localPost.id;
+    appState.posts.unshift(localPost);
+    appState.aiDrafts = (appState.aiDrafts || []).map((draft) => {
+      if (draft.aiDraftId !== aiDraftId) return draft;
+      return {
+        ...draft,
+        draftStatus: "converted",
+        createdPostId: localPost.id,
+        reviewNotes: `Converted to post ${localPost.id}.`
+      };
     });
     persistLocalState();
     rerenderAll();
   }
   closeAIWorkspaceModal();
-  openPostModal(postPayload.title, postPayload.platform, "authority", "", "draft", postPayload.description, postPayload.postType, null);
+  const createdPost = (appState.posts || []).find((post) => String(post.id || post.postId || post.post_id || "") === createdPostId);
+  if (createdPost) {
+    openPostModal(
+      createdPost.title || postPayload.title,
+      createdPost.platform || postPayload.platform,
+      createdPost.pillar || "authority",
+      createdPost.date || "",
+      createdPost.status || "draft",
+      createdPost.description || postPayload.description,
+      createdPost.postType || postPayload.postType,
+      createdPost.id || createdPost.postId || createdPost.post_id || null
+    );
+  } else {
+    openPostModal(postPayload.title, postPayload.platform, "authority", "", "draft", postPayload.description, postPayload.postType, null);
+  }
   setModalSourceContext("ai_draft", "Create Post from AI Draft", "This draft was routed through the AI Drafting Workspace.", aiDraftId);
 }
 
