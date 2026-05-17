@@ -3439,7 +3439,7 @@
 </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt-Vkcec2To90CaFPmwQsj514-JUdqztF4odAfzzq97pXYRE84RcTH84GhnMP6QW0C/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxCwrKjBHFT1F1SfOGCSSZOSTW62BaKt2XEX_hjvTTER_K4A8uBlfnGCKaHWE5OsICr/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v5",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v2"
@@ -3539,6 +3539,7 @@ let diagnosticsRefreshing = false;
 let socialCardUpload = null;
 let socialImportCapabilities = null;
 let connectedAccounts = [];
+let connectedAccountsActionState = {};
 let semanticBridgeDensity = safeStorageGet("stellarsync_bridge_density") || "low";
 let currentSocialImportResult = null;
 let currentWorkspaceSettingsTab = "settings";
@@ -3551,6 +3552,7 @@ let mobileFilterState = {
   notes: { platform: "all", pillar: "all", query: "" }
 };
 let activeConnectionSetupPlatform = "";
+const CONNECTED_ACCOUNT_PLATFORMS = ["linkedin", "instagram", "threads"];
 let installContext = {
   isIos: /iphone|ipad|ipod/i.test(navigator.userAgent || ""),
   isStandalone: false
@@ -8239,17 +8241,49 @@ function formatSocialImportModeLabel(mode) {
   return "Unsupported";
 }
 
+function getConnectedAccountActionKey(platform, action) {
+  return `${platform}:${action}`;
+}
+
+function isConnectedAccountActionLoading(platform, action) {
+  return !!connectedAccountsActionState[getConnectedAccountActionKey(platform, action)];
+}
+
+function setConnectedAccountActionLoading(platform, action, loading) {
+  const key = getConnectedAccountActionKey(platform, action);
+  if (loading) connectedAccountsActionState[key] = true;
+  else delete connectedAccountsActionState[key];
+  if (!workspaceHubModal?.classList.contains("opacity-0")) renderWorkspaceHub();
+}
+
+function getConnectedAccountMissingSetupKeys(platform) {
+  const account = getConnectedAccount(platform) || {};
+  return Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : [];
+}
+
 async function connectSocialAccount(platform) {
+  const missingSetupKeys = getConnectedAccountMissingSetupKeys(platform);
+  if (missingSetupKeys.length) {
+    showToast("Setup required", `Add Script Properties: ${missingSetupKeys.join(", ")}`, "ph-warning", "text-yellow-400");
+    openConnectionSetupModal(platform, getConnectedAccount(platform) || {});
+    return;
+  }
+
+  setConnectedAccountActionLoading(platform, "connect", true);
   try {
-    const result = await apiGetSocialAuthUrl(platform);
-    const auth = result?.auth || result;
+    const result = await apiStartPlatformAuth(platform);
+    const auth = result?.authUrl ? result : (result?.auth || result);
     openConnectionSetupModal(platform, auth);
-    if (auth?.url) {
-      window.open(auth.url, "_blank", "noopener,noreferrer");
+    if (auth?.authUrl) {
+      window.location.assign(auth.authUrl);
+      return;
     }
+    throw new Error("Auth URL was not returned by the backend.");
   } catch (err) {
     console.error(err);
-    showToast("Connect failed", err.message || "Could not initialize the account connection scaffold.", "ph-warning", "text-yellow-400");
+    showToast("Connect failed", err.message || "Could not initialize the account connection flow.", "ph-warning", "text-yellow-400");
+  } finally {
+    setConnectedAccountActionLoading(platform, "connect", false);
   }
 }
 
@@ -8258,13 +8292,36 @@ async function reconnectSocialAccount(platform) {
 }
 
 async function disconnectConnectedAccount(platform) {
+  setConnectedAccountActionLoading(platform, "disconnect", true);
   try {
-    await apiDisconnectSocialAccount(platform);
+    await apiDisconnectPlatform(platform);
     await refreshSocialImportContext();
-    showToast("Disconnected", `${toTitleCase(platform)} account scaffold disconnected.`, "ph-check", "text-[#00ffaa]");
+    showToast("Disconnected", `${toTitleCase(platform)} access tokens were removed from Apps Script properties.`, "ph-check", "text-[#00ffaa]");
   } catch (err) {
     console.error(err);
-    showToast("Disconnect failed", err.message || "Could not disconnect the account scaffold.", "ph-warning", "text-yellow-400");
+    showToast("Disconnect failed", err.message || "Could not disconnect the account.", "ph-warning", "text-yellow-400");
+  } finally {
+    setConnectedAccountActionLoading(platform, "disconnect", false);
+  }
+}
+
+async function testConnectedAccountStatus(platform) {
+  setConnectedAccountActionLoading(platform, "test", true);
+  try {
+    const result = await apiTestPlatformConnection(platform);
+    const updated = result?.account || null;
+    if (updated) {
+      connectedAccounts = (connectedAccounts || []).filter((item) => item.platform !== platform).concat(updated);
+    }
+    if (!workspaceHubModal?.classList.contains("opacity-0")) renderWorkspaceHub();
+    const status = updated?.connectionStatusLabel || updated?.accessStatus || "Unknown";
+    const detail = result?.error ? `${status}. ${result.error}` : status;
+    showToast("Test complete", `${toTitleCase(platform)}: ${detail}`, "ph-plugs-connected", updated?.connected ? "text-[#00ffaa]" : "text-yellow-400");
+  } catch (err) {
+    console.error(err);
+    showToast("Test failed", err.message || "Could not verify platform status.", "ph-warning", "text-yellow-400");
+  } finally {
+    setConnectedAccountActionLoading(platform, "test", false);
   }
 }
 
@@ -8273,7 +8330,7 @@ async function refreshSocialImportContext() {
   try {
     const [capabilitiesResult, accountsResult] = await Promise.all([
       apiGetSocialImportCapabilities(),
-      apiGetConnectedAccounts()
+      apiGetConnectedAccountsStatus()
     ]);
     socialImportCapabilities = capabilitiesResult?.capabilities || capabilitiesResult || null;
     connectedAccounts = accountsResult?.accounts || accountsResult || [];
@@ -8363,12 +8420,17 @@ function closeWorkspaceHub() {
 function openConnectionSetupModal(platform, auth = null) {
   activeConnectionSetupPlatform = platform;
   const account = getConnectedAccount(platform) || {};
-  const scopes = auth?.requiredScopes || account.requiredScopes || [];
+  const scopes = auth?.requiredScopes || auth?.scopes || account.requiredScopes || [];
   const checklist = auth?.setupChecklist || account.setupChecklist || [];
+  const missingSetupKeys = auth?.missingSetupKeys || account.missingSetupKeys || [];
   if (connectionSetupTitle) connectionSetupTitle.textContent = `${toTitleCase(platform)} Connection Setup`;
   if (connectionSetupSubtitle) connectionSetupSubtitle.textContent = account.connectionStatusLabel || auth?.status || "Scaffold only";
   if (connectionSetupChecklist) {
-    connectionSetupChecklist.innerHTML = checklist.map((item) => `<div class="text-sm text-gray-300 wrap-safe flex gap-2"><i class="ph-bold ph-check-circle text-[#c77dff] mt-0.5"></i><span>${escapeHtml(item)}</span></div>`).join("") || `<div class="text-sm text-gray-400">OAuth scaffolding details unavailable.</div>`;
+    const setupKeyRows = missingSetupKeys.length
+      ? missingSetupKeys.map((item) => `<div class="text-sm text-yellow-300 wrap-safe flex gap-2"><i class="ph-bold ph-warning-circle mt-0.5"></i><span>Missing Script Property: ${escapeHtml(item)}</span></div>`)
+      : [];
+    const checklistRows = checklist.map((item) => `<div class="text-sm text-gray-300 wrap-safe flex gap-2"><i class="ph-bold ph-check-circle text-[#c77dff] mt-0.5"></i><span>${escapeHtml(item)}</span></div>`);
+    connectionSetupChecklist.innerHTML = [...setupKeyRows, ...checklistRows].join("") || `<div class="text-sm text-gray-400">OAuth setup details unavailable.</div>`;
   }
   if (connectionSetupScopes) {
     connectionSetupScopes.innerHTML = scopes.length
@@ -8376,7 +8438,7 @@ function openConnectionSetupModal(platform, auth = null) {
       : `<span class="text-sm text-gray-400">No scopes declared yet.</span>`;
   }
   if (connectionSetupNotes) {
-    connectionSetupNotes.textContent = auth?.appReviewNotes || account.appReviewNotes || "Live OAuth, app review, and token refresh are still scaffold-only.";
+    connectionSetupNotes.textContent = auth?.appReviewNotes || account.appReviewNotes || "OAuth starts from the backend. Tokens and secrets remain server-side.";
   }
   connectionSetupModal?.classList.remove("opacity-0", "pointer-events-none");
   connectionSetupModalCard?.classList.remove("scale-95");
@@ -8391,46 +8453,72 @@ function closeConnectionSetupModal() {
 
 function getConnectedAccountsMarkup(options = {}) {
   const accounts = Array.isArray(connectedAccounts) ? connectedAccounts : [];
-  const platforms = ["linkedin", "instagram", "threads", "bluesky"];
+  const platforms = CONNECTED_ACCOUNT_PLATFORMS;
   return platforms.map((platform) => {
     const account = accounts.find((item) => item.platform === platform) || {
       platform,
       accessStatus: "not_connected",
-      connectionStatusLabel: "Scaffold only",
+      connectionStatusLabel: "Not connected",
       importSupported: false,
       publishSupported: false,
       requiredScopes: [],
-      setupChecklist: []
+      setupChecklist: [],
+      missingSetupKeys: []
     };
     const statusLabel = account.connectionStatusLabel || toTitleCase(account.accessStatus || "not connected");
-    const lastSync = account.lastSyncAt || "Never";
+    const lastSync = account.lastSyncAt || account.tokenExpiresAt || "Never";
     const lastError = account.lastError || "None";
-    const accountLabel = account.accountLabel || "No account label yet";
-    const permissions = Array.isArray(account.scopesGranted) && account.scopesGranted.length
-      ? account.scopesGranted.join(", ")
-      : (account.requiredScopes || []).join(", ") || "Scaffold only";
+    const accountLabel = account.accountLabel || account.displayName || account.username || "No account label yet";
+    const permissions = Array.isArray(account.requiredScopes) && account.requiredScopes.length
+      ? account.requiredScopes.join(", ")
+      : "Not declared";
+    const requiredKeys = Array.isArray(account.requiredSetupKeys) ? account.requiredSetupKeys : [];
+    const missingKeys = Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : [];
     const tokenStatus = account.tokenStatus || (account.accessStatus === "expired" ? "Expired" : account.accessStatus === "connected" ? "Active" : "Missing");
+    const connectLoading = isConnectedAccountActionLoading(platform, "connect");
+    const disconnectLoading = isConnectedAccountActionLoading(platform, "disconnect");
+    const testLoading = isConnectedAccountActionLoading(platform, "test");
+    const anyLoading = connectLoading || disconnectLoading || testLoading;
+    const statusTone = account.connected
+      ? "text-emerald-300"
+      : account.accessStatus === "error" || account.accessStatus === "expired"
+      ? "text-yellow-300"
+      : missingKeys.length
+      ? "text-gray-300"
+      : "text-sky-300";
     return `
       <div class="platform-card">
         <div class="flex items-start justify-between gap-3 mb-4">
           <div>
             <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(toTitleCase(platform))}</div>
-            <div class="text-lg font-bold text-white mt-1">${escapeHtml(statusLabel)}</div>
+            <div class="text-lg font-bold ${statusTone} mt-1">${escapeHtml(statusLabel)}</div>
           </div>
-          <span class="diagnostic-chip">${escapeHtml(account.importSupported ? "Import Live" : "Import Scaffold")}</span>
+          <span class="diagnostic-chip">${escapeHtml(account.connected ? "Connected" : missingKeys.length ? "Setup Required" : "Ready")}</span>
         </div>
         <div class="platform-meta-grid">
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Account</div><div class="text-sm text-white wrap-safe">${escapeHtml(accountLabel)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Permissions / Scopes</div><div class="text-sm text-white wrap-safe">${escapeHtml(permissions)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Token Status</div><div class="text-sm text-white wrap-safe">${escapeHtml(tokenStatus)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Publish Support</div><div class="text-sm text-white wrap-safe">${escapeHtml(account.publishSupported ? "Live" : "Scaffold only")}</div></div>
-          <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Last Sync</div><div class="text-sm text-white wrap-safe">${escapeHtml(lastSync)}</div></div>
+          <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Token Expires / Last Sync</div><div class="text-sm text-white wrap-safe">${escapeHtml(lastSync)}</div></div>
           <div><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Last Error</div><div class="text-sm text-white wrap-safe">${escapeHtml(lastError)}</div></div>
         </div>
+        <div class="mt-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Required Setup Keys</div>
+          <div class="space-y-2">
+            ${requiredKeys.map((key) => `
+              <div class="flex items-center justify-between gap-3 text-xs">
+                <span class="text-gray-300 wrap-safe">${escapeHtml(key)}</span>
+                <span class="${missingKeys.includes(key) ? "text-yellow-300" : "text-emerald-300"} font-semibold">${missingKeys.includes(key) ? "Missing" : "Ready"}</span>
+              </div>
+            `).join("") || `<div class="text-sm text-gray-400">No setup keys declared.</div>`}
+          </div>
+        </div>
         <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button" onclick="connectSocialAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Connect</button>
-          <button type="button" onclick="reconnectSocialAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Reconnect</button>
-          <button type="button" onclick="disconnectConnectedAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-gray-300 transition-colors">Disconnect</button>
+          <button type="button" onclick="connectSocialAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors ${anyLoading ? "opacity-60" : ""}" ${connectLoading ? "disabled" : ""}>${connectLoading ? "Loading..." : "Connect"}</button>
+          <button type="button" onclick="reconnectSocialAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors ${anyLoading ? "opacity-60" : ""}" ${connectLoading ? "disabled" : ""}>Reconnect</button>
+          <button type="button" onclick="disconnectConnectedAccount('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-gray-300 transition-colors ${anyLoading ? "opacity-60" : ""}" ${disconnectLoading ? "disabled" : ""}>${disconnectLoading ? "Working..." : "Disconnect"}</button>
+          <button type="button" onclick="testConnectedAccountStatus('${escapeHtml(platform)}')" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors ${anyLoading ? "opacity-60" : ""}" ${testLoading ? "disabled" : ""}>${testLoading ? "Testing..." : "Test Status"}</button>
         </div>
       </div>
     `;
@@ -11504,8 +11592,12 @@ function isRemoteConfigured() {
   );
 }
 
-async function apiGet(action) {
-  const response = await fetch(`${APP_CONFIG.APP_SCRIPT_URL}?action=${encodeURIComponent(action)}`, {
+async function apiGet(action, params = {}) {
+  const search = new URLSearchParams({ action });
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") search.set(key, String(value));
+  });
+  const response = await fetch(`${APP_CONFIG.APP_SCRIPT_URL}?${search.toString()}`, {
     method: "GET",
     mode: "cors"
   });
@@ -11580,18 +11672,29 @@ async function apiGetSocialImportCapabilities() {
   return result.capabilities || result.data || result;
 }
 
+async function apiGetConnectedAccountsStatus() {
+  const result = await apiGet("getConnectedAccountsStatus");
+  const accounts = result.accounts || result.data || result;
+  return Array.isArray(accounts) ? accounts : Object.values(accounts || {});
+}
+
 async function apiGetConnectedAccounts() {
-  const result = await apiGet("getConnectedAccounts");
-  return result.accounts || result.data || result;
+  return apiGetConnectedAccountsStatus();
 }
 
-async function apiGetSocialAuthUrl(platform) {
-  const result = await apiPost("getSocialAuthUrl", { platform });
-  return result.auth || result.data || result;
+async function apiStartPlatformAuth(platform) {
+  if (platform === "linkedin") return apiGet("startLinkedInAuth");
+  if (platform === "instagram") return apiGet("startInstagramAuth");
+  if (platform === "threads") return apiGet("startThreadsAuth");
+  throw new Error(`Unsupported platform: ${platform}`);
 }
 
-async function apiDisconnectSocialAccount(platform) {
-  return apiPost("disconnectSocialAccount", { platform });
+async function apiDisconnectPlatform(platform) {
+  return apiPost("disconnectPlatform", { platform });
+}
+
+async function apiTestPlatformConnection(platform) {
+  return apiGet("testPlatformConnection", { platform });
 }
 
 async function apiImportSocialPostByUrl(payload) {
@@ -11767,7 +11870,7 @@ function renderDiagnosticsPanel() {
     { label: "Brand OS framework issues", severity: "warning", value: (diagnostics.brandFrameworkIssues || []).length, detail: formatDiagnosticIds(diagnostics.brandFrameworkIssues, "frameworkKey"), guidance: "Warnings are okay until the framework is fully tuned." },
     { label: "Social import failures by platform", severity: "warning", value: Object.values(socialDiagnostics.importFailuresByPlatform || {}).reduce((sum, value) => sum + Number(value || 0), 0), detail: Object.entries(socialDiagnostics.importFailuresByPlatform || {}).map(([platform, count]) => `${platform}: ${count}`).join(" | ") || "None", guidance: "Warnings are okay if the platform requires manual fallback or authenticated access." },
     { label: "Connected account token / permission issues", severity: "warning", value: (socialDiagnostics.expiredTokens || []).length + (socialDiagnostics.missingPermissions || []).length, detail: [`Expired: ${(socialDiagnostics.expiredTokens || []).join(", ") || "none"}`, `Missing permissions: ${(socialDiagnostics.missingPermissions || []).join(", ") || "none"}`].join(" | "), guidance: "Warnings are okay until OAuth, app review, and scopes are finalized." },
-    { label: "OAuth configured platforms", severity: "warning", value: (socialDiagnostics.oauthConfigured || []).length, detail: (socialDiagnostics.oauthConfigured || []).join(", ") || "None", guidance: "Connected Accounts stays scaffold-only until callback handling and refresh are finished." },
+    { label: "OAuth configured platforms", severity: "warning", value: (socialDiagnostics.oauthConfigured || []).length, detail: (socialDiagnostics.oauthConfigured || []).join(", ") || "None", guidance: "OAuth start URLs and callbacks are scaffolded, but production refresh and broader app-review scopes may still need follow-up." },
     { label: "Bridge density visibility risk", severity: "warning", value: bridgeDensityWarning ? 1 : 0, detail: bridgeDensityWarning ? `${bridgeDensityWarning} semantic bridges may visually crowd the star map at the current density.` : "None", guidance: "Warnings are okay. Lower bridge density if semantic links start obscuring campaign paths." },
     { label: "Overused hooks / structures", severity: "warning", value: (semanticDiagnostics.overusedHookPatterns || []).length, detail: formatDetailedDiagnostics(semanticDiagnostics.overusedHookPatterns, (item) => `${item.pattern}: ${item.count}`), guidance: "Warnings are okay, but vary hook and structure choices before they flatten into repetition." },
     { label: "Campaign overlap / confusion", severity: "warning", value: (semanticDiagnostics.campaignOverlapIssues || []).length, detail: formatDetailedDiagnostics(semanticDiagnostics.campaignOverlapIssues, (item) => `${item.campaigns}: ${Math.round((item.strength || 0) * 100)}% overlap`), guidance: "Warnings are okay until the campaigns become indistinguishable." },
