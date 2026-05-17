@@ -8277,7 +8277,11 @@ function setConnectedAccountActionLoading(platform, action, loading) {
 
 function getConnectedAccountMissingSetupKeys(platform) {
   const account = getConnectedAccount(platform) || {};
-  return Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : [];
+  return filterLegacyRedirectKeys(Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : []);
+}
+
+function filterLegacyRedirectKeys(keys = []) {
+  return (Array.isArray(keys) ? keys : []).filter((key) => !["LINKEDIN_REDIRECT_URI", "INSTAGRAM_REDIRECT_URI", "THREADS_REDIRECT_URI"].includes(String(key || "").trim()));
 }
 
 async function connectSocialAccount(platform) {
@@ -8348,12 +8352,14 @@ async function testLinkedInHistoricalAccessAction() {
   const platform = "linkedin";
   setConnectedAccountActionLoading(platform, "history", true);
   try {
+    showToast("Testing LinkedIn historical access...", "Checking authored-post history access with the stored LinkedIn token.", "ph-spinner-gap", "text-[#c77dff]");
     const result = await apiTestLinkedInHistoricalAccess();
     const classification = String(result?.classification || "unknown").trim();
     const message = String(result?.message || "No backend message returned.").trim();
     const postsReturned = !!result?.postsReturned;
-    console.info("LinkedIn historical access diagnostics", {
+    console.log("LinkedIn historical access diagnostics", {
       classification,
+      message,
       postsReturned,
       attempted: Array.isArray(result?.attempted)
         ? result.attempted.map((item) => ({
@@ -8368,7 +8374,7 @@ async function testLinkedInHistoricalAccessAction() {
     });
     showToast(
       postsReturned ? "Historical access available" : "Historical access test complete",
-      `${classification.replace(/_/g, " ")}. ${message}`,
+      `${classification}: ${message}`,
       "ph-linkedin-logo",
       postsReturned ? "text-[#00ffaa]" : "text-yellow-400"
     );
@@ -8379,6 +8385,7 @@ async function testLinkedInHistoricalAccessAction() {
     setConnectedAccountActionLoading(platform, "history", false);
   }
 }
+window.testLinkedInHistoricalAccessAction = testLinkedInHistoricalAccessAction;
 
 async function refreshSocialImportContext() {
   if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return;
@@ -8477,7 +8484,7 @@ function openConnectionSetupModal(platform, auth = null) {
   const account = getConnectedAccount(platform) || {};
   const scopes = auth?.requiredScopes || auth?.scopes || account.requiredScopes || [];
   const checklist = auth?.setupChecklist || account.setupChecklist || [];
-  const missingSetupKeys = auth?.missingSetupKeys || account.missingSetupKeys || [];
+  const missingSetupKeys = filterLegacyRedirectKeys(auth?.missingSetupKeys || account.missingSetupKeys || []);
   if (connectionSetupTitle) connectionSetupTitle.textContent = `${toTitleCase(platform)} Connection Setup`;
   if (connectionSetupSubtitle) connectionSetupSubtitle.textContent = account.connectionStatusLabel || auth?.status || "Not live yet";
   if (connectionSetupChecklist) {
@@ -8528,8 +8535,8 @@ function getConnectedAccountsMarkup(options = {}) {
     const permissions = Array.isArray(account.requiredScopes) && account.requiredScopes.length
       ? account.requiredScopes.join(", ")
       : "Not declared";
-    const requiredKeys = Array.isArray(account.requiredSetupKeys) ? account.requiredSetupKeys : [];
-    const missingKeys = Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : [];
+    const requiredKeys = filterLegacyRedirectKeys(Array.isArray(account.requiredSetupKeys) ? account.requiredSetupKeys : []);
+    const missingKeys = filterLegacyRedirectKeys(Array.isArray(account.missingSetupKeys) ? account.missingSetupKeys : []);
     const tokenStatus = account.tokenStatus || (account.accessStatus === "expired" ? "Expired" : account.accessStatus === "connected" ? "Active" : "Missing");
     const connectLoading = isConnectedAccountActionLoading(platform, "connect");
     const disconnectLoading = isConnectedAccountActionLoading(platform, "disconnect");
