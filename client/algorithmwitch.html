@@ -1973,7 +1973,7 @@
     <div class="text-center max-w-3xl mx-auto pt-8">
       <p class="text-[10px] text-gray-400 uppercase tracking-[0.35em] font-bold mb-3">AI Writing Workspace</p>
       <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Write an Idea</h2>
-      <p class="text-sm text-gray-400 mt-3">Use Brand OS and semantic context to scaffold a post, a campaign, a calendar plan, a note, or an inspo draft. Live AI output is not connected yet.</p>
+      <p class="text-sm text-gray-400 mt-3">Use Brand OS, semantic memory, and imported post history to scaffold a post, a campaign, a calendar plan, a note, or an inspo draft.</p>
     </div>
     <div class="max-w-4xl w-full mx-auto space-y-5">
       <div class="rounded-[28px] border border-white/10 bg-[#0f0a18]/90 shadow-2xl p-5 md:p-6">
@@ -2011,11 +2011,24 @@
               <button type="button" class="write-idea-source-btn" data-write-idea-source="brand_os">Use Brand OS</button>
               <button type="button" class="write-idea-source-btn" data-write-idea-source="semantic_memory">Use Semantic Memory</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 mt-4">
-              <input id="write-idea-target-date" type="date" class="form-input text-sm" />
-              <input id="write-idea-target-range" type="text" class="form-input text-sm" placeholder="Optional date range filter (M/D/YYYY|M/D/YYYY|...)" />
-              <button id="write-idea-import-existing-post-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors whitespace-nowrap">Import Existing Post</button>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Target date</label>
+                <input id="write-idea-target-date" type="date" class="form-input text-sm" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Start date</label>
+                <input id="write-idea-history-start-date" type="date" class="form-input text-sm" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">End date</label>
+                <input id="write-idea-history-end-date" type="date" class="form-input text-sm" />
+              </div>
+              <div class="flex items-end">
+                <button id="write-idea-import-existing-post-btn" type="button" class="w-full px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors whitespace-nowrap">Import Existing Post</button>
+              </div>
             </div>
+            <div id="write-idea-history-filter-status" class="text-[11px] text-gray-400 leading-relaxed mt-3">Using full history.</div>
           </div>
 
           <div class="write-idea-review-card">
@@ -2193,7 +2206,7 @@
         <i class="ph-bold ph-link-simple"></i>
         Add Link
       </button>
-      <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*" />
+      <input id="media-upload-input" type="file" class="hidden" accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" />
     </div>
   </div>
 
@@ -2882,7 +2895,7 @@
                       <i class="ph-bold ph-upload-simple text-3xl mb-2"></i>
                       <span class="text-[9px] font-bold uppercase tracking-widest text-center">Upload<br>Media</span>
                     </button>
-                    <input id="modal-media-upload-input" type="file" class="hidden" accept="image/*,video/*" multiple />
+                    <input id="modal-media-upload-input" type="file" class="hidden" accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" multiple />
                     <p id="modal-media-status" class="text-[10px] text-gray-500 mt-2 leading-tight">No media linked</p>
                   </div>
                 
@@ -2964,6 +2977,11 @@
                     </span>
                   </div>
                   <div id="modal-publish-readiness" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                  <div class="flex flex-wrap gap-2">
+                    <button id="modal-validate-linkedin-btn" type="button" class="px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Validate For LinkedIn</button>
+                    <button id="modal-prepare-linkedin-payload-btn" type="button" class="px-3 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Prepare LinkedIn Payload</button>
+                  </div>
+                  <div id="modal-linkedin-publish-output" class="p-3 rounded-xl bg-[#181125] border border-white/5 text-[11px] text-gray-300 leading-relaxed">LinkedIn validation and payload preparation results will appear here.</div>
                 </div>
             </div>
 
@@ -3116,7 +3134,7 @@
               Attach Image
             </button>
           </div>
-          <input id="media-link-upload-input" type="file" accept="image/*" class="hidden">
+          <input id="media-link-upload-input" type="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" class="hidden">
           <div id="media-link-upload-preview" class="hidden aspect-video rounded-xl overflow-hidden bg-[#0f0a18] border border-white/5 items-center justify-center"></div>
         </div>
         <div id="media-link-preview" class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-3">
@@ -3339,6 +3357,54 @@
             <option value="">Attach to campaign</option>
           </select>
           <textarea id="ai-workspace-prompt" class="form-input min-h-[120px] text-sm" placeholder="Add a drafting brief, revision request, or semantic territory prompt"></textarea>
+          <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-4">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Historical Post Context</p>
+              <p class="text-xs text-gray-400 mt-2">Use imported posts from `POSTS` as pattern context. Original posts are used by default unless you explicitly switch to repost analysis.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <select id="ai-history-platform" class="form-input text-sm font-medium">
+                <option value="all">All platforms</option>
+                <option value="linkedin">LinkedIn only</option>
+                <option value="instagram">Instagram only</option>
+              </select>
+              <select id="ai-history-campaign" class="form-input text-sm font-medium">
+                <option value="">All campaigns</option>
+              </select>
+              <select id="ai-history-post-type" class="form-input text-sm font-medium">
+                <option value="all">All post types</option>
+                <option value="text">Text</option>
+                <option value="image">Image</option>
+                <option value="carousel">Carousel</option>
+                <option value="video">Video</option>
+                <option value="article">Article</option>
+                <option value="repost">Repost</option>
+                <option value="reshare">Reshare</option>
+                <option value="unknown">Unknown</option>
+              </select>
+              <select id="ai-history-post-kind" class="form-input text-sm font-medium">
+                <option value="original_only">Original posts only</option>
+                <option value="include_reposts">Include reposts and reshares</option>
+                <option value="repost_analysis">Repost / reshare analysis</option>
+                <option value="reposts_only">Reposts only</option>
+                <option value="reshares_only">Reshares only</option>
+              </select>
+              <select id="ai-history-source-type" class="form-input text-sm font-medium">
+                <option value="all">All source types</option>
+              </select>
+              <div class="grid grid-cols-2 gap-3">
+                <input id="ai-history-start-date" type="date" class="form-input text-sm" />
+                <input id="ai-history-end-date" type="date" class="form-input text-sm" />
+              </div>
+            </div>
+            <label class="flex items-start gap-3 p-3 rounded-xl bg-[#120c1d] border border-white/5 text-sm text-gray-300">
+              <input id="ai-allow-stylized-unicode" type="checkbox" class="mt-1 accent-[#c77dff]">
+              <span>
+                <span class="font-semibold text-white">Allow stylized Unicode text</span><br>
+                <span class="text-xs text-gray-400">Stylized Unicode can reduce screen-reader/search accessibility.</span>
+              </span>
+            </label>
+          </div>
           <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5">
             <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Brand Alignment Checklist</p>
             <div id="ai-brand-alignment-list" class="space-y-2"></div>
@@ -3375,6 +3441,9 @@
           <input id="ai-draft-title" class="form-input text-sm font-medium" placeholder="Draft title">
           <textarea id="ai-draft-preview" class="form-input min-h-[220px] text-sm" placeholder="Generated draft preview"></textarea>
           <textarea id="ai-draft-carousel-outline" class="form-input min-h-[120px] text-sm" placeholder="Carousel outline or structured slide sequence"></textarea>
+          <div id="ai-context-diagnostics" class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 text-sm text-gray-300 leading-relaxed">
+            Historical post diagnostics will appear here after context refresh or generation.
+          </div>
           <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5">
             <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Semantic Memory</p>
             <div id="ai-semantic-memory-cards" class="space-y-3"></div>
@@ -3517,10 +3586,13 @@
               <button id="workspace-refresh-diagnostics-btn" type="button" class="px-4 py-2 rounded-xl bg-[#1a1128] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Refresh Diagnostics</button>
               <button id="check-constellation-lanes-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Check Constellation Lanes</button>
               <button id="repair-date-fields-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Repair Date Fields</button>
+              <button id="cleanup-imported-linkedin-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Clean Imported LinkedIn Rows</button>
               <button id="workspace-open-accounts-from-diagnostics-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Connected Accounts</button>
             </div>
             <div id="repair-date-fields-status" class="text-xs text-gray-400 wrap-safe"></div>
             <div id="repair-date-fields-preview" class="space-y-3"></div>
+            <div id="cleanup-imported-linkedin-status" class="text-xs text-gray-400 wrap-safe"></div>
+            <div id="cleanup-imported-linkedin-preview" class="space-y-3"></div>
             <div id="workspace-diagnostics-panel" class="space-y-4"></div>
           </section>
         </div>
@@ -3630,19 +3702,34 @@
     </div>
   </div>
 </div>
+<div id="import-task-tray" class="fixed bottom-8 right-8 z-[109] w-[340px] max-w-[calc(100vw-2rem)] hidden">
+  <div class="rounded-2xl bg-[#120c1d]/95 border border-white/10 shadow-2xl backdrop-blur-sm overflow-hidden">
+    <div class="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-3">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Import Tasks</p>
+        <p id="import-task-tray-summary" class="text-xs text-gray-300 mt-1">No active imports.</p>
+      </div>
+      <button id="import-task-tray-refresh-btn" type="button" class="w-9 h-9 rounded-xl bg-[#181125] border border-white/5 text-gray-300 hover:text-white flex items-center justify-center">
+        <i class="ph-bold ph-arrow-clockwise"></i>
+      </button>
+    </div>
+    <div id="import-task-tray-list" class="p-3 space-y-3 max-h-[55vh] overflow-y-auto"></div>
+  </div>
+</div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzPC5U3oV1FdfWF9B6M5VcZYD89WoBau6zlWsQACy22Oek-X0N7P1Owt0VXCxPn8D2r/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwTmOozLo9pbl-93m5tbIiAzZaeyXBGdP3GV3PVkzCDMKvpX5LZuwYOsyOC8OKfYDVf/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v5",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v2"
 };
 
-const APP_FRONTEND_VERSION = "2026.05.09.10";
-const APP_SERVICE_WORKER_VERSION = "2026.05.09.10";
+const APP_FRONTEND_VERSION = "2026.05.18.01";
+const APP_SERVICE_WORKER_VERSION = "2026.05.18.01";
 const RIGHT_PANEL_COLLAPSED_KEY = "stellarsync_right_panel_collapsed_v1";
 const MAX_UPLOAD_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_UPLOAD_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_UPLOAD_DOCUMENT_BYTES = 25 * 1024 * 1024;
 
 const DEFAULT_STATE = {
   posts: [],
@@ -3707,6 +3794,7 @@ const DEFAULT_STATE = {
 ],
   notes: [],
   media: [],
+  importJobs: [],
   aiDrafts: [],
   brandFramework: []
 };
@@ -3737,6 +3825,7 @@ let connectedAccountsStatusLoading = true;
 let connectedAccountsHistoricalAccess = {};
 let connectedAccountsActionState = {};
 let linkedInCapturePreviewItems = [];
+let importJobRunnerState = {};
 let existingPostImportPreviewItem = null;
 let linkedInCaptureParseDiagnostics = null;
 let linkedInImportMode = "text";
@@ -3833,6 +3922,8 @@ let writeIdeaState = {
   sourceTypes: ["brand_os", "semantic_memory"],
   targetPlatforms: ["linkedin"],
   targetDate: normalizeQueueDateLabel(new Date()),
+  historyStartDate: "",
+  historyEndDate: "",
   targetDateRange: "",
   selectedDraftIndexes: [0],
   transformationType: "expand",
@@ -3899,6 +3990,13 @@ const linkedInImportResultErrorsEl = document.getElementById("modal-linkedin-imp
 const linkedInImportResultVerifyEl = document.getElementById("modal-linkedin-import-result-verify");
 const linkedInDownloadReportBtn = document.getElementById("modal-linkedin-download-report-btn");
 const publishReadinessEl = document.getElementById("modal-publish-readiness");
+const validateLinkedInBtn = document.getElementById("modal-validate-linkedin-btn");
+const prepareLinkedInPayloadBtn = document.getElementById("modal-prepare-linkedin-payload-btn");
+const linkedInPublishOutputEl = document.getElementById("modal-linkedin-publish-output");
+const importTaskTray = document.getElementById("import-task-tray");
+const importTaskTraySummary = document.getElementById("import-task-tray-summary");
+const importTaskTrayList = document.getElementById("import-task-tray-list");
+const importTaskTrayRefreshBtn = document.getElementById("import-task-tray-refresh-btn");
 const modalSourceContextLabel = document.getElementById("modal-source-context-label");
 const modalSourceContextChip = document.getElementById("modal-source-context-chip");
 const modalSourceContextDetail = document.getElementById("modal-source-context-detail");
@@ -3983,6 +4081,9 @@ const workspaceOpenAccountsFromDiagnosticsBtn = document.getElementById("workspa
 const repairDateFieldsBtn = document.getElementById("repair-date-fields-btn");
 const repairDateFieldsStatus = document.getElementById("repair-date-fields-status");
 const repairDateFieldsPreview = document.getElementById("repair-date-fields-preview");
+const cleanupImportedLinkedInBtn = document.getElementById("cleanup-imported-linkedin-btn");
+const cleanupImportedLinkedInStatus = document.getElementById("cleanup-imported-linkedin-status");
+const cleanupImportedLinkedInPreview = document.getElementById("cleanup-imported-linkedin-preview");
 const workspaceDiagnosticsPanel = document.getElementById("workspace-diagnostics-panel");
 const connectionSetupModal = document.getElementById("connection-setup-modal");
 const connectionSetupModalCard = document.getElementById("connection-setup-modal-card");
@@ -4020,7 +4121,9 @@ const writeIdeaChipList = document.getElementById("write-idea-chip-list");
 const writeIdeaSourceSelectors = document.getElementById("write-idea-source-selectors");
 const writeIdeaOutputTargets = document.getElementById("write-idea-output-targets");
 const writeIdeaTargetDateInput = document.getElementById("write-idea-target-date");
-const writeIdeaTargetRangeInput = document.getElementById("write-idea-target-range");
+const writeIdeaHistoryStartDateInput = document.getElementById("write-idea-history-start-date");
+const writeIdeaHistoryEndDateInput = document.getElementById("write-idea-history-end-date");
+const writeIdeaHistoryFilterStatus = document.getElementById("write-idea-history-filter-status");
 const writeIdeaRefreshContextBtn = document.getElementById("write-idea-refresh-context-btn");
 const writeIdeaGenerateBtn = document.getElementById("write-idea-generate-btn");
 const writeIdeaSaveDraftBtn = document.getElementById("write-idea-save-draft-btn");
@@ -4119,6 +4222,14 @@ const aiGenerationModeInput = document.getElementById("ai-generation-mode");
 const aiOutlineModeInput = document.getElementById("ai-outline-mode");
 const aiCampaignSelect = document.getElementById("ai-campaign-select");
 const aiWorkspacePrompt = document.getElementById("ai-workspace-prompt");
+const aiHistoryPlatformInput = document.getElementById("ai-history-platform");
+const aiHistoryCampaignInput = document.getElementById("ai-history-campaign");
+const aiHistoryPostTypeInput = document.getElementById("ai-history-post-type");
+const aiHistoryPostKindInput = document.getElementById("ai-history-post-kind");
+const aiHistorySourceTypeInput = document.getElementById("ai-history-source-type");
+const aiHistoryStartDateInput = document.getElementById("ai-history-start-date");
+const aiHistoryEndDateInput = document.getElementById("ai-history-end-date");
+const aiAllowStylizedUnicodeInput = document.getElementById("ai-allow-stylized-unicode");
 const aiBrandAlignmentList = document.getElementById("ai-brand-alignment-list");
 const aiDiversityControls = document.getElementById("ai-diversity-controls");
 const aiDraftStatusInput = document.getElementById("ai-draft-status");
@@ -4131,6 +4242,7 @@ const aiDraftCarouselOutlineInput = document.getElementById("ai-draft-carousel-o
 const aiSemanticMemoryCards = document.getElementById("ai-semantic-memory-cards");
 let confirmActionResolver = null;
 const aiDraftMeta = document.getElementById("ai-draft-meta");
+const aiContextDiagnostics = document.getElementById("ai-context-diagnostics");
 const aiDraftList = document.getElementById("ai-draft-list");
 const aiSaveDraftBtn = document.getElementById("ai-save-draft-btn");
 const aiCreatePostBtn = document.getElementById("ai-create-post-btn");
@@ -4753,16 +4865,20 @@ function handleBrokenMediaPreview(element) {
 }
 
 function getUploadByteLimit(file) {
-  return String(file?.type || "").startsWith("video/") ? MAX_UPLOAD_VIDEO_BYTES : MAX_UPLOAD_IMAGE_BYTES;
+  const mime = String(file?.type || "").toLowerCase();
+  if (mime.startsWith("video/")) return MAX_UPLOAD_VIDEO_BYTES;
+  if (mime.startsWith("image/")) return MAX_UPLOAD_IMAGE_BYTES;
+  return MAX_UPLOAD_DOCUMENT_BYTES;
 }
 
 function validateUploadFile(file, mode = "vault") {
   const mime = String(file?.type || "").toLowerCase();
-  if (!mime.startsWith("image/") && !mime.startsWith("video/")) {
-    return "Only image and video files are supported.";
+  const isDocument = mime === "application/pdf" || /officedocument|msword|presentation|spreadsheet|text\//.test(mime);
+  if (!mime.startsWith("image/") && !mime.startsWith("video/") && !isDocument) {
+    return "Only image, video, and common document files are supported.";
   }
   if (file.size > getUploadByteLimit(file)) {
-    return `${file.name} exceeds the upload size limit for ${mime.startsWith("video/") ? "video" : "image"} files.`;
+    return `${file.name} exceeds the upload size limit for ${mime.startsWith("video/") ? "video" : mime.startsWith("image/") ? "image" : "document"} files.`;
   }
   if (mode === "post" && postTypeSelect?.value === "carousel" && mime.startsWith("video/")) {
     return "Carousel uploads currently support images only.";
@@ -5116,6 +5232,7 @@ function getPostMediaKind(post) {
   if ((post.carouselAssetIds || []).length > 1 || assets.length > 1 || String(post.postType || "").toLowerCase() === "carousel") return "carousel";
   const asset = assets[0] || null;
   if (String(post.postType || "").toLowerCase() === "video" || asset?.type === "video") return "video";
+  if (asset?.type === "document" || /pdf|officedocument|msword|presentation|spreadsheet|text/i.test(String(asset?.mimeType || ""))) return "document";
   if (asset) return "image";
   if (["text", "poll", "article"].includes(postType)) return "text";
   return "missing";
@@ -5164,6 +5281,50 @@ function renderPublishingReadiness(post = {}) {
       <div class="text-sm font-bold wrap-safe" style="color:${card.color}">${escapeHtml(card.value)}</div>
     </div>
   `).join("");
+  if (linkedInPublishOutputEl) {
+    const assets = getPostAssets(post);
+    const primaryDocument = assets.find((asset) => /pdf|officedocument|msword|presentation|spreadsheet/i.test(String(asset?.mimeType || "")));
+    linkedInPublishOutputEl.textContent = primaryDocument
+      ? `LinkedIn document preparation is available for review. Primary document: ${primaryDocument.assetName || primaryDocument.title || "document"}.`
+      : "LinkedIn validation and payload preparation results will appear here.";
+  }
+}
+
+async function validateCurrentPostForLinkedIn() {
+  if (!currentEditingPostId) return;
+  try {
+    const result = await apiPost("validatePostForPublishing", { postId: currentEditingPostId, platform: "linkedin" });
+    const validation = result?.validation || result;
+    if (linkedInPublishOutputEl) {
+      linkedInPublishOutputEl.textContent = [
+        `Valid: ${validation?.valid ? "yes" : "no"}`,
+        validation?.issues?.length ? `Issues: ${validation.issues.join(" | ")}` : "Issues: none",
+        validation?.warnings?.length ? `Warnings: ${validation.warnings.join(" | ")}` : "Warnings: none"
+      ].join("\n");
+    }
+  } catch (err) {
+    console.error(err);
+    if (linkedInPublishOutputEl) linkedInPublishOutputEl.textContent = err?.message || "Could not validate the LinkedIn post.";
+  }
+}
+
+async function prepareCurrentLinkedInPayload() {
+  if (!currentEditingPostId) return;
+  try {
+    const result = await apiPost("preparePublishPayload", { postId: currentEditingPostId, platform: "linkedin" });
+    const payload = result?.payload || result;
+    if (linkedInPublishOutputEl) {
+      linkedInPublishOutputEl.textContent = JSON.stringify({
+        valid: payload?.valid,
+        issues: payload?.issues || [],
+        warnings: payload?.warnings || [],
+        adapterPayload: payload?.adapterPayload || payload?.payload?.adapterPayload || {}
+      }, null, 2);
+    }
+  } catch (err) {
+    console.error(err);
+    if (linkedInPublishOutputEl) linkedInPublishOutputEl.textContent = err?.message || "Could not prepare the LinkedIn payload.";
+  }
 }
 
 function renderSignalsOverview() {
@@ -6239,6 +6400,14 @@ function initApp() {
   linkedInCaptureDeselectAllBtn?.addEventListener("click", () => setLinkedInCaptureSelection(false));
   linkedInCopyScriptBtn?.addEventListener("click", copyLinkedInCaptureSnippet);
   linkedInDownloadReportBtn?.addEventListener("click", downloadLinkedInImportReport);
+  validateLinkedInBtn?.addEventListener("click", validateCurrentPostForLinkedIn);
+  prepareLinkedInPayloadBtn?.addEventListener("click", prepareCurrentLinkedInPayload);
+  importTaskTrayRefreshBtn?.addEventListener("click", () => {
+    refreshImportJobsFromBackend().catch((err) => {
+      console.error(err);
+      showToast("Import jobs failed", err?.message || "Could not refresh resumable import jobs.", "ph-warning", "text-yellow-400");
+    });
+  });
   ensureLinkedInCaptureSnippets();
 
   setupCalendarControls();
@@ -6276,6 +6445,7 @@ function initApp() {
     }
   });
   switchView("calendar");
+  renderImportTaskTray();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       renderCalendar();
@@ -6287,6 +6457,9 @@ function initApp() {
   syncRemoteIfConfigured().then(() => {
     refreshBackendDiagnostics({ silent: true }).catch(() => undefined);
     refreshSocialImportContext().catch(() => undefined);
+    refreshImportJobsFromBackend().then((jobs) => {
+      (jobs || []).filter((job) => String(job.status || "") === "running").forEach((job) => resumeImportJob(job.jobId));
+    }).catch(() => undefined);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (currentView === "calendar") {
@@ -6847,6 +7020,35 @@ function setupWorkspaceUI() {
       showToast("Repair failed", err.message || "Could not repair date fields.", "ph-warning", "text-yellow-400");
     }
   });
+  cleanupImportedLinkedInBtn?.addEventListener("click", async () => {
+    try {
+      const dryRun = await apiCleanupImportedLinkedInPosts({ startRow: 1006, dryRun: true });
+      renderImportedLinkedInCleanupReport(dryRun, "dryRun");
+      if (!(dryRun?.candidateRows || 0)) {
+        showToast("No LinkedIn cleanup candidates", "Dry run found no imported LinkedIn rows that need cleanup.", "ph-check", "text-[#00ffaa]");
+        return;
+      }
+      const confirmed = await openConfirmActionModal({
+        title: "Clean imported LinkedIn rows",
+        subtitle: "Dry run complete. Review the report before writing changes.",
+        message: `Apply LinkedIn cleanup to ${dryRun.cleanedRows || 0} rows starting at row ${dryRun.startRow || 1006}? This updates rows in POSTS but does not delete posts.`,
+        confirmLabel: "Apply cleanup"
+      });
+      if (!confirmed) return;
+      const liveResult = await apiCleanupImportedLinkedInPosts({ startRow: dryRun.startRow || 1006, dryRun: false });
+      renderImportedLinkedInCleanupReport(liveResult, "live");
+      await syncRemoteIfConfigured();
+      await refreshBackendDiagnostics({ silent: true });
+      renderWorkspaceHub();
+      rerenderAll();
+      showToast("LinkedIn cleanup complete", `${liveResult?.cleanedRows || 0} imported rows updated.`, "ph-check", "text-[#00ffaa]");
+    } catch (err) {
+      console.error(err);
+      renderImportedLinkedInCleanupReport(null);
+      if (cleanupImportedLinkedInStatus) cleanupImportedLinkedInStatus.textContent = err.message || "Could not clean imported LinkedIn rows.";
+      showToast("LinkedIn cleanup failed", err.message || "Could not clean imported LinkedIn rows.", "ph-warning", "text-yellow-400");
+    }
+  });
   closeConnectionSetupBtn?.addEventListener("click", closeConnectionSetupModal);
   connectionSetupModal?.addEventListener("click", (event) => {
     if (event.target === connectionSetupModal) closeConnectionSetupModal();
@@ -7018,9 +7220,28 @@ function setupWriteIdeaWorkspace() {
   writeIdeaTargetDateInput?.addEventListener("change", () => {
     writeIdeaState.targetDate = normalizeQueueDateLabel(writeIdeaTargetDateInput.value || "") || writeIdeaState.targetDate;
   });
-  writeIdeaTargetRangeInput?.addEventListener("input", () => {
-    writeIdeaState.targetDateRange = String(writeIdeaTargetRangeInput.value || "").trim();
+  writeIdeaHistoryStartDateInput?.addEventListener("change", () => {
+    writeIdeaState.historyStartDate = String(writeIdeaHistoryStartDateInput.value || "").trim();
+    renderWriteIdeaHistoryFilterStatus();
   });
+  writeIdeaHistoryEndDateInput?.addEventListener("change", () => {
+    writeIdeaState.historyEndDate = String(writeIdeaHistoryEndDateInput.value || "").trim();
+    renderWriteIdeaHistoryFilterStatus();
+  });
+  const updateAIHistoryDiagnostics = () => {
+    try {
+      const filters = buildAIHistoryFilterPayload();
+      renderAIContextDiagnostics({ historicalSummary: buildLocalAIHistorySummary(filters) }, filters);
+    } catch (err) {
+      renderAIContextDiagnostics(null, {}, err.message || "Could not validate historical post filters.");
+    }
+  };
+  [aiHistoryPlatformInput, aiHistoryCampaignInput, aiHistoryPostTypeInput, aiHistoryPostKindInput, aiHistorySourceTypeInput, aiHistoryStartDateInput, aiHistoryEndDateInput, aiAllowStylizedUnicodeInput]
+    .filter(Boolean)
+    .forEach((node) => {
+      node.addEventListener("change", updateAIHistoryDiagnostics);
+      if (node.tagName !== "SELECT" && node.type !== "checkbox") node.addEventListener("input", updateAIHistoryDiagnostics);
+    });
   writeIdeaSourceSelectors?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-write-idea-source]");
     if (!button) return;
@@ -8629,6 +8850,8 @@ function renderModalCarouselPreview() {
           ${previewUrl
             ? String(asset.assetType || asset.type || "").startsWith("video")
               ? `<video src="${escapeHtml(previewUrl)}" class="w-full h-full object-cover" muted playsinline preload="metadata"></video>`
+              : /pdf|document|doc|presentation|spreadsheet|text/i.test(String(asset.assetType || asset.type || asset.mimeType || ""))
+              ? `<div class="w-full h-full flex flex-col items-center justify-center text-gray-400"><i class="ph-bold ph-file-text text-2xl mb-1"></i><span class="text-[10px] uppercase tracking-wider font-bold">Document</span></div>`
               : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(asset.title || asset.assetName || "Carousel asset")}" class="w-full h-full object-cover" onerror="handleBrokenMediaPreview(this)">`
             : `<i class="ph-bold ph-image text-gray-500 text-2xl"></i>`}
         </div>
@@ -8695,7 +8918,9 @@ function renderUploadStagingList() {
       <div class="aspect-video rounded-xl overflow-hidden bg-[#0f0a18] border border-white/5 flex items-center justify-center mb-3">
         ${item.type.startsWith("video/")
           ? `<video src="${escapeHtml(item.previewUrl)}" class="w-full h-full object-cover" muted playsinline preload="metadata"></video>`
-          : `<img src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover" onerror="handleBrokenMediaPreview(this)">`}
+          : item.type.startsWith("image/")
+          ? `<img src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover" onerror="handleBrokenMediaPreview(this)">`
+          : `<div class="w-full h-full flex flex-col items-center justify-center text-gray-400"><i class="ph-bold ph-file-text text-3xl mb-2"></i><span class="text-xs uppercase tracking-wider font-bold">Document</span></div>`}
       </div>
       <div class="text-sm font-bold text-white wrap-safe mb-1">${escapeHtml(item.name)}</div>
       <div class="text-[10px] text-gray-500 mb-3">${escapeHtml(Math.round(item.size / 1024))} KB • ${escapeHtml(item.type || "unknown")}</div>
@@ -8724,7 +8949,10 @@ async function commitPendingUploads() {
       fileName: item.file.name,
       mimeType: item.file.type,
       base64Data,
-      assetBadge: item.file.type.startsWith("video/") ? "Reel" : uploadStagingTarget === "post" && postTypeSelect?.value === "carousel" ? "Carousel" : "Image",
+      fileSizeBytes: item.file.size,
+      originalFilename: item.file.name,
+      importedMediaSource: uploadStagingTarget === "post" ? "post_upload" : "vault_upload",
+      assetBadge: item.file.type.startsWith("video/") ? "Reel" : item.file.type.startsWith("image/") ? uploadStagingTarget === "post" && postTypeSelect?.value === "carousel" ? "Carousel" : "Image" : "Document",
       assetMeta: "",
       linkedPostId: uploadStagingTarget === "post" ? (currentEditingPostId || "") : "",
       campaign: uploadStagingTarget === "post" ? getCurrentModalCampaignLabel() : ""
@@ -10002,7 +10230,8 @@ function openArtifactInWriteIdea(type, id, mode = "use", transformationType = ""
 function syncWriteIdeaStateFromInputs() {
   writeIdeaState.prompt = String(writeIdeaPromptInput?.value || "").trim();
   writeIdeaState.targetDate = normalizeQueueDateLabel(writeIdeaTargetDateInput?.value || writeIdeaState.targetDate || "") || normalizeQueueDateLabel(new Date());
-  writeIdeaState.targetDateRange = String(writeIdeaTargetRangeInput?.value || "").trim();
+  writeIdeaState.historyStartDate = String(writeIdeaHistoryStartDateInput?.value || "").trim();
+  writeIdeaState.historyEndDate = String(writeIdeaHistoryEndDateInput?.value || "").trim();
 }
 
 function getWriteIdeaPayload() {
@@ -10025,6 +10254,8 @@ function getWriteIdeaPayload() {
     postType,
     targetDate: writeIdeaState.targetDate,
     targetDateRange: writeIdeaState.targetDateRange,
+    historyStartDate: writeIdeaState.historyStartDate,
+    historyEndDate: writeIdeaState.historyEndDate,
     generationMode: "write_an_idea",
     transformationType: writeIdeaState.transformationType,
     analysisMode: writeIdeaState.analysisMode,
@@ -10039,6 +10270,183 @@ function getWriteIdeaPayload() {
     mediaIds: writeIdeaState.mediaIds,
     performanceContext: writeIdeaState.performanceContext
   };
+}
+
+function getHistoricalPostDateKey(post) {
+  return (
+    getPlanningDateKeyFromValue(
+      pickRemoteValue(
+        post?.originalPostDate,
+        post?.original_post_date,
+        post?.scheduledAt,
+        post?.scheduled_at,
+        post?.createdAt,
+        post?.created_at,
+        post?.importedAt,
+        post?.imported_at
+      )
+    ) ||
+    parseDisplayDateKey(
+      pickRemoteValue(
+        post?.originalPostDateLabel,
+        post?.original_post_date_label,
+        post?.queueDateLabel,
+        post?.queue_date_label
+      )
+    ) ||
+    ""
+  );
+}
+
+function normalizeHistoricalPostKind(post) {
+  const type = String(pickRemoteValue(post?.postType, post?.post_type, "")).trim().toLowerCase();
+  const isRepost = normalizeRemoteBoolean(pickRemoteValue(post?.isRepost, post?.is_repost, false));
+  if (type === "reshare") return "reshare";
+  if (type === "repost") return "repost";
+  return isRepost ? "repost" : "original";
+}
+
+function buildAIHistoryFilterPayload() {
+  const start = String(aiHistoryStartDateInput?.value || "").trim();
+  const end = String(aiHistoryEndDateInput?.value || "").trim();
+  if (start && end && start > end) {
+    throw new Error("Historical post date filters are invalid. Start date must be on or before end date.");
+  }
+  return {
+    historyPlatform: String(aiHistoryPlatformInput?.value || "all").trim(),
+    historyCampaign: String(aiHistoryCampaignInput?.value || "").trim(),
+    historyPostType: String(aiHistoryPostTypeInput?.value || "all").trim(),
+    historyPostKind: String(aiHistoryPostKindInput?.value || "original_only").trim(),
+    historySourceType: String(aiHistorySourceTypeInput?.value || "all").trim(),
+    historyStartDate: start,
+    historyEndDate: end,
+    allowStylizedUnicode: !!aiAllowStylizedUnicodeInput?.checked
+  };
+}
+
+function filterHistoricalPostsLocal(posts, filters = {}) {
+  return (Array.isArray(posts) ? posts : []).filter((post) => {
+    const platform = String(post?.platform || "").trim().toLowerCase();
+    const postType = String(pickRemoteValue(post?.postType, post?.post_type, "text")).trim().toLowerCase();
+    const sourceType = String(pickRemoteValue(post?.sourceType, post?.source_type, "")).trim().toLowerCase();
+    const campaignId = String(pickRemoteValue(post?.campaignId, post?.campaign_id, "")).trim();
+    const campaignName = String(pickRemoteValue(post?.campaignName, post?.campaign_name, "")).trim();
+    const kind = normalizeHistoricalPostKind(post);
+    const dateKey = getHistoricalPostDateKey(post);
+    const requestedCampaign = normalizeCampaignName(String(filters.historyCampaign || "").trim());
+    if (filters.historyPlatform && filters.historyPlatform !== "all" && filters.historyPlatform !== "both" && platform && platform !== filters.historyPlatform) return false;
+    if (requestedCampaign) {
+      if (campaignId !== filters.historyCampaign && normalizeCampaignName(campaignName) !== requestedCampaign) return false;
+    }
+    if (filters.historyPostType && filters.historyPostType !== "all" && postType !== filters.historyPostType) return false;
+    if (filters.historySourceType && filters.historySourceType !== "all" && sourceType !== filters.historySourceType) return false;
+    if (filters.historyStartDate && (!dateKey || dateKey < filters.historyStartDate)) return false;
+    if (filters.historyEndDate && (!dateKey || dateKey > filters.historyEndDate)) return false;
+    if (filters.historyPostKind === "original_only" && kind !== "original") return false;
+    if (filters.historyPostKind === "reposts_only" && kind !== "repost") return false;
+    if (filters.historyPostKind === "reshares_only" && kind !== "reshare") return false;
+    if (filters.historyPostKind === "repost_analysis" && kind === "original") return false;
+    return true;
+  });
+}
+
+function renderWriteIdeaHistoryFilterStatus() {
+  if (!writeIdeaHistoryFilterStatus) return;
+  const start = String(writeIdeaHistoryStartDateInput?.value || writeIdeaState.historyStartDate || "").trim();
+  const end = String(writeIdeaHistoryEndDateInput?.value || writeIdeaState.historyEndDate || "").trim();
+  if (start && end && start > end) {
+    writeIdeaHistoryFilterStatus.innerHTML = `<span class="text-red-300">Start date must be on or before end date.</span>`;
+    return;
+  }
+  const filtered = filterHistoricalPostsLocal(appState.posts || [], {
+    historyStartDate: start,
+    historyEndDate: end
+  });
+  const rangeLabel = start || end
+    ? `Using history ${start || "the beginning"} to ${end || "today"}`
+    : "Using full history";
+  writeIdeaHistoryFilterStatus.textContent = `${rangeLabel}. ${filtered.length} posts match the current date filter.`;
+}
+
+function renderAIHistoryControls() {
+  if (aiHistoryCampaignInput) {
+    const previousValue = aiHistoryCampaignInput.value;
+    const options = ['<option value="">All campaigns</option>'].concat(
+      (appState.campaigns || [])
+        .filter((campaign) => !campaign?.isArchived && String(campaign?.campaignName || "").trim())
+        .map((campaign) => `<option value="${escapeHtml(campaign.campaignId || campaign.campaignName)}">${escapeHtml(formatCampaignDisplayName(campaign.campaignName))}</option>`)
+    );
+    aiHistoryCampaignInput.innerHTML = options.join("");
+    aiHistoryCampaignInput.value = previousValue || "";
+  }
+  if (aiHistorySourceTypeInput) {
+    const previousValue = aiHistorySourceTypeInput.value;
+    const sourceTypes = [...new Set((appState.posts || []).map((post) => String(pickRemoteValue(post?.sourceType, post?.source_type, "")).trim()).filter(Boolean))].sort();
+    aiHistorySourceTypeInput.innerHTML = ['<option value="all">All source types</option>']
+      .concat(sourceTypes.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`))
+      .join("");
+    aiHistorySourceTypeInput.value = previousValue || "all";
+  }
+}
+
+function buildLocalAIHistorySummary(filters = {}) {
+  const filtered = filterHistoricalPostsLocal(appState.posts || [], filters);
+  const platforms = [...new Set(filtered.map((post) => String(post?.platform || "").trim().toLowerCase()).filter(Boolean))];
+  const sourceTypes = [...new Set(filtered.map((post) => String(pickRemoteValue(post?.sourceType, post?.source_type, "")).trim().toLowerCase()).filter(Boolean))];
+  const counts = { original: 0, repost: 0, reshare: 0 };
+  let start = "";
+  let end = "";
+  filtered.forEach((post) => {
+    const kind = normalizeHistoricalPostKind(post);
+    counts[kind] = (counts[kind] || 0) + 1;
+    const dateKey = getHistoricalPostDateKey(post);
+    if (dateKey && (!start || dateKey < start)) start = dateKey;
+    if (dateKey && (!end || dateKey > end)) end = dateKey;
+  });
+  return {
+    totalHistoricalPostsAvailable: (appState.posts || []).filter((post) => String(pickRemoteValue(post?.description, post?.body, post?.title, "")).trim()).length,
+    postsIncluded: filtered.length,
+    postsUsed: filtered.length,
+    dateSpan: { start, end },
+    platformsIncluded: platforms,
+    sourceTypesIncluded: sourceTypes,
+    originalsCount: counts.original || 0,
+    repostsCount: counts.repost || 0,
+    resharesCount: counts.reshare || 0,
+    repostsIncluded: filters.historyPostKind && filters.historyPostKind !== "original_only",
+    trimmingNote: ""
+  };
+}
+
+function renderAIContextDiagnostics(context, filters = {}, errorMessage = "") {
+  if (!aiContextDiagnostics) return;
+  if (errorMessage) {
+    aiContextDiagnostics.innerHTML = `<div class="text-red-300 font-semibold mb-2">AI generation error</div><div class="text-sm text-red-200 wrap-safe">${escapeHtml(errorMessage)}</div>`;
+    return;
+  }
+  const summary = context?.historicalSummary || {};
+  const rangeText = filters.historyStartDate || filters.historyEndDate
+    ? `${filters.historyStartDate || "the beginning"} to ${filters.historyEndDate || "today"}`
+    : "Using full history";
+  const rows = [
+    { label: "Total historical posts available", value: String(summary.totalHistoricalPostsAvailable ?? 0) },
+    { label: "Posts included after filters", value: String(summary.postsIncluded ?? 0) },
+    { label: "Posts used in AI context", value: String(summary.postsUsed ?? summary.postsIncluded ?? 0) },
+    { label: "Date range used", value: rangeText },
+    { label: "Historical span", value: summary.dateSpan?.start || summary.dateSpan?.end ? `${summary.dateSpan?.start || "unknown"} to ${summary.dateSpan?.end || "unknown"}` : "No dated posts in current filter" },
+    { label: "Platforms included", value: (summary.platformsIncluded || []).join(", ") || "None" },
+    { label: "Source types included", value: (summary.sourceTypesIncluded || []).join(", ") || "None" },
+    { label: "Original / repost / reshare counts", value: `${summary.originalsCount || 0} / ${summary.repostsCount || 0} / ${summary.resharesCount || 0}` },
+    { label: "Reposts included", value: summary.repostsIncluded ? "Yes" : "No" },
+    { label: "Token/context trimming", value: summary.trimmingNote || "No trimming applied" },
+    { label: "Unicode styling", value: filters.allowStylizedUnicode ? "Enabled for hook-only emphasis" : "Disabled for accessibility" }
+  ];
+  aiContextDiagnostics.innerHTML = rows.map((item) => `
+    <div class="flex items-start justify-between gap-4 border-b border-white/5 py-2 last:border-b-0">
+      <div class="text-[11px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(item.label)}</div>
+      <div class="text-sm text-white text-right wrap-safe">${escapeHtml(item.value)}</div>
+    </div>
+  `).join("");
 }
 
 function renderWriteIdeaGuidance() {
@@ -10118,7 +10526,9 @@ function renderWriteIdeaScaffold() {
     btn.classList.toggle("active", btn.dataset.writeIdeaTransform === writeIdeaState.transformationType);
   });
   if (writeIdeaTargetDateInput) writeIdeaTargetDateInput.value = toInputDateValue(writeIdeaState.targetDate);
-  if (writeIdeaTargetRangeInput) writeIdeaTargetRangeInput.value = writeIdeaState.targetDateRange || "";
+  if (writeIdeaHistoryStartDateInput) writeIdeaHistoryStartDateInput.value = writeIdeaState.historyStartDate || "";
+  if (writeIdeaHistoryEndDateInput) writeIdeaHistoryEndDateInput.value = writeIdeaState.historyEndDate || "";
+  renderWriteIdeaHistoryFilterStatus();
   renderWriteIdeaArtifactWorkspace();
   if (!writeIdeaLastScaffold) {
     if (writeIdeaReviewSummary) writeIdeaReviewSummary.textContent = "Idea state will appear here after you generate a structured draft.";
@@ -10224,6 +10634,8 @@ function loadWriteIdeaDraft(aiDraftId) {
   writeIdeaState.outputArtifacts = Array.isArray(draft.outputArtifacts) ? draft.outputArtifacts.map((item) => normalizeWriteIdeaArtifact(item)).filter((item) => item.artifactId) : [];
   writeIdeaState.sourceArtifactIds = String(draft.sourceArtifactIds || "").split(/[|,\n]/).map((item) => String(item || "").trim()).filter(Boolean);
   writeIdeaState.derivedFromIds = String(draft.derivedFromIds || "").split(/[|,\n]/).map((item) => String(item || "").trim()).filter(Boolean);
+  writeIdeaState.historyStartDate = "";
+  writeIdeaState.historyEndDate = "";
   writeIdeaLastScaffold = {
     idea: draft,
     scaffold: {
@@ -13057,8 +13469,215 @@ function downloadLinkedInImportReport() {
   setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
 }
 
+function isImportJobTerminal(status = "") {
+  return ["completed", "failed", "cancelled"].includes(String(status || "").trim().toLowerCase());
+}
+
+function buildImportJobReportFromStatus(status = {}) {
+  const job = normalizeImportJob(status?.job || {});
+  const failedItems = Array.isArray(status?.failedItems) ? status.failedItems : [];
+  return {
+    jobId: job.jobId,
+    detectedCount: job.totalCount,
+    selectedCount: job.totalCount,
+    importedCount: job.importedCount,
+    skippedDuplicates: job.skippedDuplicates,
+    updatedCount: job.updatedCount,
+    failedCount: job.failedCount,
+    verifiedInLedgerCount: job.verifiedInLedgerCount,
+    status: job.status,
+    backendVersion: status?.backendVersion || "",
+    errors: failedItems.map((item) => ({
+      index: Number(item?.itemIndex || 0),
+      title: item?.title || "Untitled",
+      message: item?.errorMessage || "Import failed"
+    })),
+    importedPostIds: Array.isArray(job.report?.importedPostIds) ? job.report.importedPostIds : []
+  };
+}
+
+function formatImportJobDebug(status = {}) {
+  const job = normalizeImportJob(status?.job || status || {});
+  return [
+    `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
+    `Backend action called: runImportJobBatch`,
+    status?.action ? `Backend action returned: ${status.action}` : "",
+    status?.backendVersion ? `Backend version: ${status.backendVersion}` : "",
+    job.jobId ? `Job ID: ${job.jobId}` : ""
+  ].filter(Boolean).join(" • ");
+}
+
+function syncImportJobStatusIntoResultPanel(status = {}, progressLabel = "") {
+  const job = normalizeImportJob(status?.job || {});
+  linkedInCaptureImportReport = buildImportJobReportFromStatus(status);
+  const summary = `${job.importedCount} imported, ${job.updatedCount} updated, ${job.skippedDuplicates} skipped duplicates, ${job.failedCount} failed. Imported posts are saved to the POSTS sheet and appear in Ledger.`;
+  const errors = linkedInCaptureImportReport.errors.length
+    ? linkedInCaptureImportReport.errors.slice(0, 12).map((item) => `#${Number(item?.index ?? 0) + 1} ${item?.title || "Untitled"}: ${item?.message || "Import failed"}`).join(" | ")
+    : "No import errors reported.";
+  const verification = `Verified in Ledger: ${job.verifiedInLedgerCount || 0}.`;
+  updateLinkedInImportResultPanel({
+    visible: true,
+    progress: progressLabel || (job.totalCount ? `Importing ${job.processedCount} / ${job.totalCount}...` : "Import job ready"),
+    summary,
+    errors,
+    verification,
+    debug: formatImportJobDebug(status)
+  });
+}
+
+async function refreshPostsAfterImportBatch(jobId = "") {
+  if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return;
+  const posts = await apiGetPosts();
+  if (Array.isArray(posts) && posts.length) {
+    appState.posts = posts.map((post) => normalizeRemotePost(post, appState.campaigns || [], appState.media || []));
+    persistLocalState();
+  }
+  if (jobId) {
+    const verifiedCount = (appState.posts || []).filter((post) => String(post.importJobId || "").trim() === String(jobId || "").trim()).length;
+    const existing = (appState.importJobs || []).find((job) => String(job.jobId || "") === String(jobId || ""));
+    if (existing) {
+      upsertLocalImportJob({ ...existing, verifiedInLedgerCount: verifiedCount });
+    }
+  }
+}
+
+function renderImportTaskTray() {
+  if (!importTaskTray || !importTaskTraySummary || !importTaskTrayList) return;
+  const jobs = (appState.importJobs || []).filter((job) => ["queued", "running", "paused", "failed"].includes(String(job.status || "")));
+  importTaskTray.classList.toggle("hidden", !jobs.length);
+  importTaskTraySummary.textContent = jobs.length
+    ? `${jobs.length} resumable import job${jobs.length === 1 ? "" : "s"} available.`
+    : "No active imports.";
+  if (!jobs.length) {
+    importTaskTrayList.innerHTML = "";
+    return;
+  }
+  importTaskTrayList.innerHTML = jobs.map((job) => `
+    <div class="p-3 rounded-xl bg-[#181125] border border-white/5 space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(job.type || "linkedin_capture_import")}</div>
+          <div class="text-sm font-bold text-white mt-1">${escapeHtml(`Importing ${job.processedCount || 0} / ${job.totalCount || 0}`)}</div>
+        </div>
+        <span class="diagnostic-chip">${escapeHtml(String(job.status || "queued").toUpperCase())}</span>
+      </div>
+      <div class="text-[11px] text-gray-400 wrap-safe">${escapeHtml(`${job.importedCount || 0} imported • ${job.updatedCount || 0} updated • ${job.skippedDuplicates || 0} skipped • ${job.failedCount || 0} failed • Verified in Ledger ${job.verifiedInLedgerCount || 0}`)}</div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="import-task-resume-btn px-3 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors" data-job-id="${escapeHtml(job.jobId)}">${job.status === "running" ? "Running" : "Resume"}</button>
+        <button type="button" class="import-task-pause-btn px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors" data-job-id="${escapeHtml(job.jobId)}">Pause</button>
+        <button type="button" class="import-task-cancel-btn px-3 py-2 rounded-xl bg-[#30121b] hover:bg-[#3d1522] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-red-200 transition-colors" data-job-id="${escapeHtml(job.jobId)}">Cancel</button>
+        <button type="button" class="import-task-view-btn px-3 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors" data-job-id="${escapeHtml(job.jobId)}">View Report</button>
+        ${job.failedCount ? `<button type="button" class="import-task-retry-btn px-3 py-2 rounded-xl bg-[#2b2311] hover:bg-[#362c17] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-yellow-200 transition-colors" data-job-id="${escapeHtml(job.jobId)}">Retry Failures</button>` : ""}
+      </div>
+    </div>
+  `).join("");
+  importTaskTrayList.querySelectorAll(".import-task-resume-btn").forEach((button) => {
+    button.addEventListener("click", () => resumeImportJob(button.dataset.jobId));
+  });
+  importTaskTrayList.querySelectorAll(".import-task-pause-btn").forEach((button) => {
+    button.addEventListener("click", () => pauseImportJob(button.dataset.jobId));
+  });
+  importTaskTrayList.querySelectorAll(".import-task-cancel-btn").forEach((button) => {
+    button.addEventListener("click", () => cancelImportJobFromTray(button.dataset.jobId));
+  });
+  importTaskTrayList.querySelectorAll(".import-task-view-btn").forEach((button) => {
+    button.addEventListener("click", () => openImportJobReport(button.dataset.jobId));
+  });
+  importTaskTrayList.querySelectorAll(".import-task-retry-btn").forEach((button) => {
+    button.addEventListener("click", () => retryImportJobFailuresFromTray(button.dataset.jobId));
+  });
+}
+
+async function refreshImportJobsFromBackend(options = {}) {
+  if (!APP_CONFIG.ENABLE_REMOTE_SYNC || !isRemoteConfigured()) return [];
+  const jobs = await apiGetImportJobs({ includeCompleted: !!options.includeCompleted });
+  appState.importJobs = jobs.map((job) => normalizeImportJob(job));
+  persistLocalState();
+  renderImportTaskTray();
+  return appState.importJobs;
+}
+
+async function openImportJobReport(jobId) {
+  if (!jobId) return;
+  try {
+    const status = await apiGetImportJobStatus({ jobId });
+    upsertLocalImportJob(status.job || {});
+    openLinkedInCaptureImporter();
+    syncImportJobStatusIntoResultPanel(status, isImportJobTerminal(status?.job?.status) ? `Job ${jobId} ${status.job.status}` : `Importing ${status.job.processedCount} / ${status.job.totalCount}...`);
+  } catch (err) {
+    console.error(err);
+    showToast("Report failed", err?.message || "Could not load the import job report.", "ph-warning", "text-yellow-400");
+  }
+}
+
+async function pauseImportJob(jobId) {
+  if (!jobId) return;
+  importJobRunnerState[jobId] = { active: false };
+  const result = await apiCancelImportJob({ jobId, mode: "pause" });
+  upsertLocalImportJob(result.job || {});
+  syncImportJobStatusIntoResultPanel(result, `Paused ${result?.job?.processedCount || 0} / ${result?.job?.totalCount || 0}`);
+}
+
+async function cancelImportJobFromTray(jobId) {
+  if (!jobId) return;
+  const confirmed = await openConfirmActionModal({
+    title: "Cancel Import Job",
+    subtitle: "Processed rows stay saved. Remaining rows will stop.",
+    message: `Cancel import job ${jobId}?`,
+    confirmLabel: "Cancel Job",
+    cancelLabel: "Keep Running"
+  });
+  if (!confirmed) return;
+  importJobRunnerState[jobId] = { active: false };
+  const result = await apiCancelImportJob({ jobId, mode: "cancel" });
+  upsertLocalImportJob(result.job || {});
+  renderImportTaskTray();
+  syncImportJobStatusIntoResultPanel(result, `Cancelled ${result?.job?.processedCount || 0} / ${result?.job?.totalCount || 0}`);
+}
+
+async function retryImportJobFailuresFromTray(jobId) {
+  if (!jobId) return;
+  const result = await apiRetryImportJobFailures({ jobId });
+  upsertLocalImportJob(result.job || {});
+  syncImportJobStatusIntoResultPanel(result, `Retrying ${result?.job?.processedCount || 0} / ${result?.job?.totalCount || 0}...`);
+  await resumeImportJob(jobId);
+}
+
+async function resumeImportJob(jobId) {
+  if (!jobId) return;
+  if (importJobRunnerState[jobId]?.active) return;
+  importJobRunnerState[jobId] = { active: true };
+  try {
+    let status = await apiGetImportJobStatus({ jobId });
+    upsertLocalImportJob(status.job || {});
+    syncImportJobStatusIntoResultPanel(status);
+    while (importJobRunnerState[jobId]?.active && !isImportJobTerminal(status?.job?.status)) {
+      status = await apiRunImportJobBatch({ jobId, batchSize: status?.job?.totalCount > 150 ? 50 : 25 });
+      await refreshPostsAfterImportBatch(jobId);
+      const verifiedCount = (appState.posts || []).filter((post) => String(post.importJobId || "").trim() === String(jobId || "").trim()).length;
+      upsertLocalImportJob({ ...(status.job || {}), verifiedInLedgerCount: verifiedCount });
+      syncImportJobStatusIntoResultPanel({
+        ...status,
+        job: { ...(status.job || {}), verifiedInLedgerCount: verifiedCount }
+      });
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      status = await apiGetImportJobStatus({ jobId });
+    }
+    status = await apiGetImportJobStatus({ jobId });
+    upsertLocalImportJob(status.job || {});
+    syncImportJobStatusIntoResultPanel(status, isImportJobTerminal(status?.job?.status) ? `Completed ${status?.job?.processedCount || 0} / ${status?.job?.totalCount || 0}` : `Importing ${status?.job?.processedCount || 0} / ${status?.job?.totalCount || 0}...`);
+    rerenderAll();
+    if (isImportJobTerminal(status?.job?.status) && status?.job?.status !== "failed") removeCompletedImportJobsFromState();
+  } catch (err) {
+    console.error(err);
+    showToast("Import job failed", err?.message || "Could not continue the import job.", "ph-warning", "text-yellow-400");
+  } finally {
+    importJobRunnerState[jobId] = { active: false };
+    renderImportTaskTray();
+  }
+}
+
 async function importSelectedLinkedInCaptureItems() {
-  const backendActionCalled = "importCapturedPosts";
   const selectedItems = linkedInCapturePreviewItems.filter((item) => item.selected);
   if (!selectedItems.length) {
     showToast("Nothing selected", "Select one or more non-duplicate capture items first.", "ph-warning", "text-yellow-400");
@@ -13068,158 +13687,68 @@ async function importSelectedLinkedInCaptureItems() {
     showToast("Backend required", "Configure the Apps Script backend before importing captured LinkedIn posts into POSTS.", "ph-warning", "text-yellow-400");
     return;
   }
-  const batchSize = selectedItems.length > 150 ? 50 : 25;
-  const batches = [];
-  for (let index = 0; index < selectedItems.length; index += batchSize) {
-    batches.push(selectedItems.slice(index, index + batchSize));
-  }
-  const baseReport = {
-    detectedCount: 0,
-    selectedCount: 0,
-    importedCount: 0,
-    skippedDuplicates: 0,
-    updatedCount: 0,
-    failedCount: 0,
-    errors: [],
-    firstImportedPostIds: [],
-    importedPostIds: [],
-    dateParseStats: selectedItems.reduce((stats, item) => {
-      const key = item.dateConfidence || "missing";
-      stats[key] = Number(stats[key] || 0) + 1;
-      return stats;
-    }, { exact: 0, relative: 0, label_only: 0, missing: 0 }),
-    repostStats: selectedItems.reduce((stats, item) => {
-      const key = item.requiresContentPaste ? "url_only" : item.postType === "repost" ? "repost" : item.postType === "reshare" ? "reshare" : "original";
-      stats[key] = Number(stats[key] || 0) + 1;
-      return stats;
-    }, { original: 0, repost: 0, reshare: 0, url_only: 0 })
-  };
-  linkedInCaptureImportReport = baseReport;
   updateLinkedInImportResultPanel({
     visible: true,
-    progress: `Importing 0 / ${selectedItems.length}...`,
-    summary: `Preparing ${selectedItems.length} selected capture item${selectedItems.length === 1 ? "" : "s"} for batched import.`,
+    progress: `Creating import job for ${selectedItems.length} item${selectedItems.length === 1 ? "" : "s"}...`,
+    summary: "Saving parsed LinkedIn items into a resumable backend job.",
     errors: "",
     verification: "",
-    debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
+    debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: createImportJob`
   });
   try {
-    const mergedPosts = new Map((appState.posts || []).map((post) => [post.id, post]));
-    let importedSoFar = 0;
-    for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
-      const batch = batches[batchIndex];
-      updateLinkedInImportResultPanel({
-        visible: true,
-        progress: `Importing ${Math.min(importedSoFar + batch.length, selectedItems.length)} / ${selectedItems.length}...`,
-        summary: `Sending batch ${batchIndex + 1} of ${batches.length}.`,
-        errors: linkedInCaptureImportReport?.errors?.length ? `${linkedInCaptureImportReport.errors.length} partial failure${linkedInCaptureImportReport.errors.length === 1 ? "" : "s"} recorded so far.` : "",
-        verification: "",
-        debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
-      });
-      const payload = {
-        overwriteDuplicates: !!linkedInCaptureOverwriteInput?.checked,
-        items: batch.map((item) => ({
-          title: item.title,
-          description: item.description,
-          rawText: item.rawText || "",
-          sourceUrl: item.sourceUrl,
-          sourceType: item.sourceType,
-          sourcePlatform: "linkedin",
-          platform: "linkedin",
-          postType: item.postType,
-          pillar: item.pillar,
-          status: "published",
-          importedAt: item.importedAt,
-          linkedinPostId: item.linkedinPostId,
-          scheduledAt: item.scheduledAt,
-          dateLabel: item.dateLabel,
-          originalPostDate: item.originalPostDate,
-          originalPostDateLabel: item.originalPostDateLabel,
-          queueDateLabel: item.queueDateLabel,
-          dateConfidence: item.dateConfidence,
-          impressions: item.metrics.impressions,
-          likes: item.metrics.likes,
-          comments: item.metrics.comments,
-          shares: item.metrics.shares,
-          metrics: item.metrics,
-          mediaUrls: item.mediaUrls,
-          mediaAltTexts: item.mediaAltTexts,
-          generatedAt: item.generatedAt,
-          sourcePageUrl: item.sourcePageUrl,
-          normalizedTextHash: item.normalizedTextHash,
-          requiresManualReview: item.requiresManualReview,
-          isRepost: item.isRepost,
-          repostAuthor: item.repostAuthor,
-          repostCommentary: item.repostCommentary,
-          originalAuthor: item.originalAuthor,
-          originalPostExcerpt: item.originalPostExcerpt
-        }))
-      };
-      const result = await apiImportCapturedPosts(payload);
-      const backendDebug = [
-        `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
-        `Backend action called: ${backendActionCalled}`,
-        result?.action ? `Backend action returned: ${result.action}` : "",
-        result?.backendVersion || result?.codeVersionStamp ? `Backend version: ${result.backendVersion || result.codeVersionStamp}` : ""
-      ].filter(Boolean).join(" • ");
-      linkedInCaptureImportReport = mergeLinkedInImportReports(linkedInCaptureImportReport, result?.report || {
-        selectedCount: batch.length,
-        importedCount: result?.importedCount || 0,
-        skippedDuplicates: result?.skippedDuplicates || 0,
-        updatedCount: result?.updatedCount || 0,
-        failedCount: result?.failedCount || 0,
-        errors: result?.errors || [],
-        firstImportedPostIds: result?.firstImportedPostIds || [],
-        importedPostIds: result?.importedPostIds || []
-      });
-      const importedPosts = Array.isArray(result?.posts) ? result.posts.map((post) => normalizeRemotePost(post, appState.campaigns || [], appState.media || [])) : [];
-      importedPosts.forEach((post) => mergedPosts.set(post.id, post));
-      importedSoFar += batch.length;
-      updateLinkedInImportResultPanel({
-        visible: true,
-        progress: `Importing ${importedSoFar} / ${selectedItems.length}...`,
-        summary: `${linkedInCaptureImportReport.importedCount} imported, ${linkedInCaptureImportReport.updatedCount} updated, ${linkedInCaptureImportReport.skippedDuplicates} skipped duplicates, ${linkedInCaptureImportReport.failedCount} failed.`,
-        errors: linkedInCaptureImportReport.errors.slice(0, 8).map((item) => `#${Number(item?.index ?? 0) + 1} ${item?.title || "Untitled"}: ${item?.message || "Import failed"}`).join(" | "),
-        verification: "",
-        debug: backendDebug
-      });
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
-    appState.posts = Array.from(mergedPosts.values());
-    persistLocalState();
-    const verifyResult = await apiGet("getPosts");
-    const verifiedPosts = Array.isArray(verifyResult?.items) ? verifyResult.items.map((post) => normalizeRemotePost(post, appState.campaigns || [], appState.media || [])) : [];
-    if (verifiedPosts.length) {
-      appState.posts = verifiedPosts;
-      persistLocalState();
-    }
-    const importedIds = Array.from(new Set((linkedInCaptureImportReport.importedPostIds || []).concat(linkedInCaptureImportReport.firstImportedPostIds || []))).filter(Boolean);
-    const verifiedCount = importedIds.filter((postId) => verifiedPosts.some((post) => String(post.id || post.postId || "").trim() === String(postId).trim())).length;
-    const verificationMessage = importedIds.length
-      ? `Verified in Ledger: ${verifiedCount}. ${verifiedCount !== importedIds.length ? "Some imported rows could not be re-verified immediately." : ""}`
-      : "Verified in Ledger: 0.";
-    linkedInCaptureImportReport.detectedCount = linkedInCapturePreviewItems.length;
-    linkedInCaptureImportReport.selectedCount = selectedItems.length;
-    linkedInCapturePreviewItems = linkedInCapturePreviewItems.map((item) => item.selected ? { ...item, selected: false, duplicate: findLinkedInCaptureDuplicate(item) || item.duplicate } : item);
+    const payload = {
+      type: "linkedin_capture_import",
+      overwriteDuplicates: !!linkedInCaptureOverwriteInput?.checked,
+      items: selectedItems.map((item) => ({
+        title: item.title,
+        description: item.description,
+        rawText: item.rawText || "",
+        sourceUrl: item.sourceUrl,
+        sourceType: item.sourceType,
+        sourcePlatform: "linkedin",
+        platform: "linkedin",
+        postType: item.postType,
+        pillar: item.pillar,
+        status: "published",
+        importedAt: item.importedAt,
+        linkedinPostId: item.linkedinPostId,
+        scheduledAt: item.scheduledAt,
+        dateLabel: item.dateLabel,
+        originalPostDate: item.originalPostDate,
+        originalPostDateLabel: item.originalPostDateLabel,
+        queueDateLabel: item.queueDateLabel,
+        dateConfidence: item.dateConfidence,
+        impressions: item.metrics.impressions,
+        likes: item.metrics.likes,
+        comments: item.metrics.comments,
+        shares: item.metrics.shares,
+        metrics: item.metrics,
+        mediaUrls: item.mediaUrls,
+        mediaAltTexts: item.mediaAltTexts,
+        generatedAt: item.generatedAt,
+        sourcePageUrl: item.sourcePageUrl,
+        normalizedTextHash: item.normalizedTextHash,
+        requiresManualReview: item.requiresManualReview,
+        isRepost: item.isRepost,
+        repostAuthor: item.repostAuthor,
+        repostCommentary: item.repostCommentary,
+        originalAuthor: item.originalAuthor,
+        originalPostExcerpt: item.originalPostExcerpt
+      }))
+    };
+    const created = await apiCreateImportJob(payload);
+    const job = upsertLocalImportJob(created.job || {});
+    linkedInCapturePreviewItems = linkedInCapturePreviewItems.map((item) => item.selected ? { ...item, selected: false } : item);
     renderLinkedInCapturePreview();
-    rerenderAll();
-    updateLinkedInImportResultPanel({
-      visible: true,
-      progress: `Completed ${selectedItems.length} / ${selectedItems.length}`,
-      summary: `${linkedInCaptureImportReport.importedCount} imported, ${linkedInCaptureImportReport.updatedCount} updated, ${linkedInCaptureImportReport.skippedDuplicates} skipped duplicates, ${linkedInCaptureImportReport.failedCount} failed.`,
-      errors: linkedInCaptureImportReport.errors.length
-        ? linkedInCaptureImportReport.errors.slice(0, 12).map((item) => `#${Number(item?.index ?? 0) + 1} ${item?.title || "Untitled"}: ${item?.message || "Import failed"}`).join(" | ")
-        : "No import errors reported.",
-      verification: verificationMessage,
-      debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
-    });
-    showToast("Import complete", `${linkedInCaptureImportReport.importedCount || 0} imported, ${linkedInCaptureImportReport.updatedCount || 0} updated, ${linkedInCaptureImportReport.skippedDuplicates || 0} skipped.`, "ph-check", "text-[#00ffaa]");
+    syncImportJobStatusIntoResultPanel(created, `Importing 0 / ${selectedItems.length}...`);
+    await resumeImportJob(job.jobId);
+    showToast("Import job started", `Job ${job.jobId} will continue from the task tray if you close this modal.`, "ph-check", "text-[#00ffaa]");
   } catch (err) {
     console.error(err);
     if (linkedInCaptureDiagnosticsEl) linkedInCaptureDiagnosticsEl.textContent = err?.message || "Captured import failed.";
     const backendDebug = [
       `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
-      `Backend action called: ${backendActionCalled}`,
+      `Backend action called: createImportJob`,
       err?.backend?.action ? `Backend action returned: ${err.backend.action}` : "",
       err?.backend?.backendVersion || err?.backend?.codeVersionStamp ? `Backend version: ${err.backend.backendVersion || err.backend.codeVersionStamp}` : "",
       err?.backend?.error ? `Raw safe backend error: ${err.backend.error}` : ""
@@ -13862,7 +14391,8 @@ async function apiGetAICreationOptions() {
 }
 
 async function apiPrepareAIGenerationContext(payload) {
-  return apiPost("prepareAIGenerationContext", payload);
+  const result = await apiPost("prepareAIGenerationContext", payload);
+  return result.context || result.data || result;
 }
 
 async function apiGenerateAIDraft(payload) {
@@ -14241,6 +14771,75 @@ function renderDiagnosticsPanel() {
   });
 }
 
+function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
+  if (cleanupImportedLinkedInStatus) {
+    cleanupImportedLinkedInStatus.textContent = report
+      ? `${mode === "live" ? "Live cleanup" : "Dry run"} scanned ${report.scannedRows || 0} rows, found ${report.candidateRows || 0} LinkedIn import candidates, and ${mode === "live" ? "updated" : "would update"} ${report.cleanedRows || 0} rows.`
+      : "Run a dry run to preview LinkedIn cleanup changes.";
+  }
+  if (!cleanupImportedLinkedInPreview) return;
+  if (!report) {
+    cleanupImportedLinkedInPreview.innerHTML = "";
+    return;
+  }
+  const samples = Array.isArray(report.sampleBeforeAfter) ? report.sampleBeforeAfter : [];
+  const errors = Array.isArray(report.errors) ? report.errors : [];
+  cleanupImportedLinkedInPreview.innerHTML = `
+    <div class="platform-card overflow-hidden">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(mode === "live" ? "Imported LinkedIn Cleanup Applied" : "Imported LinkedIn Cleanup Dry Run")}</div>
+        <span class="diagnostic-chip">${escapeHtml(`Start row ${report.startRow || 1006}`)}</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        ${[
+          ["Cleaned rows", report.cleanedRows || 0],
+          ["Recovered dates", report.recoveredDates || 0],
+          ["Label-only dates", report.labelOnlyDates || 0],
+          ["Duplicates detected", report.duplicatesDetected || 0],
+          ["Regenerated titles", report.regeneratedTitles || 0]
+        ].map(([label, value]) => `
+          <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
+            <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">${escapeHtml(label)}</div>
+            <div class="text-sm text-white font-bold">${escapeHtml(String(value))}</div>
+          </div>
+        `).join("")}
+      </div>
+      <div class="text-xs text-gray-300 mb-4 wrap-safe">
+        ${escapeHtml(`Reposts detected: ${report.repostsDetected || 0} • Reshares detected: ${report.resharesDetected || 0} • Missing dates: ${report.missingDates || 0}`)}
+      </div>
+      <div class="space-y-3">
+        ${samples.length ? samples.map((sample) => `
+          <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <div class="text-sm font-bold text-white">Row ${escapeHtml(String(sample.row || ""))}</div>
+              ${sample.duplicateReason ? `<span class="diagnostic-chip text-yellow-200">${escapeHtml(sample.duplicateReason)}</span>` : ""}
+            </div>
+            <div class="text-[11px] text-gray-400 mb-2">Changed fields: ${escapeHtml((sample.changedFields || []).join(", ") || "none")}</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+                <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Before</div>
+                <div class="text-gray-300 wrap-safe">${escapeHtml(JSON.stringify(sample.before || {}, null, 2))}</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5">
+                <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">After</div>
+                <div class="text-gray-300 wrap-safe">${escapeHtml(JSON.stringify(sample.after || {}, null, 2))}</div>
+              </div>
+            </div>
+          </div>
+        `).join("") : `<div class="text-xs text-gray-500">No sample rows to preview.</div>`}
+      </div>
+      ${errors.length ? `
+        <div class="mt-4 p-3 rounded-xl bg-[#251218] border border-red-400/15">
+          <div class="text-[10px] uppercase tracking-widest text-red-200 font-bold mb-2">Errors</div>
+          <div class="space-y-2">
+            ${errors.slice(0, 8).map((item) => `<div class="text-xs text-red-100 wrap-safe">Row ${escapeHtml(String(item.row || ""))}: ${escapeHtml(item.error || "Unknown error")}</div>`).join("")}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function getContextualGuidanceItems() {
   const rules = (appState.brandFramework || []).filter((item) => item.enabled !== false);
   const map = {
@@ -14604,12 +15203,19 @@ function openAIWorkspaceModal() {
   populateAISourceOptions();
   populateAIGenerationModes();
   populateCampaignDropdown();
+  renderAIHistoryControls();
   if (aiCampaignSelect) {
     aiCampaignSelect.innerHTML = ['<option value="">Attach to campaign</option>'].concat((appState.campaigns || []).map((campaign) => `<option value="${escapeHtml(campaign.campaignId)}">${escapeHtml(formatCampaignDisplayName(campaign.campaignName))}</option>`)).join("");
   }
   renderAIWorkspaceControls();
   renderAIDraftList();
   renderAISemanticMemoryCards();
+  try {
+    const filters = buildAIHistoryFilterPayload();
+    renderAIContextDiagnostics({ historicalSummary: buildLocalAIHistorySummary(filters) }, filters);
+  } catch (err) {
+    renderAIContextDiagnostics(null, {}, err.message || "Could not load historical post diagnostics.");
+  }
 }
 
 function closeAIWorkspaceModal() {
@@ -14640,6 +15246,7 @@ async function generateAIDraftPreview() {
   const sourceId = aiSourceIdInput?.value || "";
   const mode = aiGenerationModeInput?.value || "LinkedIn draft";
   const prompt = String(aiWorkspacePrompt?.value || "").trim();
+  const historyFilters = buildAIHistoryFilterPayload();
   const payload = {
     aiDraftId: currentAIDraftId || "",
     sourceType,
@@ -14652,15 +15259,31 @@ async function generateAIDraftPreview() {
     title: String(aiDraftTitleInput?.value || "").trim(),
     existingTitle: String(aiDraftTitleInput?.value || "").trim(),
     existingText: String(aiDraftPreviewInput?.value || "").trim(),
-    prompt
+    prompt,
+    ...historyFilters
   };
-  const result = await apiGenerateAIDraft(payload);
+  let context = null;
+  try {
+    context = await apiPrepareAIGenerationContext(payload);
+    renderAIContextDiagnostics(context, historyFilters);
+  } catch (err) {
+    renderAIContextDiagnostics(null, historyFilters, err.message || "Could not prepare historical AI context.");
+    throw err;
+  }
+  let result = null;
+  try {
+    result = await apiGenerateAIDraft(payload);
+  } catch (err) {
+    renderAIContextDiagnostics(context, historyFilters, err.message || "AI provider request failed.");
+    throw err;
+  }
   currentAIGenerationResult = result;
   if (aiDraftTitleInput) aiDraftTitleInput.value = result.title || aiDraftTitleInput.value || "";
   if (aiDraftPreviewInput) aiDraftPreviewInput.value = result.draftText || result.captionVariant || "";
   if (aiDraftCarouselOutlineInput) aiDraftCarouselOutlineInput.value = result.carouselOutline || "";
   if (aiDraftStatusInput) aiDraftStatusInput.value = result.outlineMode ? "reviewed" : "needs_review";
   if (aiReviewNotesInput && !String(aiReviewNotesInput.value || "").trim()) aiReviewNotesInput.value = result.reviewNotes || "";
+  renderAIContextDiagnostics({ historicalSummary: result.historicalSummary || context?.historicalSummary || {} }, historyFilters);
   if (aiDraftMeta) {
     aiDraftMeta.innerHTML = [
       { label: "Provider", value: result.provider || "Unavailable" },
@@ -14668,7 +15291,8 @@ async function generateAIDraftPreview() {
       { label: "Mode", value: result.outlineMode ? "Outline" : "Full draft" },
       { label: "Platform", value: toTitleCase(result.platform || payload.platform || "linkedin") },
       { label: "Post Type", value: toTitleCase(result.postType || payload.postType || "text") },
-      { label: "Source", value: sourceType }
+      { label: "Source", value: sourceType },
+      { label: "Unicode", value: historyFilters.allowStylizedUnicode ? "Hook-only stylized Unicode allowed" : "Accessibility-safe plain text" }
     ].map((item) => `<div class="p-3 rounded-xl bg-[#181125] border border-white/5"><div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">${escapeHtml(item.label)}</div><div class="text-sm text-white wrap-safe">${escapeHtml(item.value)}</div></div>`).join("");
   }
   renderAISemanticMemoryCards();
@@ -14913,6 +15537,7 @@ function normalizeRemotePost(post, campaigns = [], mediaItems = []) {
     sourceTitle: String(pickRemoteValue(post?.sourceTitle, post?.source_title, "")).trim(),
     sourceMetadata: pickRemoteValue(post?.sourceMetadata, post?.source_metadata, ""),
     sourceImportStatus: String(pickRemoteValue(post?.sourceImportStatus, post?.source_import_status, "")).trim(),
+    importJobId: String(pickRemoteValue(post?.importJobId, post?.import_job_id, "")).trim(),
     originalPostDate: String(pickRemoteValue(post?.originalPostDate, post?.original_post_date, "")).trim(),
     originalPostDateLabel: String(pickRemoteValue(post?.originalPostDateLabel, post?.original_post_date_label, "")).trim(),
     dateConfidence: String(pickRemoteValue(post?.dateConfidence, post?.date_confidence, "")).trim(),
@@ -15045,8 +15670,49 @@ function normalizeRemoteMedia(asset) {
     sourceUrl: String(pickRemoteValue(asset?.sourceUrl, asset?.source_url, "")).trim(),
     sourceType: String(pickRemoteValue(asset?.sourceType, asset?.source_type, "")).trim(),
     mimeType: String(pickRemoteValue(asset?.mimeType, asset?.mime_type, "")).trim(),
+    fileSizeBytes: Number(pickRemoteValue(asset?.fileSizeBytes, asset?.file_size_bytes, 0)) || 0,
+    originalFilename: String(pickRemoteValue(asset?.originalFilename, asset?.original_filename, assetName)).trim(),
+    importedMediaSource: String(pickRemoteValue(asset?.importedMediaSource, asset?.imported_media_source, "")).trim(),
     ...normalizeRemoteSemanticFields(asset)
   };
+}
+
+function normalizeImportJob(job = {}) {
+  return {
+    jobId: String(pickRemoteValue(job?.jobId, job?.job_id, "")).trim(),
+    type: String(pickRemoteValue(job?.type, "linkedin_capture_import")).trim() || "linkedin_capture_import",
+    status: String(pickRemoteValue(job?.status, "queued")).trim() || "queued",
+    totalCount: Number(pickRemoteValue(job?.totalCount, job?.total_count, 0)) || 0,
+    processedCount: Number(pickRemoteValue(job?.processedCount, job?.processed_count, 0)) || 0,
+    importedCount: Number(pickRemoteValue(job?.importedCount, job?.imported_count, 0)) || 0,
+    skippedDuplicates: Number(pickRemoteValue(job?.skippedDuplicates, job?.skipped_duplicates, 0)) || 0,
+    updatedCount: Number(pickRemoteValue(job?.updatedCount, job?.updated_count, 0)) || 0,
+    failedCount: Number(pickRemoteValue(job?.failedCount, job?.failed_count, 0)) || 0,
+    verifiedInLedgerCount: Number(pickRemoteValue(job?.verifiedInLedgerCount, job?.verified_in_ledger_count, 0)) || 0,
+    overwriteDuplicates: normalizeRemoteBoolean(pickRemoteValue(job?.overwriteDuplicates, job?.overwrite_duplicates, false)),
+    createdAt: String(pickRemoteValue(job?.createdAt, job?.created_at, "")).trim(),
+    updatedAt: String(pickRemoteValue(job?.updatedAt, job?.updated_at, "")).trim(),
+    lastError: String(pickRemoteValue(job?.lastError, job?.last_error, "")).trim(),
+    report: typeof job?.report === "object" && job.report ? job.report : {}
+  };
+}
+
+function upsertLocalImportJob(job) {
+  const normalized = normalizeImportJob(job);
+  const next = Array.isArray(appState.importJobs) ? appState.importJobs.slice() : [];
+  const existingIndex = next.findIndex((item) => String(item.jobId || "") === String(normalized.jobId || ""));
+  if (existingIndex >= 0) next[existingIndex] = { ...next[existingIndex], ...normalized };
+  else next.unshift(normalized);
+  appState.importJobs = next.slice(0, 20);
+  persistLocalState();
+  renderImportTaskTray();
+  return normalized;
+}
+
+function removeCompletedImportJobsFromState() {
+  appState.importJobs = (appState.importJobs || []).filter((job) => ["queued", "running", "paused", "failed"].includes(String(job.status || "")));
+  persistLocalState();
+  renderImportTaskTray();
 }
 
 function normalizeRemoteAIDraft(draft) {
@@ -15162,6 +15828,31 @@ async function apiCreatePostFromNote(noteId, post = {}) {
 
 async function apiImportCapturedPosts(payload) {
   return apiPost("importCapturedPosts", payload);
+}
+
+async function apiCreateImportJob(payload) {
+  return apiPost("createImportJob", payload);
+}
+
+async function apiGetImportJobs(payload = {}) {
+  const result = await apiGet("getImportJobs", payload);
+  return result.items || [];
+}
+
+async function apiGetImportJobStatus(payload) {
+  return apiGet("getImportJobStatus", payload);
+}
+
+async function apiRunImportJobBatch(payload) {
+  return apiPost("runImportJobBatch", payload);
+}
+
+async function apiCancelImportJob(payload) {
+  return apiPost("cancelImportJob", payload);
+}
+
+async function apiRetryImportJobFailures(payload) {
+  return apiPost("retryImportJobFailures", payload);
 }
 
 async function apiTestImportCapturedPostsRoute() {
@@ -15308,6 +15999,11 @@ async function apiRepairDateFields(payload = {}) {
   return result?.results || result;
 }
 
+async function apiCleanupImportedLinkedInPosts(payload = {}) {
+  const result = await apiPost("cleanupImportedLinkedInPosts", payload);
+  return result?.results || result;
+}
+
 function renderQueue(queueItems) {
   const queueList = document.getElementById("queue-list");
   const badge = document.getElementById("queue-count-badge");
@@ -15401,6 +16097,7 @@ function loadLocalState() {
       inspo: Array.isArray(parsed.inspo) ? parsed.inspo : structuredCloneState(DEFAULT_STATE.inspo),
       notes: Array.isArray(parsed.notes) ? parsed.notes : structuredCloneState(DEFAULT_STATE.notes),
       media: Array.isArray(parsed.media) ? parsed.media : structuredCloneState(DEFAULT_STATE.media),
+      importJobs: Array.isArray(parsed.importJobs) ? parsed.importJobs : structuredCloneState(DEFAULT_STATE.importJobs),
       aiDrafts: Array.isArray(parsed.aiDrafts) ? parsed.aiDrafts : structuredCloneState(DEFAULT_STATE.aiDrafts),
       brandFramework: Array.isArray(parsed.brandFramework) ? parsed.brandFramework : structuredCloneState(DEFAULT_STATE.brandFramework)
     };
