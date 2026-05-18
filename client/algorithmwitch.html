@@ -2609,6 +2609,26 @@
         <div class="text-[11px] text-gray-300 border border-white/5 bg-[#0f0a18] rounded-xl px-4 py-3">
           1. Open your LinkedIn activity page. 2. Scroll until the posts you want are visible. 3. Copy visible page text or run the local capture script. 4. Paste the text or JSON here. 5. Parse. 6. Review detected posts. 7. Import selected.
         </div>
+        <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4">
+          <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-3">
+            <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Path A · Paste / Upload JSON</div>
+            <div class="text-xs text-gray-300">Use this when you already have a capture JSON file or want to paste raw capture JSON directly.</div>
+            <div class="flex flex-wrap gap-2">
+              <button id="modal-linkedin-parse-json-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors">Parse JSON</button>
+              <button id="modal-linkedin-import-captured-json-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] border border-white/5 text-xs font-bold text-white hover:bg-[#231738] transition-colors">Import Captured JSON</button>
+            </div>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-3">
+            <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Path B · Desktop / Browser Plugin Capture</div>
+            <div class="text-xs text-gray-300">StellarSync cannot directly read your LinkedIn tab from this page. Use the local capture helper, browser extension, or pasted JSON.</div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" disabled class="px-4 py-2 rounded-xl bg-[#181125] border border-white/5 text-xs font-bold text-gray-500 cursor-not-allowed opacity-60">Start Capture Session</button>
+              <button type="button" disabled class="px-4 py-2 rounded-xl bg-[#181125] border border-white/5 text-xs font-bold text-gray-500 cursor-not-allowed opacity-60">Stop Capture Session</button>
+              <button id="modal-linkedin-download-helper-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors">Download Capture Helper</button>
+            </div>
+            <div class="text-[11px] text-gray-500">Desktop/Extension capture: planned</div>
+          </div>
+        </div>
         <div class="flex flex-wrap gap-2">
           <button id="linkedin-import-mode-text-btn" type="button" class="px-3 py-2 rounded-xl bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white">Paste copied LinkedIn page text</button>
           <button id="linkedin-import-mode-json-btn" type="button" class="px-3 py-2 rounded-xl bg-[#181125] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-gray-300 hover:text-white">Browser capture JSON</button>
@@ -2623,7 +2643,7 @@
             <textarea id="modal-linkedin-capture-input" class="form-input resize-none h-44 text-sm" placeholder="Paste copied LinkedIn activity/profile text here."></textarea>
           </div>
           <div class="space-y-3">
-            <div id="linkedin-import-json-upload-shell" class="hidden">
+            <div id="linkedin-import-json-upload-shell">
               <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2">Upload capture JSON</label>
               <input id="modal-linkedin-capture-file" type="file" accept="application/json,.json" class="form-input text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#231738] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white">
             </div>
@@ -3818,6 +3838,9 @@ const linkedInImportModeHelper = document.getElementById("linkedin-import-mode-h
 const linkedInImportMainLabel = document.getElementById("linkedin-import-main-label");
 const linkedInImportUrlLabel = document.getElementById("linkedin-import-url-label");
 const linkedInImportJsonUploadShell = document.getElementById("linkedin-import-json-upload-shell");
+const linkedInParseJsonBtn = document.getElementById("modal-linkedin-parse-json-btn");
+const linkedInImportCapturedJsonBtn = document.getElementById("modal-linkedin-import-captured-json-btn");
+const linkedInDownloadHelperBtn = document.getElementById("modal-linkedin-download-helper-btn");
 const linkedInCapturePreviewBtn = document.getElementById("modal-linkedin-capture-preview-btn");
 const linkedInCaptureImportBtn = document.getElementById("modal-linkedin-capture-import-btn");
 const linkedInCaptureDiagnosticsEl = document.getElementById("modal-linkedin-capture-diagnostics");
@@ -6142,6 +6165,16 @@ function initApp() {
   linkedInImportModeTextBtn?.addEventListener("click", () => setLinkedInImportMode("text"));
   linkedInImportModeJsonBtn?.addEventListener("click", () => setLinkedInImportMode("json"));
   linkedInImportModeUrlsBtn?.addEventListener("click", () => setLinkedInImportMode("urls"));
+  linkedInParseJsonBtn?.addEventListener("click", () => {
+    setLinkedInImportMode("json");
+    previewLinkedInBrowserCaptureImport();
+  });
+  linkedInImportCapturedJsonBtn?.addEventListener("click", () => {
+    setLinkedInImportMode("json");
+    linkedInCaptureInput?.focus();
+    showToast("JSON mode", "Upload or paste capture JSON, then click Parse.", "ph-file-json", "text-[#00ffaa]");
+  });
+  linkedInDownloadHelperBtn?.addEventListener("click", downloadLinkedInCaptureHelper);
   linkedInCapturePreviewBtn?.addEventListener("click", previewLinkedInBrowserCaptureImport);
   linkedInCaptureImportBtn?.addEventListener("click", importSelectedLinkedInCaptureItems);
   linkedInCaptureSelectAllBtn?.addEventListener("click", () => setLinkedInCaptureSelection(true));
@@ -6340,7 +6373,7 @@ function setLinkedInImportMode(mode = "text") {
       urlLabel: "Optional LinkedIn URL found on the page"
     },
     json: {
-      helper: "Paste browser-capture JSON or upload the downloaded JSON file from the local capture script.",
+      helper: "Upload capture JSON or paste browser-capture JSON from the local helper. StellarSync cannot inspect another browser tab directly from this page.",
       label: "Paste browser-capture JSON",
       placeholder: "Paste the downloaded browser-capture JSON here.",
       urlLabel: "Optional LinkedIn URL for context"
@@ -6372,7 +6405,10 @@ function setLinkedInImportMode(mode = "text") {
   if (linkedInImportMainLabel) linkedInImportMainLabel.textContent = config.label;
   if (linkedInCaptureInput) linkedInCaptureInput.placeholder = config.placeholder;
   if (linkedInImportUrlLabel) linkedInImportUrlLabel.textContent = config.urlLabel;
-  linkedInImportJsonUploadShell?.classList.toggle("hidden", mode !== "json");
+  linkedInImportJsonUploadShell?.classList.toggle("hidden", mode === "urls");
+  if (linkedInCapturePreviewBtn) {
+    linkedInCapturePreviewBtn.textContent = mode === "json" ? "Parse JSON" : mode === "urls" ? "Parse URLs" : "Parse Text";
+  }
 }
 
 function openNoteModal() {
@@ -11577,6 +11613,18 @@ async function copyLinkedInCaptureSnippet(kind) {
   }
 }
 
+function downloadLinkedInCaptureHelper() {
+  const script = getLinkedInBrowserCaptureScript();
+  const blob = new Blob([script], { type: "text/javascript;charset=utf-8" });
+  const downloadUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = downloadUrl;
+  anchor.download = "stellarsync-linkedin-capture-helper.js";
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
+  showToast("Downloaded", "Capture helper downloaded. Run it from the LinkedIn tab to create local JSON.", "ph-download-simple", "text-[#00ffaa]");
+}
+
 function extractUrlsFromText(value) {
   return Array.from(String(value || "").matchAll(/https?:\/\/[^\s<>"')]+/gi)).map((match) => String(match[0] || "").trim());
 }
@@ -12127,6 +12175,13 @@ async function previewLinkedInBrowserCaptureImport() {
   linkedInCaptureParseDiagnostics = parsed.diagnostics || null;
   renderLinkedInCapturePreview();
   if (!linkedInCapturePreviewItems.length) {
+    if (linkedInCaptureDiagnosticsEl) {
+      linkedInCaptureDiagnosticsEl.textContent = [
+        "No usable LinkedIn posts were detected.",
+        "Scroll more posts into view on LinkedIn and rerun capture.",
+        "Try pasted text mode."
+      ].join(" ");
+    }
     showToast("No posts detected", "No LinkedIn posts were detected from the provided input. Try pasted page text or browser-capture JSON.", "ph-warning", "text-yellow-400");
     return;
   }
