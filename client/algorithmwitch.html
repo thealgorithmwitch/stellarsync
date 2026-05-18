@@ -2616,6 +2616,7 @@
             <div class="flex flex-wrap gap-2">
               <button id="modal-linkedin-parse-json-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors">Parse JSON</button>
               <button id="modal-linkedin-import-captured-json-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] border border-white/5 text-xs font-bold text-white hover:bg-[#231738] transition-colors">Import Captured JSON</button>
+              <button id="modal-linkedin-test-backend-route-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] border border-white/5 text-xs font-bold text-white hover:bg-[#231738] transition-colors">Test Backend Import Route</button>
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-3">
@@ -3031,15 +3032,30 @@
         </div>
         <input id="campaign-archived-input" type="checkbox" class="w-5 h-5 rounded border-white/10 bg-[#181125] text-[#c77dff] focus:ring-[#c77dff]">
       </label>
+      <div id="campaign-merge-shell" class="hidden">
+        <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2">Merge Into Existing Campaign</label>
+        <select id="campaign-merge-target-input" class="form-input text-sm font-medium"></select>
+        <p class="text-[11px] text-gray-400 mt-2">Merging moves all posts from this campaign into the selected target campaign, then archives the source campaign.</p>
+      </div>
     </div>
 
-    <div class="p-6 border-t border-white/10 flex justify-end gap-3 bg-[#0f0a18]">
+    <div class="p-6 border-t border-white/10 flex justify-between gap-3 bg-[#0f0a18] flex-wrap">
+      <div class="flex gap-3">
+        <button id="merge-campaign-btn" type="button" class="hidden px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#181125] border border-white/10 hover:bg-[#231738] transition-colors">
+          Merge Into Existing
+        </button>
+        <button id="delete-campaign-btn" type="button" class="hidden px-5 py-2.5 rounded-xl text-xs font-bold text-yellow-300 bg-[#181125] border border-yellow-500/20 hover:bg-[#231738] transition-colors">
+          Delete Campaign
+        </button>
+      </div>
+      <div class="flex justify-end gap-3">
       <button id="cancel-campaign-btn" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
         Cancel
       </button>
       <button id="save-campaign-btn" type="button" class="px-6 py-2.5 bg-gradient-to-r from-[#9d4edd] to-[#c77dff] hover:opacity-90 text-white text-xs uppercase tracking-wider font-bold rounded-xl shadow-[0_0_20px_rgba(157,78,221,0.3)] transition-all flex items-center gap-2">
         <i class="ph-bold ph-check text-sm"></i> <span id="save-campaign-btn-label">Create Campaign</span>
       </button>
+      </div>
     </div>
   </div>
 </div>
@@ -3860,6 +3876,7 @@ const linkedInImportUrlLabel = document.getElementById("linkedin-import-url-labe
 const linkedInImportJsonUploadShell = document.getElementById("linkedin-import-json-upload-shell");
 const linkedInParseJsonBtn = document.getElementById("modal-linkedin-parse-json-btn");
 const linkedInImportCapturedJsonBtn = document.getElementById("modal-linkedin-import-captured-json-btn");
+const linkedInTestBackendRouteBtn = document.getElementById("modal-linkedin-test-backend-route-btn");
 const linkedInDownloadHelperBtn = document.getElementById("modal-linkedin-download-helper-btn");
 const linkedInValidateHelperBtn = document.getElementById("modal-linkedin-validate-helper-btn");
 const linkedInSelectScriptBtn = document.getElementById("modal-linkedin-select-script-btn");
@@ -4963,6 +4980,13 @@ function getConstellationLabel(value, fallback = "Untitled") {
   const clipped = words.slice(0, Math.min(6, words.length)).join(" ");
   if (/[a-z]/.test(clipped) && /[A-Z]/.test(clipped)) return clipped;
   return toTitleCase(clipped);
+}
+
+function getConstellationCampaignLaneKey(campaign = {}) {
+  const campaignId = String(campaign.campaignId || campaign.campaign_id || "").trim();
+  if (campaignId) return `campaign_id:${campaignId}`;
+  const normalizedName = normalizeLookupValue(campaign.campaignName || campaign.campaign_name || "");
+  return normalizedName ? `campaign_name:${normalizedName}` : "";
 }
 
 function getDisplayExcerpt(value, fallback = "") {
@@ -6201,6 +6225,7 @@ function initApp() {
     linkedInCaptureInput?.focus();
     showToast("JSON mode", "Upload or paste capture JSON, then click Parse.", "ph-file-json", "text-[#00ffaa]");
   });
+  linkedInTestBackendRouteBtn?.addEventListener("click", testLinkedInBackendImportRoute);
   linkedInDownloadHelperBtn?.addEventListener("click", downloadLinkedInCaptureHelper);
   linkedInValidateHelperBtn?.addEventListener("click", () => {
     renderLinkedInHelperValidation(validateLinkedInCaptureHelperScript(String(linkedInUserscriptOutput?.value || "")));
@@ -6683,6 +6708,10 @@ const campaignNameInput = document.getElementById("campaign-name-input");
 const campaignPillarInput = document.getElementById("campaign-pillar-input");
 const campaignShapeInput = document.getElementById("campaign-shape-input");
 const campaignArchivedInput = document.getElementById("campaign-archived-input");
+const campaignMergeShell = document.getElementById("campaign-merge-shell");
+const campaignMergeTargetInput = document.getElementById("campaign-merge-target-input");
+const mergeCampaignBtn = document.getElementById("merge-campaign-btn");
+const deleteCampaignBtn = document.getElementById("delete-campaign-btn");
 const campaignModalTitle = document.getElementById("campaign-modal-title");
 const campaignModalSubtitle = document.getElementById("campaign-modal-subtitle");
 
@@ -6698,10 +6727,22 @@ function setupCampaignControls() {
   closeCampaignModalBtn?.addEventListener("click", closeCampaignModal);
   cancelCampaignBtn?.addEventListener("click", closeCampaignModal);
   saveCampaignBtn?.addEventListener("click", saveCampaignFromModal);
+  mergeCampaignBtn?.addEventListener("click", mergeCampaignFromModal);
+  deleteCampaignBtn?.addEventListener("click", deleteCampaignFromModal);
 
   campaignModal?.addEventListener("click", (e) => {
     if (e.target === campaignModal) closeCampaignModal();
   });
+}
+
+function renderCampaignMergeOptions(sourceCampaignId = "") {
+  if (!campaignMergeTargetInput) return;
+  const options = ['<option value="">Select target campaign</option>']
+    .concat((appState.campaigns || [])
+      .filter((item) => !item.isArchived && String(item.campaignId || "") !== String(sourceCampaignId || ""))
+      .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
+      .map((item) => `<option value="${escapeHtml(item.campaignId)}">${escapeHtml(formatCampaignDisplayName(item.campaignName || item.campaignId || "Campaign"))}</option>`));
+  campaignMergeTargetInput.innerHTML = options.join("");
 }
 
 function setupWorkspaceReturnButtons() {
@@ -7105,6 +7146,11 @@ function openCampaignModal(options = "authority") {
   renderCampaignPillarInputOptions(selectedPillar);
   if (campaignShapeInput) campaignShapeInput.value = existingCampaign?.iconShape || "";
   if (campaignArchivedInput) campaignArchivedInput.checked = !!existingCampaign?.isArchived;
+  if (campaignMergeShell) campaignMergeShell.classList.toggle("hidden", !isEditing);
+  if (mergeCampaignBtn) mergeCampaignBtn.classList.toggle("hidden", !isEditing);
+  if (deleteCampaignBtn) deleteCampaignBtn.classList.toggle("hidden", !isEditing);
+  if (isEditing) renderCampaignMergeOptions(existingCampaign?.campaignId || "");
+  if (campaignMergeTargetInput) campaignMergeTargetInput.value = "";
   if (campaignModalTitle) campaignModalTitle.textContent = isEditing ? "Edit Campaign" : "Create Campaign";
   if (campaignModalSubtitle) {
     campaignModalSubtitle.textContent = isEditing
@@ -7132,6 +7178,10 @@ function closeCampaignModal() {
     if (campaignPillarInput) campaignPillarInput.value = "authority";
     if (campaignShapeInput) campaignShapeInput.value = "";
     if (campaignArchivedInput) campaignArchivedInput.checked = false;
+    if (campaignMergeShell) campaignMergeShell.classList.add("hidden");
+    if (mergeCampaignBtn) mergeCampaignBtn.classList.add("hidden");
+    if (deleteCampaignBtn) deleteCampaignBtn.classList.add("hidden");
+    if (campaignMergeTargetInput) campaignMergeTargetInput.innerHTML = "";
     if (campaignModalTitle) campaignModalTitle.textContent = "Create Campaign";
     if (campaignModalSubtitle) campaignModalSubtitle.textContent = "Add a campaign row with a pillar, star-map shape, and archive status.";
     if (saveCampaignBtnLabel) saveCampaignBtnLabel.textContent = "Create Campaign";
@@ -7206,6 +7256,73 @@ async function saveCampaignFromModal() {
   } catch (err) {
     console.error(err);
     showToast("Campaign failed", err.message || "Could not save campaign.", "ph-warning", "text-yellow-400");
+  }
+}
+
+async function mergeCampaignFromModal() {
+  if (!editingCampaignId) return;
+  const targetCampaignId = String(campaignMergeTargetInput?.value || "").trim();
+  if (!targetCampaignId) {
+    showToast("Select target", "Choose an existing target campaign first.", "ph-warning", "text-yellow-400");
+    return;
+  }
+  if (String(targetCampaignId) === String(editingCampaignId)) {
+    showToast("Invalid merge", "A campaign cannot be merged into itself.", "ph-warning", "text-yellow-400");
+    return;
+  }
+  const source = (appState.campaigns || []).find((item) => String(item.campaignId || "") === String(editingCampaignId));
+  const target = (appState.campaigns || []).find((item) => String(item.campaignId || "") === String(targetCampaignId));
+  if (!source || !target) {
+    showToast("Campaign missing", "Source or target campaign could not be found.", "ph-warning", "text-yellow-400");
+    return;
+  }
+  const confirmed = await openConfirmActionModal({
+    title: "Merge Campaign",
+    subtitle: "Posts will move to the target campaign.",
+    message: `Merge ${formatCampaignDisplayName(source.campaignName)} into ${formatCampaignDisplayName(target.campaignName)}?`,
+    confirmLabel: "Merge",
+    cancelLabel: "Cancel"
+  });
+  if (!confirmed) return;
+  try {
+    await apiMergeCampaignIntoCampaign({
+      sourceCampaignId: source.campaignId,
+      targetCampaignId: target.campaignId
+    });
+    await syncRemoteIfConfigured();
+    closeCampaignModal();
+    showToast("Campaign merged", `Moved posts into ${formatCampaignDisplayName(target.campaignName)}.`, "ph-check", "text-[#00ffaa]");
+  } catch (err) {
+    console.error(err);
+    showToast("Merge failed", err?.message || "Could not merge the campaign.", "ph-warning", "text-yellow-400");
+  }
+}
+
+async function deleteCampaignFromModal() {
+  if (!editingCampaignId) return;
+  const source = (appState.campaigns || []).find((item) => String(item.campaignId || "") === String(editingCampaignId));
+  if (!source) {
+    showToast("Campaign missing", "The source campaign could not be found.", "ph-warning", "text-yellow-400");
+    return;
+  }
+  const confirmed = await openConfirmActionModal({
+    title: "Delete Campaign",
+    subtitle: "Posts will be unassigned, not deleted.",
+    message: `Delete ${formatCampaignDisplayName(source.campaignName)} and unassign its posts?`,
+    confirmLabel: "Delete",
+    cancelLabel: "Cancel"
+  });
+  if (!confirmed) return;
+  try {
+    await apiDeleteCampaignAndUnassignPosts({
+      sourceCampaignId: source.campaignId
+    });
+    await syncRemoteIfConfigured();
+    closeCampaignModal();
+    showToast("Campaign deleted", "Posts were unassigned without being deleted.", "ph-check", "text-[#00ffaa]");
+  } catch (err) {
+    console.error(err);
+    showToast("Delete failed", err?.message || "Could not delete the campaign.", "ph-warning", "text-yellow-400");
   }
 }
 
@@ -7697,7 +7814,8 @@ function buildConstellationRows() {
       const bSort = Number(b.sortOrder || 0);
       return aSort - bSort;
     });
-
+  const laneMap = new Map();
+  const laneOccupancy = new Map();
   const mapped = campaigns.map((campaign) => {
     const posts = [...(appState.posts || [])]
       .map((post) => hydratePostCampaign(post, campaigns))
@@ -7712,33 +7830,45 @@ function buildConstellationRows() {
       });
 
     const derivedPillar = normalizePillar(campaign.pillar || posts[0]?.pillar || (appState.settings?.pillars || [])[0] || "authority");
+    const laneKey = getConstellationCampaignLaneKey(campaign) || `fallback:${normalizeLookupValue(campaign.campaignName || campaign.campaignId || "")}:${laneMap.size}`;
+    if (laneMap.has(laneKey)) {
+      console.warn("Constellation duplicate lane assignment key detected.", {
+        laneKey,
+        campaignId: campaign.campaignId || "",
+        campaignName: campaign.campaignName || ""
+      });
+    } else {
+      const nextLaneIndex = laneMap.size;
+      if (laneOccupancy.has(nextLaneIndex)) {
+        console.warn("Constellation duplicate lane assignment detected.", {
+          laneIndex: nextLaneIndex,
+          existingLaneKey: laneOccupancy.get(nextLaneIndex),
+          incomingLaneKey: laneKey
+        });
+      }
+      laneMap.set(laneKey, nextLaneIndex);
+      laneOccupancy.set(nextLaneIndex, laneKey);
+    }
+    const rowIndex = laneMap.get(laneKey);
 
     return {
       ...campaign,
       pillar: derivedPillar,
       posts,
-      _constellationLayout: getConstellationLayoutConfig({ ...campaign, posts }, 0)
+      _constellationLaneKey: laneKey,
+      _constellationRowIndex: rowIndex,
+      _constellationLayout: getConstellationLayoutConfig({ ...campaign, posts, _constellationRowIndex: rowIndex }, rowIndex)
     };
   });
-  const usedRows = new Set();
-  const fallbackStart = Object.keys(CAMPAIGN_ROWS).length;
-  let fallbackRowIndex = fallbackStart;
   return mapped.map((campaign, index) => {
-    const layout = getConstellationLayoutConfig(campaign, index);
-    let rowIndex = getCampaignLaneRowIndex(campaign);
-    if (rowIndex == null || usedRows.has(rowIndex)) {
-      while (usedRows.has(fallbackRowIndex)) fallbackRowIndex += 1;
-      rowIndex = fallbackRowIndex;
-      fallbackRowIndex += 1;
-    }
-    usedRows.add(rowIndex);
+    const rowIndex = Number(campaign._constellationRowIndex || index);
+    const layout = getConstellationLayoutConfig({ ...campaign, _constellationRowIndex: rowIndex }, rowIndex);
     const anchor = {
       x: getConstellationLaneCenterX(layout),
       y: getCampaignBaseY(rowIndex)
     };
     return {
       ...campaign,
-      _constellationRowIndex: rowIndex,
       _constellationAnchor: {
         x: Math.max(anchor.x, START_X),
         y: clamp(anchor.y, 180, 6000)
@@ -7805,6 +7935,7 @@ function getConstellationLayoutConfig(campaign, index = 0) {
   if (campaign?._constellationLayout) return campaign._constellationLayout;
   const postCount = Math.max((campaign.posts || []).length, 1);
   const tier = getConstellationTier(postCount);
+  const rowIndex = Number(campaign?._constellationRowIndex ?? index ?? 0);
   const labelWidth = clamp(180 + String(campaign.campaignName || "").length * 6, 220, 360);
   const labelHeight = 72;
   const rowLength = Math.max((postCount - 1) * NODE_SPACING, NODE_SPACING);
@@ -7823,12 +7954,13 @@ function getConstellationLayoutConfig(campaign, index = 0) {
     hoverPadding: tierConfig.hoverPadding,
     labelOffset: tierConfig.labelOffset,
     anchorX: START_X + (rowLength / 2),
-    anchorY: START_Y + (index * ROW_HEIGHT),
+    anchorY: START_Y + (rowIndex * ROW_HEIGHT),
     rowLength,
     rowHeight: ROW_HEIGHT,
     labelWidth,
     labelHeight,
     dotGap: NODE_SPACING,
+    rowIndex,
     crowded: postCount >= 10,
     overlapRisk: postCount >= 14,
     labelCollisionRisk: postCount >= 9,
@@ -7948,7 +8080,8 @@ function renderConstellation() {
     const pathData = buildCanonicalSquigglePath(points);
     const labelTop = clamp(getCampaignBaseY(rowIndex) - 94, 40, minCanvasHeight - 160);
 
-    const label = document.createElement("div");
+    const label = document.createElement("button");
+    label.type = "button";
     label.className = "constellation-campaign-label";
     label.style.cssText = `
       position:absolute;
@@ -7964,7 +8097,9 @@ function renderConstellation() {
       z-index:6;
       min-width:${Math.min(layout.labelWidth, 220)}px;
       max-width:320px;
-      pointer-events:none;
+      pointer-events:auto;
+      text-align:left;
+      cursor:pointer;
     `;
     label.innerHTML = `
       <h3 style="font-weight:700;color:white;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(campaign.campaignName || "")}">${escapeHtml(formatCampaignDisplayName(campaign.campaignName || "Untitled Campaign"))}</h3>
@@ -7972,6 +8107,7 @@ function renderConstellation() {
         ${escapeHtml(`${campaign.posts.length} posts • ${toTitleCase(summary.topPlatform)} • ${toTitleCase(summary.topStatus)}`)}
       </p>
     `;
+    label.addEventListener("click", () => openCampaignModal({ campaignId: campaign.campaignId }));
     rowGroup.appendChild(label);
 
     const lineSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -12523,13 +12659,62 @@ function updateLinkedInImportResultPanel({
   progress = "",
   summary = "",
   errors = "",
-  verification = ""
+  verification = "",
+  debug = ""
 } = {}) {
   if (linkedInImportResultEl) linkedInImportResultEl.classList.toggle("hidden", !visible);
   if (linkedInImportProgressEl) linkedInImportProgressEl.textContent = progress || "Idle";
   if (linkedInImportResultSummaryEl) linkedInImportResultSummaryEl.textContent = summary || "";
   if (linkedInImportResultErrorsEl) linkedInImportResultErrorsEl.textContent = errors || "";
-  if (linkedInImportResultVerifyEl) linkedInImportResultVerifyEl.textContent = verification || "";
+  if (linkedInImportResultVerifyEl) linkedInImportResultVerifyEl.textContent = [verification, debug].filter(Boolean).join(" ");
+}
+
+async function testLinkedInBackendImportRoute() {
+  updateLinkedInImportResultPanel({
+    visible: true,
+    progress: "Testing backend route...",
+    summary: "Posting dry-run importCapturedPosts payload.",
+    errors: "",
+    verification: "",
+    debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: importCapturedPosts`
+  });
+  try {
+    const [postResult, getResult] = await Promise.all([
+      apiTestImportCapturedPostsRoute(),
+      apiGetTestImportCapturedPostsRoute()
+    ]);
+    updateLinkedInImportResultPanel({
+      visible: true,
+      progress: "Backend route ready",
+      summary: postResult?.dryRun ? "Dry-run import route responded successfully." : "Import route responded.",
+      errors: "",
+      verification: getResult?.importCapturedPostsRegistered ? "GET route check confirms importCapturedPosts is registered." : "",
+      debug: [
+        `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
+        `Backend action called: importCapturedPosts`,
+        postResult?.action ? `Backend action returned: ${postResult.action}` : "",
+        postResult?.backendVersion || postResult?.codeVersionStamp ? `Backend version: ${postResult.backendVersion || postResult.codeVersionStamp}` : ""
+      ].filter(Boolean).join(" • ")
+    });
+  } catch (err) {
+    const rawError = err?.backend?.error || err?.message || "Unknown backend error";
+    const invalidAction = /invalid action/i.test(rawError);
+    updateLinkedInImportResultPanel({
+      visible: true,
+      progress: "Backend route failed",
+      summary: invalidAction
+        ? "Backend deployment is stale or APP_SCRIPT_URL points to the wrong Apps Script deployment."
+        : "Backend import route test failed.",
+      errors: `Raw backend error: ${rawError}`,
+      verification: "",
+      debug: [
+        `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
+        `Backend action called: importCapturedPosts`,
+        err?.backend?.action ? `Backend action returned: ${err.backend.action}` : "",
+        err?.backend?.backendVersion || err?.backend?.codeVersionStamp ? `Backend version: ${err.backend.backendVersion || err.backend.codeVersionStamp}` : ""
+      ].filter(Boolean).join(" • ")
+    });
+  }
 }
 
 function mergeLinkedInImportReports(target = {}, source = {}) {
@@ -12579,6 +12764,7 @@ function downloadLinkedInImportReport() {
 }
 
 async function importSelectedLinkedInCaptureItems() {
+  const backendActionCalled = "importCapturedPosts";
   const selectedItems = linkedInCapturePreviewItems.filter((item) => item.selected);
   if (!selectedItems.length) {
     showToast("Nothing selected", "Select one or more non-duplicate capture items first.", "ph-warning", "text-yellow-400");
@@ -12620,7 +12806,8 @@ async function importSelectedLinkedInCaptureItems() {
     progress: `Importing 0 / ${selectedItems.length}...`,
     summary: `Preparing ${selectedItems.length} selected capture item${selectedItems.length === 1 ? "" : "s"} for batched import.`,
     errors: "",
-    verification: ""
+    verification: "",
+    debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
   });
   try {
     const mergedPosts = new Map((appState.posts || []).map((post) => [post.id, post]));
@@ -12632,7 +12819,8 @@ async function importSelectedLinkedInCaptureItems() {
         progress: `Importing ${Math.min(importedSoFar + batch.length, selectedItems.length)} / ${selectedItems.length}...`,
         summary: `Sending batch ${batchIndex + 1} of ${batches.length}.`,
         errors: linkedInCaptureImportReport?.errors?.length ? `${linkedInCaptureImportReport.errors.length} partial failure${linkedInCaptureImportReport.errors.length === 1 ? "" : "s"} recorded so far.` : "",
-        verification: ""
+        verification: "",
+        debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
       });
       const payload = {
         overwriteDuplicates: !!linkedInCaptureOverwriteInput?.checked,
@@ -12674,6 +12862,12 @@ async function importSelectedLinkedInCaptureItems() {
         }))
       };
       const result = await apiImportCapturedPosts(payload);
+      const backendDebug = [
+        `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
+        `Backend action called: ${backendActionCalled}`,
+        result?.action ? `Backend action returned: ${result.action}` : "",
+        result?.backendVersion || result?.codeVersionStamp ? `Backend version: ${result.backendVersion || result.codeVersionStamp}` : ""
+      ].filter(Boolean).join(" • ");
       linkedInCaptureImportReport = mergeLinkedInImportReports(linkedInCaptureImportReport, result?.report || {
         selectedCount: batch.length,
         importedCount: result?.importedCount || 0,
@@ -12692,7 +12886,8 @@ async function importSelectedLinkedInCaptureItems() {
         progress: `Importing ${importedSoFar} / ${selectedItems.length}...`,
         summary: `${linkedInCaptureImportReport.importedCount} imported, ${linkedInCaptureImportReport.updatedCount} updated, ${linkedInCaptureImportReport.skippedDuplicates} skipped duplicates, ${linkedInCaptureImportReport.failedCount} failed.`,
         errors: linkedInCaptureImportReport.errors.slice(0, 8).map((item) => `#${Number(item?.index ?? 0) + 1} ${item?.title || "Untitled"}: ${item?.message || "Import failed"}`).join(" | "),
-        verification: ""
+        verification: "",
+        debug: backendDebug
       });
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
@@ -12721,18 +12916,30 @@ async function importSelectedLinkedInCaptureItems() {
       errors: linkedInCaptureImportReport.errors.length
         ? linkedInCaptureImportReport.errors.slice(0, 12).map((item) => `#${Number(item?.index ?? 0) + 1} ${item?.title || "Untitled"}: ${item?.message || "Import failed"}`).join(" | ")
         : "No import errors reported.",
-      verification: verificationMessage
+      verification: verificationMessage,
+      debug: `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL} • Backend action called: ${backendActionCalled}`
     });
     showToast("Import complete", `${linkedInCaptureImportReport.importedCount || 0} imported, ${linkedInCaptureImportReport.updatedCount || 0} updated, ${linkedInCaptureImportReport.skippedDuplicates || 0} skipped.`, "ph-check", "text-[#00ffaa]");
   } catch (err) {
     console.error(err);
     if (linkedInCaptureDiagnosticsEl) linkedInCaptureDiagnosticsEl.textContent = err?.message || "Captured import failed.";
+    const backendDebug = [
+      `APP_SCRIPT_URL used: ${APP_CONFIG.APP_SCRIPT_URL}`,
+      `Backend action called: ${backendActionCalled}`,
+      err?.backend?.action ? `Backend action returned: ${err.backend.action}` : "",
+      err?.backend?.backendVersion || err?.backend?.codeVersionStamp ? `Backend version: ${err.backend.backendVersion || err.backend.codeVersionStamp}` : "",
+      err?.backend?.error ? `Raw safe backend error: ${err.backend.error}` : ""
+    ].filter(Boolean).join(" • ");
+    const invalidAction = /invalid action/i.test(err?.backend?.error || err?.message || "");
     updateLinkedInImportResultPanel({
       visible: true,
       progress: "Import failed",
-      summary: "The import did not finish.",
+      summary: invalidAction
+        ? "Backend deployment is stale or APP_SCRIPT_URL points to the wrong Apps Script deployment."
+        : "The import did not finish.",
       errors: err?.message || "Could not import selected captured posts.",
-      verification: ""
+      verification: "",
+      debug: backendDebug
     });
     showToast("Import failed", err?.message || "Could not import selected captured posts.", "ph-warning", "text-yellow-400");
   }
@@ -14651,6 +14858,22 @@ async function apiCreatePostFromNote(noteId, post = {}) {
 
 async function apiImportCapturedPosts(payload) {
   return apiPost("importCapturedPosts", payload);
+}
+
+async function apiTestImportCapturedPostsRoute() {
+  return apiPost("importCapturedPosts", { dryRun: true, items: [] });
+}
+
+async function apiGetTestImportCapturedPostsRoute() {
+  return apiGet("testImportCapturedPostsRoute");
+}
+
+async function apiMergeCampaignIntoCampaign(payload) {
+  return apiPost("mergeCampaignIntoCampaign", payload);
+}
+
+async function apiDeleteCampaignAndUnassignPosts(payload) {
+  return apiPost("deleteCampaignAndUnassignPosts", payload);
 }
 
 async function apiImportExistingPostAsIdea(payload) {
