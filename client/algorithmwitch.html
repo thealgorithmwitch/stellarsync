@@ -3586,8 +3586,30 @@
               <button id="workspace-refresh-diagnostics-btn" type="button" class="px-4 py-2 rounded-xl bg-[#1a1128] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Refresh Diagnostics</button>
               <button id="check-constellation-lanes-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Check Constellation Lanes</button>
               <button id="repair-date-fields-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Repair Date Fields</button>
-              <button id="cleanup-imported-linkedin-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Clean Imported LinkedIn Rows</button>
               <button id="workspace-open-accounts-from-diagnostics-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Connected Accounts</button>
+            </div>
+            <div class="platform-card space-y-3">
+              <div class="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Imported LinkedIn Rewrite</div>
+                  <div class="text-sm text-gray-300 mt-1">Preview or rewrite imported LinkedIn rows directly in `POSTS`. Live apply creates a backup tab first.</div>
+                </div>
+                <span class="diagnostic-chip"><i class="ph-bold ph-arrow-clockwise"></i> Sheet Rewrite</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <label class="space-y-2">
+                  <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Start Row</span>
+                  <input id="linkedin-rewrite-start-row-input" type="number" min="2" step="1" value="1006" class="w-full px-3 py-2 rounded-xl bg-[#120c1d] border border-white/5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#c77dff]/40">
+                </label>
+                <label class="space-y-2">
+                  <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">End Row</span>
+                  <input id="linkedin-rewrite-end-row-input" type="number" min="2" step="1" placeholder="Optional" class="w-full px-3 py-2 rounded-xl bg-[#120c1d] border border-white/5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#c77dff]/40">
+                </label>
+                <div class="md:col-span-2 flex items-end gap-2 flex-wrap">
+                  <button id="linkedin-rewrite-dry-run-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Dry Run Rewrite</button>
+                  <button id="linkedin-rewrite-apply-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Apply Rewrite With Backup</button>
+                </div>
+              </div>
             </div>
             <div id="repair-date-fields-status" class="text-xs text-gray-400 wrap-safe"></div>
             <div id="repair-date-fields-preview" class="space-y-3"></div>
@@ -4081,7 +4103,10 @@ const workspaceOpenAccountsFromDiagnosticsBtn = document.getElementById("workspa
 const repairDateFieldsBtn = document.getElementById("repair-date-fields-btn");
 const repairDateFieldsStatus = document.getElementById("repair-date-fields-status");
 const repairDateFieldsPreview = document.getElementById("repair-date-fields-preview");
-const cleanupImportedLinkedInBtn = document.getElementById("cleanup-imported-linkedin-btn");
+const linkedInRewriteStartRowInput = document.getElementById("linkedin-rewrite-start-row-input");
+const linkedInRewriteEndRowInput = document.getElementById("linkedin-rewrite-end-row-input");
+const linkedInRewriteDryRunBtn = document.getElementById("linkedin-rewrite-dry-run-btn");
+const linkedInRewriteApplyBtn = document.getElementById("linkedin-rewrite-apply-btn");
 const cleanupImportedLinkedInStatus = document.getElementById("cleanup-imported-linkedin-status");
 const cleanupImportedLinkedInPreview = document.getElementById("cleanup-imported-linkedin-preview");
 const workspaceDiagnosticsPanel = document.getElementById("workspace-diagnostics-panel");
@@ -7020,33 +7045,47 @@ function setupWorkspaceUI() {
       showToast("Repair failed", err.message || "Could not repair date fields.", "ph-warning", "text-yellow-400");
     }
   });
-  cleanupImportedLinkedInBtn?.addEventListener("click", async () => {
+  linkedInRewriteDryRunBtn?.addEventListener("click", async () => {
     try {
-      const dryRun = await apiCleanupImportedLinkedInPosts({ startRow: 1006, dryRun: true });
+      const payload = getLinkedInRewritePayload(true);
+      const dryRun = await apiRewriteImportedLinkedInRows(payload);
       renderImportedLinkedInCleanupReport(dryRun, "dryRun");
-      if (!(dryRun?.candidateRows || 0)) {
-        showToast("No LinkedIn cleanup candidates", "Dry run found no imported LinkedIn rows that need cleanup.", "ph-check", "text-[#00ffaa]");
+      showToast("Rewrite preview ready", `${dryRun?.affectedRows || 0} row${dryRun?.affectedRows === 1 ? "" : "s"} would be updated.`, "ph-check", "text-[#00ffaa]");
+    } catch (err) {
+      console.error(err);
+      renderImportedLinkedInCleanupReport(null);
+      if (cleanupImportedLinkedInStatus) cleanupImportedLinkedInStatus.textContent = err.message || "Could not preview imported LinkedIn rewrite.";
+      showToast("Rewrite preview failed", err.message || "Could not preview imported LinkedIn rewrite.", "ph-warning", "text-yellow-400");
+    }
+  });
+  linkedInRewriteApplyBtn?.addEventListener("click", async () => {
+    try {
+      const previewPayload = getLinkedInRewritePayload(true);
+      const dryRun = await apiRewriteImportedLinkedInRows(previewPayload);
+      renderImportedLinkedInCleanupReport(dryRun, "dryRun");
+      if (!(dryRun?.affectedRows || 0)) {
+        showToast("No rewrite needed", "Dry run found no imported LinkedIn rows that need rewriting.", "ph-check", "text-[#00ffaa]");
         return;
       }
       const confirmed = await openConfirmActionModal({
-        title: "Clean imported LinkedIn rows",
-        subtitle: "Dry run complete. Review the report before writing changes.",
-        message: `Apply LinkedIn cleanup to ${dryRun.cleanedRows || 0} rows starting at row ${dryRun.startRow || 1006}? This updates rows in POSTS but does not delete posts.`,
-        confirmLabel: "Apply cleanup"
+        title: "Rewrite imported LinkedIn rows",
+        subtitle: "Dry run complete. Live apply will create a backup tab before writing.",
+        message: `Apply rewrite to ${dryRun.affectedRows || 0} rows and ${dryRun.changedCells || 0} cells starting at row ${dryRun.startRow || 1006}${dryRun.endRow ? ` through row ${dryRun.endRow}` : ""}?`,
+        confirmLabel: "Apply rewrite"
       });
       if (!confirmed) return;
-      const liveResult = await apiCleanupImportedLinkedInPosts({ startRow: dryRun.startRow || 1006, dryRun: false });
+      const liveResult = await apiRewriteImportedLinkedInRows(getLinkedInRewritePayload(false));
       renderImportedLinkedInCleanupReport(liveResult, "live");
       await syncRemoteIfConfigured();
       await refreshBackendDiagnostics({ silent: true });
       renderWorkspaceHub();
       rerenderAll();
-      showToast("LinkedIn cleanup complete", `${liveResult?.cleanedRows || 0} imported rows updated.`, "ph-check", "text-[#00ffaa]");
+      showToast("Rewrite complete", `${liveResult?.affectedRows || 0} rows updated.${liveResult?.backupSheetName ? ` Backup: ${liveResult.backupSheetName}` : ""}`, "ph-check", "text-[#00ffaa]");
     } catch (err) {
       console.error(err);
       renderImportedLinkedInCleanupReport(null);
-      if (cleanupImportedLinkedInStatus) cleanupImportedLinkedInStatus.textContent = err.message || "Could not clean imported LinkedIn rows.";
-      showToast("LinkedIn cleanup failed", err.message || "Could not clean imported LinkedIn rows.", "ph-warning", "text-yellow-400");
+      if (cleanupImportedLinkedInStatus) cleanupImportedLinkedInStatus.textContent = err.message || "Could not rewrite imported LinkedIn rows.";
+      showToast("Rewrite failed", err.message || "Could not rewrite imported LinkedIn rows.", "ph-warning", "text-yellow-400");
     }
   });
   closeConnectionSetupBtn?.addEventListener("click", closeConnectionSetupModal);
@@ -14774,8 +14813,8 @@ function renderDiagnosticsPanel() {
 function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
   if (cleanupImportedLinkedInStatus) {
     cleanupImportedLinkedInStatus.textContent = report
-      ? `${mode === "live" ? "Live cleanup" : "Dry run"} scanned ${report.scannedRows || 0} rows, found ${report.candidateRows || 0} LinkedIn import candidates, and ${mode === "live" ? "updated" : "would update"} ${report.cleanedRows || 0} rows.`
-      : "Run a dry run to preview LinkedIn cleanup changes.";
+      ? `${mode === "live" ? "Live rewrite" : "Dry run"} scanned ${report.scannedRows || 0} rows, found ${report.candidateRows || 0} import candidates, and ${mode === "live" ? "updated" : "would update"} ${report.affectedRows || 0} rows across ${report.changedCells || 0} cells.${report.backupSheetName ? ` Backup tab: ${report.backupSheetName}.` : report.backupWouldBeCreated ? " Backup tab will be created before live rewrite." : ""}`
+      : "Run a dry run to preview LinkedIn rewrite changes.";
   }
   if (!cleanupImportedLinkedInPreview) return;
   if (!report) {
@@ -14787,12 +14826,13 @@ function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
   cleanupImportedLinkedInPreview.innerHTML = `
     <div class="platform-card overflow-hidden">
       <div class="flex items-center justify-between gap-3 mb-3">
-        <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(mode === "live" ? "Imported LinkedIn Cleanup Applied" : "Imported LinkedIn Cleanup Dry Run")}</div>
-        <span class="diagnostic-chip">${escapeHtml(`Start row ${report.startRow || 1006}`)}</span>
+        <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">${escapeHtml(mode === "live" ? "Imported LinkedIn Rewrite Applied" : "Imported LinkedIn Rewrite Dry Run")}</div>
+        <span class="diagnostic-chip">${escapeHtml(`Rows ${report.startRow || 1006}${report.endRow ? `-${report.endRow}` : "+"}`)}</span>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
         ${[
-          ["Cleaned rows", report.cleanedRows || 0],
+          ["Affected rows", report.affectedRows || 0],
+          ["Changed cells", report.changedCells || 0],
           ["Recovered dates", report.recoveredDates || 0],
           ["Label-only dates", report.labelOnlyDates || 0],
           ["Duplicates detected", report.duplicatesDetected || 0],
@@ -14805,8 +14845,13 @@ function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
         `).join("")}
       </div>
       <div class="text-xs text-gray-300 mb-4 wrap-safe">
-        ${escapeHtml(`Reposts detected: ${report.repostsDetected || 0} • Reshares detected: ${report.resharesDetected || 0} • Missing dates: ${report.missingDates || 0}`)}
+        ${escapeHtml(`Reposts detected: ${report.repostsDetected || 0} • Reshares detected: ${report.resharesDetected || 0} • Originals detected: ${report.originalsDetected || 0} • Missing dates: ${report.missingDates || 0}`)}
       </div>
+      ${(report.backupSheetName || report.backupWouldBeCreated) ? `
+        <div class="mb-4 p-3 rounded-xl bg-[#181125] border border-white/5 text-xs text-gray-300 wrap-safe">
+          ${escapeHtml(report.backupSheetName ? `Backup tab created: ${report.backupSheetName}` : "Backup tab will be created before live rewrite.")}
+        </div>
+      ` : ""}
       <div class="space-y-3">
         ${samples.length ? samples.map((sample) => `
           <div class="p-3 rounded-xl bg-[#181125] border border-white/5">
@@ -15999,9 +16044,25 @@ async function apiRepairDateFields(payload = {}) {
   return result?.results || result;
 }
 
-async function apiCleanupImportedLinkedInPosts(payload = {}) {
-  const result = await apiPost("cleanupImportedLinkedInPosts", payload);
+function getLinkedInRewritePayload(dryRun = true) {
+  const startRow = Math.max(2, Number(linkedInRewriteStartRowInput?.value || 1006) || 1006);
+  const endRowRaw = String(linkedInRewriteEndRowInput?.value || "").trim();
+  const payload = {
+    startRow,
+    dryRun: !!dryRun,
+    createBackup: true
+  };
+  if (endRowRaw) payload.endRow = Math.max(startRow, Number(endRowRaw) || startRow);
+  return payload;
+}
+
+async function apiRewriteImportedLinkedInRows(payload = {}) {
+  const result = await apiPost("rewriteImportedLinkedInRows", payload);
   return result?.results || result;
+}
+
+async function apiCleanupImportedLinkedInPosts(payload = {}) {
+  return apiRewriteImportedLinkedInRows(payload);
 }
 
 function renderQueue(queueItems) {
