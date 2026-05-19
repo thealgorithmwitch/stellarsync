@@ -2620,7 +2620,7 @@
     <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
       <div id="modal-linkedin-capture-shell" class="space-y-4">
         <div class="text-[11px] text-gray-300 border border-white/5 bg-[#0f0a18] rounded-xl px-4 py-3">
-          1. Open your LinkedIn activity page. 2. Scroll until the posts you want are visible. 3. Copy visible page text or run the local capture script. 4. Paste the text or JSON here. 5. Parse. 6. Review detected posts. 7. Import selected.
+          1. Open your LinkedIn activity page. 2. Scroll until the posts you want are visible. 3. Export your visible LinkedIn posts locally, then import the JSON or paste TSV into StellarSync. 4. Paste the text or JSON here if you are using manual capture. 5. Parse. 6. Review detected posts. 7. Import selected.
         </div>
         <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4">
           <div class="p-4 rounded-2xl bg-[#0f0a18] border border-white/5 space-y-3">
@@ -3025,6 +3025,17 @@
           <option value="identity">Identity</option>
           <option value="application">Application</option>
         </select>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2">Campaign Color</label>
+          <input type="color" id="campaign-color-input" class="w-full h-12 rounded-xl bg-[#181125] border border-white/5 p-2 cursor-pointer" value="#c77dff">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-2">Preset Swatches</label>
+          <div id="campaign-color-swatches" class="flex flex-wrap gap-2"></div>
+        </div>
       </div>
 
       <div>
@@ -3567,7 +3578,7 @@
                 </div>
                 <button type="button" id="workspace-open-linkedin-capture-btn" class="px-4 py-2 rounded-xl bg-[#231738] border border-white/5 text-xs font-bold text-white hover:bg-[#2d1b4e] transition-colors">Import LinkedIn Posts</button>
               </div>
-              <div class="text-xs text-gray-400 wrap-safe">Open your LinkedIn activity page in another tab, run the local capture script, then paste the downloaded JSON into StellarSync.</div>
+              <div class="text-xs text-gray-400 wrap-safe">Export your visible LinkedIn posts locally, then import the JSON or paste TSV into StellarSync.</div>
             </div>
             <div class="platform-card">
               <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
@@ -3606,6 +3617,7 @@
                   <input id="linkedin-rewrite-end-row-input" type="number" min="2" step="1" placeholder="Optional" class="w-full px-3 py-2 rounded-xl bg-[#120c1d] border border-white/5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#c77dff]/40">
                 </label>
                 <div class="md:col-span-2 flex items-end gap-2 flex-wrap">
+                  <button id="linkedin-rewrite-route-test-btn" type="button" class="px-4 py-2 rounded-xl bg-[#181125] hover:bg-[#231738] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Test Rewrite Route</button>
                   <button id="linkedin-rewrite-dry-run-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Dry Run Rewrite</button>
                   <button id="linkedin-rewrite-apply-btn" type="button" class="px-4 py-2 rounded-xl bg-[#231738] hover:bg-[#2d1b4e] border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white transition-colors">Apply Rewrite With Backup</button>
                 </div>
@@ -3613,6 +3625,7 @@
             </div>
             <div id="repair-date-fields-status" class="text-xs text-gray-400 wrap-safe"></div>
             <div id="repair-date-fields-preview" class="space-y-3"></div>
+            <div id="linkedin-rewrite-route-status" class="text-xs text-gray-400 wrap-safe"></div>
             <div id="cleanup-imported-linkedin-status" class="text-xs text-gray-400 wrap-safe"></div>
             <div id="cleanup-imported-linkedin-preview" class="space-y-3"></div>
             <div id="workspace-diagnostics-panel" class="space-y-4"></div>
@@ -3740,7 +3753,7 @@
 </div>
 <script>
 const APP_CONFIG = {
-  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwTmOozLo9pbl-93m5tbIiAzZaeyXBGdP3GV3PVkzCDMKvpX5LZuwYOsyOC8OKfYDVf/exec",
+  APP_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyFoguUInvkHsRjqGuHTX05i6sID75Taov_NO-0oEtdFSDiFw8uzFybzLGUGatJ8SbN/exec",
   ENABLE_REMOTE_SYNC: true,
   STORAGE_KEY: "stellarsync_local_state_v5",
   SHELL_LAYOUT_KEY: "stellarsync_shell_layout_v2"
@@ -4105,8 +4118,10 @@ const repairDateFieldsStatus = document.getElementById("repair-date-fields-statu
 const repairDateFieldsPreview = document.getElementById("repair-date-fields-preview");
 const linkedInRewriteStartRowInput = document.getElementById("linkedin-rewrite-start-row-input");
 const linkedInRewriteEndRowInput = document.getElementById("linkedin-rewrite-end-row-input");
+const linkedInRewriteRouteTestBtn = document.getElementById("linkedin-rewrite-route-test-btn");
 const linkedInRewriteDryRunBtn = document.getElementById("linkedin-rewrite-dry-run-btn");
 const linkedInRewriteApplyBtn = document.getElementById("linkedin-rewrite-apply-btn");
+const linkedInRewriteRouteStatus = document.getElementById("linkedin-rewrite-route-status");
 const cleanupImportedLinkedInStatus = document.getElementById("cleanup-imported-linkedin-status");
 const cleanupImportedLinkedInPreview = document.getElementById("cleanup-imported-linkedin-preview");
 const workspaceDiagnosticsPanel = document.getElementById("workspace-diagnostics-panel");
@@ -6906,6 +6921,8 @@ const saveCampaignBtn = document.getElementById("save-campaign-btn");
 const saveCampaignBtnLabel = document.getElementById("save-campaign-btn-label");
 const campaignNameInput = document.getElementById("campaign-name-input");
 const campaignPillarInput = document.getElementById("campaign-pillar-input");
+const campaignColorInput = document.getElementById("campaign-color-input");
+const campaignColorSwatches = document.getElementById("campaign-color-swatches");
 const campaignShapeInput = document.getElementById("campaign-shape-input");
 const campaignArchivedInput = document.getElementById("campaign-archived-input");
 const campaignMergeShell = document.getElementById("campaign-merge-shell");
@@ -6917,6 +6934,28 @@ const campaignModalSubtitle = document.getElementById("campaign-modal-subtitle")
 
 let campaignModalTargetSelect = null;
 let editingCampaignId = "";
+const CAMPAIGN_COLOR_SWATCHES = ["#c77dff", "#00f0ff", "#00ffaa", "#ffd700", "#fb923c", "#f472b6", "#38bdf8", "#94a3b8"];
+
+function renderCampaignColorControls(selectedColor = "#c77dff") {
+  const normalizedColor = String(selectedColor || "#c77dff").trim() || "#c77dff";
+  if (campaignColorInput) campaignColorInput.value = normalizedColor;
+  if (!campaignColorSwatches) return;
+  campaignColorSwatches.innerHTML = CAMPAIGN_COLOR_SWATCHES.map((color) => `
+    <button
+      type="button"
+      class="w-8 h-8 rounded-full border ${normalizedColor.toLowerCase() === color.toLowerCase() ? "border-white" : "border-white/10"} transition-colors"
+      data-campaign-color-swatch="${escapeHtml(color)}"
+      style="background:${escapeHtml(color)}"
+      title="${escapeHtml(color)}"
+    ></button>
+  `).join("");
+  campaignColorSwatches.querySelectorAll("[data-campaign-color-swatch]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (campaignColorInput) campaignColorInput.value = String(button.dataset.campaignColorSwatch || "#c77dff").trim();
+      renderCampaignColorControls(campaignColorInput?.value || normalizedColor);
+    });
+  });
+}
 
 function setupCampaignControls() {
   addCampaignBtnModal?.addEventListener("click", () => {
@@ -6929,6 +6968,7 @@ function setupCampaignControls() {
   saveCampaignBtn?.addEventListener("click", saveCampaignFromModal);
   mergeCampaignBtn?.addEventListener("click", mergeCampaignFromModal);
   deleteCampaignBtn?.addEventListener("click", deleteCampaignFromModal);
+  campaignColorInput?.addEventListener("input", () => renderCampaignColorControls(campaignColorInput.value));
 
   campaignModal?.addEventListener("click", (e) => {
     if (e.target === campaignModal) closeCampaignModal();
@@ -7056,6 +7096,17 @@ function setupWorkspaceUI() {
       renderImportedLinkedInCleanupReport(null);
       if (cleanupImportedLinkedInStatus) cleanupImportedLinkedInStatus.textContent = err.message || "Could not preview imported LinkedIn rewrite.";
       showToast("Rewrite preview failed", err.message || "Could not preview imported LinkedIn rewrite.", "ph-warning", "text-yellow-400");
+    }
+  });
+  linkedInRewriteRouteTestBtn?.addEventListener("click", async () => {
+    try {
+      const report = await apiTestRewriteImportedLinkedInRowsRoute();
+      renderLinkedInRewriteRouteDiagnostics(report);
+      showToast("Rewrite route ready", "Backend rewrite route diagnostics loaded.", "ph-check", "text-[#00ffaa]");
+    } catch (err) {
+      console.error(err);
+      if (linkedInRewriteRouteStatus) linkedInRewriteRouteStatus.textContent = err.message || "Could not test rewrite route.";
+      showToast("Rewrite route failed", err.message || "Could not test rewrite route.", "ph-warning", "text-yellow-400");
     }
   });
   linkedInRewriteApplyBtn?.addEventListener("click", async () => {
@@ -7409,6 +7460,7 @@ function openCampaignModal(options = "authority") {
 
   if (campaignNameInput) campaignNameInput.value = existingCampaign?.campaignName || "";
   renderCampaignPillarInputOptions(selectedPillar);
+  renderCampaignColorControls(existingCampaign?.color || defaultCampaignColor(existingCampaign?.campaignName || config.campaignName || "", selectedPillar));
   if (campaignShapeInput) campaignShapeInput.value = existingCampaign?.iconShape || "";
   if (campaignArchivedInput) campaignArchivedInput.checked = !!existingCampaign?.isArchived;
   if (campaignMergeShell) campaignMergeShell.classList.toggle("hidden", !isEditing);
@@ -7441,6 +7493,7 @@ function closeCampaignModal() {
     editingCampaignId = "";
     if (campaignNameInput) campaignNameInput.value = "";
     if (campaignPillarInput) campaignPillarInput.value = "authority";
+    renderCampaignColorControls(defaultCampaignColor("", "authority"));
     if (campaignShapeInput) campaignShapeInput.value = "";
     if (campaignArchivedInput) campaignArchivedInput.checked = false;
     if (campaignMergeShell) campaignMergeShell.classList.add("hidden");
@@ -7456,6 +7509,7 @@ function closeCampaignModal() {
 async function saveCampaignFromModal() {
   const campaignName = campaignNameInput?.value.trim() || "";
   const pillar = normalizePillar(campaignPillarInput?.value || "authority");
+  const selectedColor = String(campaignColorInput?.value || "").trim();
   const iconShape = String(campaignShapeInput?.value || "").trim().toLowerCase();
   const isArchived = !!campaignArchivedInput?.checked;
 
@@ -7464,7 +7518,7 @@ async function saveCampaignFromModal() {
     return;
   }
 
-  const color = defaultCampaignColor(campaignName, pillar);
+  const color = selectedColor || defaultCampaignColor(campaignName, pillar);
   const existingCampaign = editingCampaignId
     ? (appState.campaigns || []).find((item) => String(item.campaignId || "") === String(editingCampaignId))
     : null;
@@ -7474,7 +7528,7 @@ async function saveCampaignFromModal() {
   }, 0)) + 1;
 
   try {
-    const result = await apiSaveCampaign({
+    let result = await apiSaveCampaign({
       campaignId: existingCampaign?.campaignId || "",
       campaignName,
       pillar,
@@ -7483,6 +7537,13 @@ async function saveCampaignFromModal() {
       isArchived,
       iconShape
     });
+    if (existingCampaign && String(existingCampaign.color || "").trim().toLowerCase() !== String(color || "").trim().toLowerCase()) {
+      result = await apiUpdateCampaignColor({
+        campaignId: existingCampaign.campaignId,
+        color
+      });
+      result = { campaign: result?.result?.campaign || result?.campaign || result };
+    }
 
     const normalized = {
       campaignId: result.campaign.campaignId,
@@ -7500,10 +7561,14 @@ async function saveCampaignFromModal() {
     else appState.campaigns.push(normalized);
 
     appState.posts = (appState.posts || []).map((post) => {
-      if (String(post.campaignId || "") !== String(normalized.campaignId || "")) return post;
+      const sameCampaign = String(post.campaignId || "") === String(normalized.campaignId || "")
+        || normalizeLookupValue(post.campaignName || "") === normalizeLookupValue(existingCampaign?.campaignName || normalized.campaignName || "");
+      if (!sameCampaign) return post;
       return {
         ...post,
+        campaignId: normalized.campaignId,
         campaignName: normalized.campaignName,
+        campaignColor: normalized.color,
         hubTitle: normalized.campaignName,
         hubPillarLabel: formatContentPillarLabel(normalized.pillar)
       };
@@ -8095,6 +8160,14 @@ function buildConstellationRows() {
   }
   const laneMap = new Map();
   const laneOccupancy = new Map();
+  const getNextAvailableLaneIndex = (preferredLaneIndex = null) => {
+    if (Number.isFinite(Number(preferredLaneIndex)) && !laneOccupancy.has(Number(preferredLaneIndex))) {
+      return Number(preferredLaneIndex);
+    }
+    let nextLaneIndex = 0;
+    while (laneOccupancy.has(nextLaneIndex)) nextLaneIndex += 1;
+    return nextLaneIndex;
+  };
   const mapped = campaigns.map((campaign) => {
     const posts = ((String(campaign.campaignName || "").trim() === "Uncategorized")
       ? uncategorizedPosts.slice()
@@ -8112,25 +8185,18 @@ function buildConstellationRows() {
 
     const derivedPillar = normalizePillar(campaign.pillar || posts[0]?.pillar || (appState.settings?.pillars || [])[0] || "authority");
     const laneKey = getConstellationCampaignLaneKey(campaign) || `__uncategorized__${Number(campaign._uncategorizedIndex || 0)}`;
+    const preferredLaneIndex = getCampaignLaneRowIndex(campaign);
+    const rowIndex = getNextAvailableLaneIndex(preferredLaneIndex);
     if (laneMap.has(laneKey)) {
       console.warn("Constellation duplicate lane assignment key detected.", {
         laneKey,
         campaignId: campaign.campaignId || "",
-        campaignName: campaign.campaignName || ""
+        campaignName: campaign.campaignName || "",
+        rowIndex
       });
-    } else {
-      const nextLaneIndex = laneMap.size;
-      if (laneOccupancy.has(nextLaneIndex)) {
-        console.warn("Constellation duplicate lane assignment detected.", {
-          laneIndex: nextLaneIndex,
-          existingLaneKey: laneOccupancy.get(nextLaneIndex),
-          incomingLaneKey: laneKey
-        });
-      }
-      laneMap.set(laneKey, nextLaneIndex);
-      laneOccupancy.set(nextLaneIndex, laneKey);
     }
-    const rowIndex = laneMap.get(laneKey);
+    laneMap.set(laneKey, rowIndex);
+    laneOccupancy.set(rowIndex, laneKey);
 
     return {
       ...campaign,
@@ -9577,7 +9643,21 @@ function renderWorkspaceHub() {
   if (inlineTarget) inlineTarget.innerHTML = getConnectedAccountsMarkup({ compact: true });
   const accountsPanel = document.querySelector('[data-settings-panel="accounts"]');
   if (accountsPanel) accountsPanel.innerHTML = getConnectedAccountsMarkup();
+  renderLinkedInRewriteRouteDiagnostics(backendDiagnostics?.linkedInRewriteRouteDiagnostics || null);
   renderWorkspaceDiagnosticsPanel();
+}
+
+function renderLinkedInRewriteRouteDiagnostics(report) {
+  if (!linkedInRewriteRouteStatus) return;
+  if (!report) {
+    linkedInRewriteRouteStatus.textContent = "Rewrite route diagnostics unavailable.";
+    return;
+  }
+  linkedInRewriteRouteStatus.textContent = [
+    `rewriteImportedLinkedInRows registered: ${report.rewriteImportedLinkedInRowsRegistered ? "Yes" : "No"}`,
+    `cleanupImportedLinkedInPosts registered: ${report.cleanupImportedLinkedInPostsRegistered ? "Yes" : "No"}`,
+    `backendVersion: ${report.backendVersion || "Unavailable"}`
+  ].join(" • ");
 }
 
 function buildLocalConstellationDiagnostics() {
@@ -9624,9 +9704,11 @@ function getCampaignCleanupDiagnosticsData() {
   const cleanup = backendDiagnostics?.campaignCleanupDiagnostics || {};
   const nearDuplicates = Array.isArray(cleanup.nearDuplicateCampaigns) ? cleanup.nearDuplicateCampaigns : [];
   const invalidComboCampaigns = Array.isArray(cleanup.invalidComboCampaigns) ? cleanup.invalidComboCampaigns : [];
+  const cleanupSuggestions = Array.isArray(cleanup.cleanupSuggestions) ? cleanup.cleanupSuggestions : [];
   return {
     nearDuplicates,
-    invalidComboCampaigns
+    invalidComboCampaigns,
+    cleanupSuggestions
   };
 }
 
@@ -9642,7 +9724,7 @@ function getCampaignByNameOrId(value = "") {
 
 function renderCampaignCleanupDiagnosticsCard() {
   const cleanup = getCampaignCleanupDiagnosticsData();
-  if (!cleanup.nearDuplicates.length && !cleanup.invalidComboCampaigns.length) return "";
+  if (!cleanup.nearDuplicates.length && !cleanup.invalidComboCampaigns.length && !cleanup.cleanupSuggestions.length) return "";
   const invalidComboPostIds = cleanup.invalidComboCampaigns.map((item) => String(item.postId || "").trim()).filter(Boolean);
   const allowedTargets = cleanup.invalidComboCampaigns[0]?.allowedTargets || ["Algorithm Best Practices", "Messaging", "Offerings"];
   return `
@@ -9673,6 +9755,14 @@ function renderCampaignCleanupDiagnosticsCard() {
           </button>
         </div>
       `).join("")}
+      ${cleanup.cleanupSuggestions.length ? `
+        <div class="p-3 rounded-xl bg-[#120c1d] border border-white/5 space-y-2">
+          <div class="text-sm font-bold text-white">Cleanup Suggestions</div>
+          ${cleanup.cleanupSuggestions.slice(0, 8).map((item) => `
+            <div class="text-[11px] text-gray-300 wrap-safe">${escapeHtml(item.suggestedAction || item.type || "Review this campaign issue.")}</div>
+          `).join("")}
+        </div>
+      ` : ""}
       ${cleanup.invalidComboCampaigns.length ? `
         <div class="p-3 rounded-xl bg-[#120c1d] border border-red-400/15 space-y-3">
           <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -14811,6 +14901,7 @@ function renderDiagnosticsPanel() {
 }
 
 function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
+  renderLinkedInRewriteRouteDiagnostics(report?.routeDiagnostics || backendDiagnostics?.linkedInRewriteRouteDiagnostics || null);
   if (cleanupImportedLinkedInStatus) {
     cleanupImportedLinkedInStatus.textContent = report
       ? `${mode === "live" ? "Live rewrite" : "Dry run"} scanned ${report.scannedRows || 0} rows, found ${report.candidateRows || 0} import candidates, and ${mode === "live" ? "updated" : "would update"} ${report.affectedRows || 0} rows across ${report.changedCells || 0} cells.${report.backupSheetName ? ` Backup tab: ${report.backupSheetName}.` : report.backupWouldBeCreated ? " Backup tab will be created before live rewrite." : ""}`
@@ -14823,6 +14914,7 @@ function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
   }
   const samples = Array.isArray(report.sampleBeforeAfter) ? report.sampleBeforeAfter : [];
   const errors = Array.isArray(report.errors) ? report.errors : [];
+  const noRowsReasons = Array.isArray(report.noRowsReasons) ? report.noRowsReasons : [];
   cleanupImportedLinkedInPreview.innerHTML = `
     <div class="platform-card overflow-hidden">
       <div class="flex items-center justify-between gap-3 mb-3">
@@ -14850,6 +14942,11 @@ function renderImportedLinkedInCleanupReport(report, mode = "dryRun") {
       ${(report.backupSheetName || report.backupWouldBeCreated) ? `
         <div class="mb-4 p-3 rounded-xl bg-[#181125] border border-white/5 text-xs text-gray-300 wrap-safe">
           ${escapeHtml(report.backupSheetName ? `Backup tab created: ${report.backupSheetName}` : "Backup tab will be created before live rewrite.")}
+        </div>
+      ` : ""}
+      ${noRowsReasons.length ? `
+        <div class="mb-4 p-3 rounded-xl bg-[#181125] border border-white/5 text-xs text-gray-300 wrap-safe">
+          ${noRowsReasons.map((reason) => escapeHtml(reason)).join(" • ")}
         </div>
       ` : ""}
       <div class="space-y-3">
@@ -15863,6 +15960,10 @@ async function apiSaveCampaign(campaign) {
   return apiPost("saveCampaign", campaign);
 }
 
+async function apiUpdateCampaignColor(payload) {
+  return apiPost("updateCampaignColor", payload);
+}
+
 async function apiSaveNote(note) {
   return apiPost("saveNote", note);
 }
@@ -16059,6 +16160,10 @@ function getLinkedInRewritePayload(dryRun = true) {
 async function apiRewriteImportedLinkedInRows(payload = {}) {
   const result = await apiPost("rewriteImportedLinkedInRows", payload);
   return result?.results || result;
+}
+
+async function apiTestRewriteImportedLinkedInRowsRoute() {
+  return apiPost("testRewriteImportedLinkedInRowsRoute", {});
 }
 
 async function apiCleanupImportedLinkedInPosts(payload = {}) {
