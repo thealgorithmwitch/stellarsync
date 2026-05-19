@@ -8275,13 +8275,26 @@ function buildConstellationRows() {
   }
   const laneMap = new Map();
   const laneOccupancy = new Map();
+  let appendedLaneIndex = Math.max(...Object.values(CAMPAIGN_ROWS)) + 1;
   const getNextAvailableLaneIndex = (preferredLaneIndex = null) => {
-    if (Number.isFinite(Number(preferredLaneIndex)) && !laneOccupancy.has(Number(preferredLaneIndex))) {
-      return Number(preferredLaneIndex);
+    if (Number.isFinite(Number(preferredLaneIndex))) {
+      let nextLaneIndex = Number(preferredLaneIndex);
+      while (laneOccupancy.has(nextLaneIndex)) nextLaneIndex += 1;
+      return nextLaneIndex;
     }
     let nextLaneIndex = 0;
     while (laneOccupancy.has(nextLaneIndex)) nextLaneIndex += 1;
     return nextLaneIndex;
+  };
+  const getPreferredLaneIndex = (campaign = {}) => {
+    const exactLane = getCampaignLaneRowIndex(campaign);
+    if (exactLane != null && Number.isFinite(Number(exactLane))) return Number(exactLane);
+    if (isMessagingJobPostsComboCampaign(campaign.campaignName || "")) {
+      const nextLane = appendedLaneIndex;
+      appendedLaneIndex += 1;
+      return nextLane;
+    }
+    return null;
   };
   const mapped = campaigns.map((campaign) => {
     const posts = ((String(campaign.campaignName || "").trim() === "Uncategorized")
@@ -8300,7 +8313,7 @@ function buildConstellationRows() {
 
     const derivedPillar = normalizePillar(campaign.pillar || posts[0]?.pillar || (appState.settings?.pillars || [])[0] || "authority");
     const laneKey = getConstellationCampaignLaneKey(campaign) || `__uncategorized__${Number(campaign._uncategorizedIndex || 0)}`;
-    const preferredLaneIndex = getCampaignLaneRowIndex(campaign);
+    const preferredLaneIndex = getPreferredLaneIndex(campaign);
     const rowIndex = getNextAvailableLaneIndex(preferredLaneIndex);
     if (laneMap.has(laneKey)) {
       console.warn("Constellation duplicate lane assignment key detected.", {
@@ -8356,6 +8369,31 @@ function normalizeCampaignLaneKey(value = "") {
   return "";
 }
 
+function getConstellationCampaignLabelParts(value = "") {
+  return String(value || "")
+    .split(",")
+    .map((item) => normalizeDisplayText(item))
+    .filter(Boolean);
+}
+
+function isInvalidComboCampaignName(value = "") {
+  return getConstellationCampaignLabelParts(value).length > 1;
+}
+
+function hasMessagingLabel(value = "") {
+  const normalized = normalizeLookupValue(value);
+  return normalized === "messaging" || normalized.includes("messaging");
+}
+
+function hasJobPostsLabel(value = "") {
+  const normalized = normalizeLookupValue(value);
+  return normalized === "job posts" || normalized.includes("job posts");
+}
+
+function isMessagingJobPostsComboCampaign(value = "") {
+  return hasMessagingLabel(value) && hasJobPostsLabel(value);
+}
+
 function getCampaignLaneRowIndex(campaign = {}) {
   const normalizedKey = normalizeCampaignLaneKey(campaign.campaignName || "");
   if (!normalizedKey) return null;
@@ -8366,8 +8404,84 @@ function getCampaignBaseY(rowIndex) {
   return START_Y + (Number(rowIndex || 0) * ROW_HEIGHT);
 }
 
+function getConstellationWorldDimensions(rows = []) {
+  const longestCampaignItemCount = (rows || []).reduce((maxCount, campaign) => {
+    return Math.max(maxCount, Math.max((campaign.posts || []).length, 1));
+  }, 1);
+  const maxRowIndex = (rows || []).reduce((maxRow, campaign, index) => {
+    return Math.max(maxRow, Number(campaign?._constellationRowIndex ?? index) || 0);
+  }, 0);
+  return {
+    worldWidth: START_X + (longestCampaignItemCount * NODE_SPACING) + 800,
+    worldHeight: START_Y + ((maxRowIndex + 1) * ROW_HEIGHT) + 800
+  };
+}
+
+function buildConstellationNodeLayoutSnapshot(rows = buildConstellationRows()) {
+  const dimensions = getConstellationWorldDimensions(rows);
+  const entries = [];
+  rows.forEach((campaign, index) => {
+    const anchor = getConstellationAnchor(campaign, index);
+    const rowIndex = Number(campaign?._constellationRowIndex || index);
+    const layout = {
+      ...getConstellationLayoutConfig(campaign, index),
+      rowIndex
+    };
+    const points = getIconPathPoints(
+      String(campaign.iconShape || "").trim().toLowerCase(),
+      Math.max((campaign.posts || []).length, 1),
+      anchor.x,
+      anchor.y,
+      layout,
+      String(campaign.campaignId || campaign.campaignName || index)
+    );
+    (campaign.posts || []).forEach((post, postIndex) => {
+      entries.push({
+        post_id: String(post.id || post.postId || "").trim(),
+        title: String(post.title || "").trim(),
+        campaign_id: String(campaign.campaignId || "").trim(),
+        campaign_name: String(campaign.campaignName || "Uncategorized").trim(),
+        campaign_lane_key: String(campaign._constellationLaneKey || "").trim(),
+        lane_index: rowIndex,
+        x: Math.round(Number(points[postIndex]?.x || anchor.x) || 0),
+        y: Math.round(Number(points[postIndex]?.y || anchor.y) || 0)
+      });
+    });
+  });
+  return {
+    rows,
+    entries,
+    worldWidth: dimensions.worldWidth,
+    worldHeight: dimensions.worldHeight
+  };
+}
+
+function detectConstellationNodeOverlaps(snapshot = buildConstellationNodeLayoutSnapshot()) {
+  const overlaps = [];
+  const entries = Array.isArray(snapshot?.entries) ? snapshot.entries : [];
+  for (let index = 0; index < entries.length; index += 1) {
+    for (let compareIndex = index + 1; compareIndex < entries.length; compareIndex += 1) {
+      const first = entries[index];
+      const second = entries[compareIndex];
+      const deltaX = Math.abs(Number(first.x || 0) - Number(second.x || 0));
+      const deltaY = Math.abs(Number(first.y || 0) - Number(second.y || 0));
+      if (deltaX < 40 && deltaY < 40) {
+        overlaps.push({
+          deltaX,
+          deltaY,
+          first,
+          second
+        });
+      }
+    }
+  }
+  return overlaps;
+}
+
 function buildConstellationLaneDiagnostics() {
   const rows = buildConstellationRows();
+  const overlapSnapshot = buildConstellationNodeLayoutSnapshot(rows);
+  const nodeOverlaps = detectConstellationNodeOverlaps(overlapSnapshot);
   const laneIndexes = new Map();
   const duplicateLanes = [];
   rows.forEach((campaign) => {
@@ -8412,6 +8526,7 @@ function buildConstellationLaneDiagnostics() {
     campaignKeys: rows.map((campaign) => String(campaign._constellationLaneKey || "")),
     laneIndexes: rows.map((campaign) => Number(campaign._constellationRowIndex || 0)),
     duplicateLanes,
+    nodeOverlaps,
     missingCampaignIdButName,
     sameNormalizedNameDifferentIds,
     rows: rows.map((campaign) => ({
@@ -8560,11 +8675,7 @@ function renderConstellation() {
   if (!canvas) return;
 
   const rows = buildConstellationRows();
-  const longestCampaignItemCount = rows.reduce((maxCount, campaign) => {
-    return Math.max(maxCount, Math.max((campaign.posts || []).length, 1));
-  }, 1);
-  const worldWidth = START_X + (longestCampaignItemCount * NODE_SPACING) + 800;
-  const minCanvasHeight = START_Y + (rows.length * ROW_HEIGHT) + 800;
+  const { worldWidth, worldHeight: minCanvasHeight } = getConstellationWorldDimensions(rows);
 
   canvas.style.height = `${minCanvasHeight}px`;
   canvas.style.width = `${worldWidth}px`;
@@ -8767,6 +8878,13 @@ function renderConstellation() {
     });
     canvas.appendChild(rowGroup);
   });
+
+  const overlapDiagnostics = detectConstellationNodeOverlaps(buildConstellationNodeLayoutSnapshot(rows));
+  if (overlapDiagnostics.length) {
+    console.warn("Constellation node overlaps detected after layout.", overlapDiagnostics);
+  } else {
+    console.debug("Constellation overlap detector: no overlaps detected after layout.");
+  }
 
   const addCampaignRow = document.createElement("div");
   addCampaignRow.style.cssText = `
@@ -9816,6 +9934,13 @@ function buildLocalConstellationDiagnostics() {
       detail: laneDiagnostics.sameNormalizedNameDifferentIds.map((item) => `${item.normalizedName}: ${item.campaigns.map((campaign) => campaign.campaignId || campaign.campaignName).join(", ")}`).join(" | ")
     });
   }
+  if (laneDiagnostics.nodeOverlaps.length) {
+    diagnostics.push({
+      severity: "error",
+      label: "Constellation node overlaps",
+      detail: laneDiagnostics.nodeOverlaps.slice(0, 6).map((item) => `${item.first.campaign_name} / ${item.second.campaign_name} • ${item.first.post_id || item.first.title} ↔ ${item.second.post_id || item.second.title} • (${item.first.x},${item.first.y}) / (${item.second.x},${item.second.y})`).join(" | ")
+    });
+  }
   const mobileRouteIssues = ["calendar", "ledger", "media", "inspo", "notes", "write-idea", "constellation", "performance", "audit"].filter((view) => !document.getElementById(`view-${view}`)).map((view) => ({
     severity: "warning",
     label: "Mobile nav target has no visible route",
@@ -10005,9 +10130,10 @@ function runConstellationLaneDiagnostics() {
   if (diagnostics.duplicateLanes.length) console.warn("Duplicate constellation lanes detected", diagnostics.duplicateLanes);
   if (diagnostics.missingCampaignIdButName.length) console.warn("Posts missing campaign_id but keeping campaign_name", diagnostics.missingCampaignIdButName);
   if (diagnostics.sameNormalizedNameDifferentIds.length) console.warn("Campaigns share normalized names with different IDs", diagnostics.sameNormalizedNameDifferentIds);
+  if (diagnostics.nodeOverlaps.length) console.warn("Constellation node overlaps detected", diagnostics.nodeOverlaps);
   console.groupEnd();
-  const issueCount = diagnostics.duplicateLanes.length + diagnostics.missingCampaignIdButName.length + diagnostics.sameNormalizedNameDifferentIds.length;
-  showToast("Constellation lanes checked", issueCount ? `${issueCount} diagnostics warning${issueCount === 1 ? "" : "s"} logged to console.` : "No duplicate lane issues detected.", issueCount ? "ph-warning" : "ph-check", issueCount ? "text-yellow-400" : "text-[#00ffaa]");
+  const issueCount = diagnostics.duplicateLanes.length + diagnostics.missingCampaignIdButName.length + diagnostics.sameNormalizedNameDifferentIds.length + diagnostics.nodeOverlaps.length;
+  showToast("Constellation lanes checked", issueCount ? `${issueCount} diagnostics warning${issueCount === 1 ? "" : "s"} logged to console.` : "No duplicate lane or overlap issues detected.", issueCount ? "ph-warning" : "ph-check", issueCount ? "text-yellow-400" : "text-[#00ffaa]");
 }
 
 function renderWorkspaceDiagnosticsPanel() {
